@@ -63,7 +63,9 @@ service cloud.firestore {
           isOwnerOrAdmin() &&
           sameOrganization(resource.data.organizationId) &&
           request.resource.data.organizationId == resource.data.organizationId &&
-          request.resource.data.role in ['owner', 'admin', 'sales', 'operations', 'finance']
+          request.resource.data.role in ['owner', 'admin', 'sales', 'operations', 'finance'] &&
+          (resource.data.role != 'owner' || currentRole() == 'owner') &&
+          (request.resource.data.role != 'owner' || currentRole() == 'owner')
         )
       );
 
