@@ -62,9 +62,21 @@ service cloud.firestore {
     }
 
     match /organizations/{organizationId} {
-      allow read: if isPlatformAdmin() || sameOrganization(organizationId);
-      allow create: if isPlatformAdmin()
-        && request.resource.data.organizationId == organizationId;
+      allow read: if isPlatformAdmin() || (
+        signedIn()
+        && userProfileExists()
+        && organizationId == currentOrganizationId()
+      );
+      allow create: if (
+        isPlatformAdmin()
+        && request.resource.data.organizationId == organizationId
+      ) || (
+        signedIn()
+        && request.auth.uid == organizationId
+        && request.resource.data.organizationId == organizationId
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.status == 'active'
+      );
       allow update: if isPlatformAdmin()
         && request.resource.data.organizationId == organizationId;
       allow delete: if false;
