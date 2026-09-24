@@ -106,7 +106,10 @@ export default function Quotes() {
 
   const statusChange = async (id, status) => {
     try {
-      await updateQuoteStatus(id, status)
+      const policyId = await updateQuoteStatus(organizationId, id, status)
+      if (policyId) {
+        setError('')
+      }
     } catch (err) {
       console.error(err)
       setError('تعذر تحديث حالة العرض')
@@ -219,6 +222,12 @@ export default function Quotes() {
               </div>
 
               {quote.notes && <p className="subtitle">{quote.notes}</p>}
+
+              {quote.policyId && (
+                <div style={{ color: 'var(--success)', fontSize: 12, fontWeight: 700, marginBottom: 10 }}>
+                  ✓ تم تحويل العرض إلى بوليصة
+                </div>
+              )}
 
               <button className="btn btn-danger-outline" onClick={() => remove(quote.id)}>
                 حذف
