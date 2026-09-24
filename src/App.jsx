@@ -14,7 +14,7 @@ import Quotes from './pages/Quotes'
 import Renewals from './pages/Renewals'
 import Claims from './pages/Claims'
 import Payments from './pages/Payments'
-import AuditLogs from './pages/AuditLogs'
+import AuditLogs from './pages/AuditLogs'\nimport Documents from './pages/Documents'
 import Login from './pages/Login'
 
 function App() {
@@ -37,7 +37,7 @@ function App() {
             <Route path="/renewals" element={<Renewals />} />
             <Route path="/claims" element={<Claims />} />
             <Route path="/payments" element={<Payments />} />
-            <Route path="/audit" element={<AuditLogs />} />
+            <Route path="/audit" element={<AuditLogs />} />\n            <Route path="/documents" element={<Documents />} />
           </Route>
         </Route>
       </Routes>
