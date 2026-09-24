@@ -61,12 +61,12 @@ export default function Insurers() {
   }
 
   const remove = async (id) => {
-    if (!window.confirm('حذف شركة التأمين؟')) return
+    if (!window.confirm('تعطيل شركة التأمين؟')) return
     try {
       await deleteInsurer(id)
     } catch (err) {
       console.error(err)
-      setError('تعذر حذف الشركة')
+      setError('تعذر تعطيل الشركة')
     }
   }
 
@@ -132,8 +132,8 @@ export default function Insurers() {
 
               {item.notes && <p className="subtitle">{item.notes}</p>}
 
-              <button className="btn btn-danger-outline" onClick={() => remove(item.id)}>
-                حذف
+              <button className="btn btn-danger-outline" onClick={() => remove(item.id)} disabled={!item.active}>
+                {item.active ? "تعطيل الشركة" : "معطلة"}
               </button>
             </div>
           ))}
