@@ -25,11 +25,13 @@ import MedicalAnalysis from './pages/MedicalAnalysis'
 import Legal from './pages/Legal'
 import Login from './pages/Login'
 import { PlatformFeaturesProvider } from './services/PlatformFeaturesContext'
+import { ThemeProvider } from './services/ThemeContext'
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <ThemeProvider>
+      <BrowserRouter>
+        <Routes>
         <Route path="/login" element={<Login initialMode="login" />} />
         <Route path="/register" element={<Login initialMode="register" />} />
         <Route path="/legal" element={<Legal />} />
@@ -62,8 +64,9 @@ function App() {
             </Route>
           </Route>
         </Route>
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
 
