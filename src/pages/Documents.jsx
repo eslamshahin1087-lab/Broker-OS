@@ -1,3 +1,5 @@
+import AppIcon from '../components/AppIcon'
+import PageHeader from '../components/PageHeader'
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../services/AuthContext'
 import { canManageOperations } from '../constants/roles'
@@ -94,16 +96,18 @@ export default function Documents() {
 
   return (
     <div className="page-shell">
-      <div className="hero">
-        <div>
-          <span className="eyebrow">Document Registry</span>
-          <h1>المستندات</h1>
-          <p>سجل المستندات وروابطها داخل المؤسسة، بدون Firebase Storage أو خطة مدفوعة.</p>
-        </div>
-        <button type="button" className="btn btn-primary" onClick={() => setShowForm((v) => !v)}>
-          {showForm ? 'إلغاء' : '+ إضافة مستند'}
-        </button>
-      </div>
+      <PageHeader
+        icon="documents"
+        eyebrow="Document Registry"
+        title="المستندات"
+        description="روابط المستندات ومراجعها داخل العميل والبوليصة بدون تخزين الملفات على Firebase Storage."
+        action={
+          <button type="button" className="btn btn-primary" onClick={() => setShowForm((v) => !v)}>
+            <AppIcon name={showForm ? 'close' : 'plus'} size={14} />
+            {showForm ? 'إلغاء' : 'مستند'}
+          </button>
+        }
+      />
 
       {error && <div className="alert">{error}</div>}
 
