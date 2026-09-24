@@ -62,7 +62,7 @@ export default function Clients() {
   }
 
   if (selected) {
-    return <ClientDetail client={selected} onBack={() => setSelected(null)} onDelete={handleDelete} />
+    return <ClientDetail client={selected} organizationId={organizationId} onBack={() => setSelected(null)} onDelete={handleDelete} />
   }
 
   return (
@@ -106,17 +106,26 @@ export default function Clients() {
   )
 }
 
-function ClientDetail({ client, onBack, onDelete }) {
+function ClientDetail({ client, organizationId, onBack, onDelete }) {
   const [policies, setPolicies] = useState([])
   const [loadingPolicies, setLoadingPolicies] = useState(true)
 
   useEffect(() => {
-    const unsub = listenToPoliciesByClient(client.id, (rows) => {
-      setPolicies(rows)
-      setLoadingPolicies(false)
-    })
+    if (!organizationId || !client?.id) return
+    const unsub = listenToPoliciesByClient(
+      organizationId,
+      client.id,
+      (rows) => {
+        setPolicies(rows)
+        setLoadingPolicies(false)
+      },
+      (err) => {
+        console.error(err)
+        setLoadingPolicies(false)
+      }
+    )
     return unsub
-  }, [client.id])
+  }, [organizationId, client.id])
 
   return (
     <div>

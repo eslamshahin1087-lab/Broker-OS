@@ -23,6 +23,7 @@ export const INSURANCE_TYPES = {
   ENGINEERING: 'engineering',
   LIABILITY:   'liability',
   TRAVEL:      'travel',
+  OTHER:       'other',
 };
 
 export const INSURANCE_TYPE_LABELS = {
@@ -34,6 +35,7 @@ export const INSURANCE_TYPE_LABELS = {
   [INSURANCE_TYPES.ENGINEERING]: 'تأمين هندسي',
   [INSURANCE_TYPES.LIABILITY]:   'تأمين مسؤولية',
   [INSURANCE_TYPES.TRAVEL]:      'تأمين سفر',
+  [INSURANCE_TYPES.OTHER]:       'أخرى',
 };
 
 /* ─── حالات العميل ─── */

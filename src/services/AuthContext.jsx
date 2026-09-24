@@ -4,24 +4,41 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
+  updateProfile,
 } from 'firebase/auth'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, db } from './firebase'
 
 const AuthContext = createContext(null)
 
-// بينشئ مستند users/{uid} لو مش موجود (broker مستقل بمنظمته الخاصة)
 async function ensureProfile(firebaseUser) {
   const ref = doc(db, 'users', firebaseUser.uid)
   const snap = await getDoc(ref)
-  if (snap.exists()) return snap.data()
+
+  if (snap.exists()) {
+    const data = snap.data()
+    if (data.organizationId && data.role) return data
+
+    const patch = {
+      organizationId: data.organizationId || firebaseUser.uid,
+      role: data.role || 'owner',
+      displayName: data.displayName || firebaseUser.displayName || '',
+      updatedAt: serverTimestamp(),
+    }
+    await setDoc(ref, patch, { merge: true })
+    return { ...data, ...patch }
+  }
 
   const profileData = {
-    email: firebaseUser.email,
+    email: firebaseUser.email || '',
+    displayName: firebaseUser.displayName || '',
     organizationId: firebaseUser.uid,
     role: 'owner',
+    status: 'active',
+    profileCompleted: false,
     createdAt: serverTimestamp(),
   }
+
   await setDoc(ref, profileData)
   return profileData
 }
@@ -30,28 +47,104 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [platformAdmin, setPlatformAdmin] = useState(false)
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (u) => {
-      setUser(u)
-      if (u) {
-        try {
-          const profileData = await ensureProfile(u)
-          setProfile(profileData)
-        } catch (err) {
-          console.error('تعذر تحميل/إنشاء ملف تعريف المستخدم', err)
-          setProfile(null)
-        }
-      } else {
+    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+      setUser(firebaseUser)
+
+      if (!firebaseUser) {
         setProfile(null)
+        setPlatformAdmin(false)
+        setLoading(false)
+        return
       }
-      setLoading(false)
+
+      try {
+        const profileData = await ensureProfile(firebaseUser)
+        setProfile(profileData)
+        const platformAdminSnap = await getDoc(doc(db, 'platformAdmins', firebaseUser.uid))
+        setPlatformAdmin(platformAdminSnap.exists() && platformAdminSnap.data()?.enabled === true)
+      } catch (err) {
+        console.error('تعذر تحميل/إنشاء ملف تعريف المستخدم', err)
+        setProfile(null)
+        setPlatformAdmin(false)
+      } finally {
+        setLoading(false)
+      }
     })
+
     return unsub
   }, [])
 
   const login = (email, password) => signInWithEmailAndPassword(auth, email, password)
-  const register = (email, password) => createUserWithEmailAndPassword(auth, email, password)
+
+  const register = async (registration) => {
+    const credential = await createUserWithEmailAndPassword(
+      auth,
+      registration.email.trim(),
+      registration.password
+    )
+
+    const displayName = registration.fullName.trim()
+    const userRef = doc(db, 'users', credential.user.uid)
+    const organizationRef = doc(db, 'organizations', credential.user.uid)
+
+    if (displayName) {
+      await updateProfile(credential.user, { displayName })
+    }
+
+    const profileData = {
+      email: credential.user.email || '',
+      displayName,
+      phone: registration.phone.trim(),
+      jobTitle: registration.jobTitle.trim(),
+      brokerageName: registration.brokerageName.trim(),
+      brokerageType: registration.brokerageType,
+      city: registration.city.trim(),
+      address: registration.address.trim(),
+      whatsapp: registration.whatsapp.trim(),
+      website: registration.website.trim(),
+      licenseNumber: registration.licenseNumber.trim(),
+      yearsInBusiness: Number(registration.yearsInBusiness) || 0,
+      teamSize: registration.teamSize,
+      specializations: registration.specializations || [],
+      organizationId: credential.user.uid,
+      role: 'owner',
+      status: 'active',
+      profileCompleted: true,
+      onboardingStage: 'completed',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }
+
+    const organizationData = {
+      organizationId: credential.user.uid,
+      name: registration.brokerageName.trim() || displayName,
+      ownerId: credential.user.uid,
+      ownerUserId: credential.user.uid,
+      plan: 'free',
+      status: 'active',
+      industry: 'insurance-brokerage',
+      city: registration.city.trim(),
+      address: registration.address.trim(),
+      website: registration.website.trim(),
+      licenseNumber: registration.licenseNumber.trim(),
+      brokerageType: registration.brokerageType,
+      yearsInBusiness: Number(registration.yearsInBusiness) || 0,
+      teamSize: registration.teamSize,
+      specializations: registration.specializations || [],
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }
+
+    await setDoc(userRef, profileData, { merge: true })
+    await setDoc(organizationRef, organizationData, { merge: true })
+
+    setProfile(profileData)
+    return credential
+  }
+
   const logout = () => signOut(auth)
 
   return (
@@ -60,6 +153,8 @@ export function AuthProvider({ children }) {
         user,
         profile,
         organizationId: profile?.organizationId ?? null,
+        role: profile?.role ?? null,
+        platformAdmin,
         loading,
         login,
         register,

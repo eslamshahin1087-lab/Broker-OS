@@ -1,42 +1,41 @@
-/* ═══════════════════════════════════════════════════
-   useClient — Hook لقراءة عميل واحد
-   ═══════════════════════════════════════════════════ */
-
-import { useEffect, useState } from 'react';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from '../services/firebase';
-import { clientFromDoc } from '../models/client';
+import { useEffect, useState } from 'react'
+import { doc, onSnapshot } from 'firebase/firestore'
+import { db } from '../services/firebase'
+import { clientFromDoc } from '../models/client'
 
 export function useClient(orgId, clientId) {
-  const [client, setClient] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [client, setClient] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (!orgId || !clientId) {
-      setClient(null);
-      setLoading(false);
-      return;
+      setClient(null)
+      setLoading(false)
+      setError(null)
+      return
     }
 
-    setLoading(true);
-    const ref = doc(db, 'organizations', orgId, 'clients', clientId);
+    setLoading(true)
+    setError(null)
+    const ref = doc(db, 'clients', clientId)
 
     const unsub = onSnapshot(
       ref,
       (snap) => {
-        setClient(clientFromDoc(snap));
-        setLoading(false);
+        if (!snap.exists() || snap.data().organizationId !== orgId) setClient(null)
+        else setClient(clientFromDoc(snap))
+        setLoading(false)
       },
       (err) => {
-        console.error('useClient error:', err);
-        setError(err);
-        setLoading(false);
+        console.error('useClient error:', err)
+        setError(err)
+        setLoading(false)
       }
-    );
+    )
 
-    return () => unsub();
-  }, [orgId, clientId]);
+    return () => unsub()
+  }, [orgId, clientId])
 
-  return { client, loading, error };
+  return { client, loading, error }
 }

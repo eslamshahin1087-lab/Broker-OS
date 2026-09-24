@@ -1,60 +1,132 @@
-# Broker OS — Step 1 (MVP Scaffold)
+# Broker OS
 
-هذا أول إصدار من هيكل المشروع: React + Vite + Firebase (Auth + Firestore + Hosting)، مع أول شاشتين فعليتين: **Login** و **Home (Dashboard)**، وباقي شاشات الـ Bottom Nav كـ placeholders جاهزة للبناء عليها.
+Broker OS is a React + Vite + Firebase workspace for insurance brokers. The current architecture keeps the existing top-level Firestore collections while enforcing tenant isolation through `organizationId`.
 
-## الخطوات اللي محتاج تعملها إنت (تحتاج حسابك الشخصي)
+## Current architecture
 
-### 1. GitHub Repository
-1. روح على github.com وسجّل دخول.
-2. اعمل New Repository باسم `broker-os` (خليه Private في البداية).
-3. من جهازك، بعد ما تفك ضغط الملفات دي:
-   ```bash
-   cd broker-os
-   git init
-   git add .
-   git commit -m "Initial scaffold: auth + dashboard shell"
-   git branch -M main
-   git remote add origin https://github.com/<username>/broker-os.git
-   git push -u origin main
-   ```
+```
+Auth
+  ↓
+users/{uid}
+  ├── organizationId
+  └── role
 
-### 2. Firebase Project
-1. روح على console.firebase.google.com.
-2. Add project → اسمه مثلاً `broker-os`.
-3. من داخل المشروع: Build → Authentication → Get started → فعّل **Email/Password**.
-4. Build → Firestore Database → Create database → ابدأ في **test mode** مؤقتًا (هنرفعله بعد كده بالـ rules اللي في `firestore.rules`).
-5. Project settings (⚙️) → Your apps → Add app → Web (</>) → هياديك بيانات الـ config.
-6. انسخ الملف `.env.example` باسم `.env` واملأ فيه القيم من الخطوة اللي فاتت.
+organization-scoped collections
+  ├── clients
+  ├── leads
+  ├── opportunities
+  ├── policies
+  ├── insurers
+  ├── products
+  ├── quotes
+  ├── claims
+  ├── payments
+  ├── auditLogs
+  └── documents
 
-### 3. تشغيل المشروع محليًا
+```
+
+The commercial and operational flow is:
+
+```
+LEAD → OPPORTUNITY → CLIENT → QUOTE → POLICY
+                         ↓
+                  CLAIMS / PAYMENTS
+                         ↓
+                 RENEWALS / AUDIT
+                         ↓
+                    DOCUMENTS
+```
+
+When an opportunity is moved to **won**, the policy creation and opportunity update are performed in one Firestore transaction. Accepting a quote can also create its policy in the same transaction.
+
+## Security
+
+- `firestore.rules` is the authorization boundary for Firestore data.
+- User roles are stored in `users/{uid}`.
+- Existing operational collections are organization-scoped.
+- Document metadata is kept in Firestore while the actual file stays in the external document provider referenced by its HTTPS URL.
+- Document links must use HTTPS.
+- Document deletion is restricted to owner/admin/operations at the rules layer.
+- Audit entries are immutable.
+
+Do not deploy Firestore in test mode.
+
+## Main routes
+
+- `/` — Command Center / Dashboard
+- `/clients` — Clients + Client 360
+- `/leads` — Leads pipeline
+- `/opportunities` — Opportunities
+- `/quotes` — Quotes and quote-to-policy conversion
+- `/policies` — Policies + renewals
+- `/renewals` — Renewal follow-up queue
+- `/claims` — Claims
+- `/payments` — Payments
+- `/documents` — Secure document vault
+- `/finance` — Financial dashboard
+- `/insurers` — Insurer directory
+- `/products` — Insurer products
+- `/team` — Team + roles
+- `/audit` — Audit log
+
+## Local development
+
 ```bash
 npm install
 npm run dev
 ```
-هيفتحلك على `http://localhost:5173`.
 
-### 4. النشر (Free — Firebase Hosting)
+## Build
+
 ```bash
-npm install -g firebase-tools
-firebase login
-firebase init hosting   # اختار المشروع اللي عملته، ولو سألك عن الملفات اختار "no" عشان firebase.json موجود بالفعل
-npm run deploy
+npm run build
 ```
 
-## هيكل المشروع
+A GitHub Actions workflow is included at `.github/workflows/ci.yml` to run dependency installation and the production build on pushes to the main/foundation branches and pull requests.
+
+## Platform Admin
+
+Platform administration is separate from the per-organization `admin` role.
+
+- `/platform-admin` is available only to users listed in `platformAdmins/{uid}`.
+- Platform Admin can review all users, suspend/activate accounts, change roles, inspect organization summaries, manage global feature flags, update platform settings, and review platform audit logs.
+- Feature flags control both the navigation and route access for wired application modules.
+- Adding a feature flag does not create new application code automatically; a new module must first be wired to that flag.
+
+### Bootstrap the first Platform Admin
+
+The `platformAdmins` collection is intentionally **not writable from the application**.
+
+After deploying the new Firestore Rules, open:
+
+`Firebase Console → Firestore Database → Data → platformAdmins`
+
+Create a document whose ID is the Firebase Auth **UID** of the account that should own the platform.
+
+The document can contain a simple field such as:
+
 ```
-src/
-  layouts/MainLayout.jsx     ← Bottom Navigation (Home, Clients, Opportunities, Policies, Finance, More)
-  pages/                     ← كل شاشة رئيسية (Home جاهزة، الباقي placeholder)
-  services/firebase.js       ← تهيئة Firebase
-  services/AuthContext.jsx   ← إدارة تسجيل الدخول في كل التطبيق
-  components/RequireAuth.jsx ← حماية الصفحات من غير تسجيل دخول
-firestore.rules              ← صلاحيات قاعدة البيانات (Multi-tenant بـ organizationId)
+enabled: true
 ```
 
-## الخطوة الجاية
-بعد ما تعمل الـ push والـ Firebase project، أقترح نبدأ بـ:
-- **Clients module**: نموذج بيانات Firestore + شاشة إضافة/عرض عميل (Client 360°)
-- أو **Leads Pipeline**: نفس الفكرة بس للـ leads
+Then sign out and sign in again in Broker OS. The **إدارة المنصة** button and `/platform-admin` route will become available.
 
-قولّي أنهي واحدة تحب تبدأ بيها وهكمل معاك خطوة بخطوة.
+## Firebase deploy
+
+The repository now pins Firebase project `broker-os-7df4b` through `.firebaserc`.
+
+```bash
+npm run build
+firebase deploy --project broker-os-7df4b --only hosting,firestore:rules
+```
+
+Broker OS intentionally stays compatible with the Firebase Spark no-cost plan. Cloud Storage is not used; the Documents screen stores only secure HTTPS links to external files.
+
+## Next architectural layers
+
+1. Tasks and notifications.
+2. Role-level write restrictions across the legacy CRM mutations.
+3. Policy/client mutation audit coverage.
+4. Reporting and broker performance analytics.
+5. Search/indexing and dashboard aggregation to reduce realtime listener load.
