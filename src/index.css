@@ -3236,3 +3236,49 @@ body {
     font-size: 8px;
   }
 }
+
+
+/* Visual empty states and icon alignment */
+.empty-state-visual {
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 22px 16px;
+  border: 1px dashed rgba(96,165,250,.14);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(59,130,246,.035), rgba(255,255,255,.01));
+}
+.empty-state-visual strong {
+  color: var(--text-white);
+  font-size: 13px;
+}
+.empty-state-visual > span:not(.empty-state-icon) {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+.empty-state-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 2px;
+  border-radius: 12px;
+  color: var(--primary-blue-2);
+  background: linear-gradient(145deg, rgba(59,130,246,.14), rgba(34,211,238,.04));
+  border: 1px solid rgba(96,165,250,.15);
+}
+.sidebar-link-icon svg,
+.mobile-nav-icon svg,
+.page-header-icon svg,
+.section-head-icon svg,
+.quick-access-icon svg {
+  display: block;
+}
+.sidebar-link-icon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+}
