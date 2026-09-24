@@ -1,3 +1,5 @@
+import AppIcon from '../components/AppIcon'
+import PageHeader from '../components/PageHeader'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../services/AuthContext'
 import { canManageOperations } from '../constants/roles'
@@ -91,17 +93,18 @@ export default function Claims() {
 
   return (
     <div className="page-shell">
-      <div className="section-head">
-        <div>
-          <span className="eyebrow">Claims Desk</span>
-          <h1 style={{ margin: '6px 0 0' }}>المطالبات</h1>
-        </div>
-        {canManage && (
+      <PageHeader
+        icon="claims"
+        eyebrow="Claims Desk"
+        title="المطالبات"
+        description="متابعة المطالبات من البلاغ حتى التعويض، مع ربط مباشر بالبوليصة والعميل."
+        action={canManage ? (
           <button className="btn btn-primary" onClick={() => setShowForm((value) => !value)}>
-            {showForm ? 'إلغاء' : '+ مطالبة جديدة'}
+            <AppIcon name={showForm ? 'close' : 'plus'} size={14} />
+            {showForm ? 'إلغاء' : 'مطالبة'}
           </button>
-        )}
-      </div>
+        ) : null}
+      />
 
       {error && <div className="alert">{error}</div>}
 
