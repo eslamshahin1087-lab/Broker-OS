@@ -69,13 +69,21 @@ export async function moveOpportunityStage(organizationId, opportunity, newStage
     if (current.organizationId !== organizationId) throw new Error('Organization mismatch')
     if (current.stage === newStage) return current.policyId || null
 
+    if (current.policyId && current.stage === 'won' && newStage !== 'won') {
+      throw new Error('WON_OPPORTUNITY_LOCKED')
+    }
+
     if (newStage === 'won' && !current.policyId) {
+      if (!current.clientId) {
+        throw new Error('CLIENT_REQUIRED_FOR_WON_OPPORTUNITY')
+      }
+
       const policyRef = doc(collection(db, 'policies'))
-      const premium = Number(current.estimatedPremium) || 0
-      const rate = Number(current.commissionRate) || 0
+      const premium = Math.max(0, Number(current.estimatedPremium) || 0)
+      const rate = Math.max(0, Number(current.commissionRate) || 0)
 
       transaction.set(policyRef, {
-        clientId: current.clientId || '',
+        clientId: current.clientId,
         clientName: current.clientName || '',
         type: current.type || 'other',
         premiumAmount: premium,
@@ -85,6 +93,10 @@ export async function moveOpportunityStage(organizationId, opportunity, newStage
         renewalDate: '',
         organizationId,
         sourceOpportunityId: opportunity.id,
+        insurerId: current.insurerId || '',
+        insurerName: current.insurerName || '',
+        productId: current.productId || '',
+        productName: current.productName || '',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       })
