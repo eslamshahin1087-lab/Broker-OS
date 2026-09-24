@@ -1,9 +1,11 @@
 import AppIcon from '../components/AppIcon'
 import PageHeader from '../components/PageHeader'
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { addClient, deleteClient, listenToClients } from '../services/clients'
 import { listenToPoliciesByClient, policyTypeLabel } from '../services/policies'
+import { buildMedicalAnalysisLink } from '../services/relationshipEngine'
 
 const emptyForm = { name: '', phone: '', email: '', notes: '' }
 
@@ -142,6 +144,11 @@ function ClientDetail({ client, organizationId, onBack, onDelete }) {
       </button>
       <h2>{client.name}</h2>
       <div className="card" style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+          <Link className="btn btn-primary" to={buildMedicalAnalysisLink({ clientId: client.id })}>
+            <AppIcon name="spark" size={14} /> تحليل الاستهلاكات
+          </Link>
+        </div>
         <div className="card-row"><span className="label">الموبايل</span><span>{client.phone || '—'}</span></div>
         <div className="card-row"><span className="label">الإيميل</span><span>{client.email || '—'}</span></div>
         <div className="card-row"><span className="label">ملاحظات</span><span>{client.notes || '—'}</span></div>
