@@ -12,6 +12,7 @@ import { listenToClaims } from '../services/claims'
 import { listenToPayments } from '../services/payments'
 import {
   buildClient360,
+  buildClient360Indexes,
   calculateWorkflowHealth,
   getNextBestActions,
 } from '../services/workflowEngine'
@@ -123,23 +124,32 @@ export default function Home() {
     }),
   }), [leads, opportunities, quotes, policies, claims, payments])
 
+  const clientIndexes = useMemo(() => buildClient360Indexes({
+    leads,
+    opportunities,
+    quotes,
+    policies,
+    claims,
+    payments,
+  }), [leads, opportunities, quotes, policies, claims, payments])
+
   const clientSpotlight = useMemo(() => (
     clients
       .map((client) => ({
         client,
         ...buildClient360(client.id, {
-          leads,
-          opportunities,
-          quotes,
-          policies,
-          claims,
-          payments,
+          leads: clientIndexes.leads.get(client.id) || [],
+          opportunities: clientIndexes.opportunities.get(client.id) || [],
+          quotes: clientIndexes.quotes.get(client.id) || [],
+          policies: clientIndexes.policies.get(client.id) || [],
+          claims: clientIndexes.claims.get(client.id) || [],
+          payments: clientIndexes.payments.get(client.id) || [],
         }),
       }))
       .filter((item) => item.premium > 0 || item.openClaims > 0 || item.outstandingPayments > 0)
       .sort((a, b) => (b.premium + b.outstandingPayments) - (a.premium + a.outstandingPayments))
       .slice(0, 5)
-  ), [clients, leads, opportunities, quotes, policies, claims, payments])
+  ), [clients, clientIndexes])
 
   const recentOpportunities = opportunities.slice(0, 5)
   const greeting = profile?.displayName || profile?.email?.split('@')[0] || 'وسيط التأمين'
