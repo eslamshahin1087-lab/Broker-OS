@@ -1,3 +1,4 @@
+import PageHeader from '../components/PageHeader'
 import { useEffect, useMemo, useState } from 'react'
 import { collection, getDocs, query, updateDoc, where, doc } from 'firebase/firestore'
 import { useAuth } from '../services/AuthContext'
@@ -85,12 +86,12 @@ export default function Team() {
 
   return (
     <div className="page-shell">
-      <div className="section-head">
-        <div>
-          <span className="eyebrow">Workspace Administration</span>
-          <h1 style={{ margin: '6px 0 0' }}>الفريق والصلاحيات</h1>
-        </div>
-      </div>
+      <PageHeader
+        icon="team"
+        eyebrow="Workspace Administration"
+        title="الفريق والصلاحيات"
+        description="إدارة أعضاء المؤسسة والأدوار والصلاحيات التشغيلية."
+      />
 
       <div className="card" style={{ marginBottom: 16 }}>
         <input
