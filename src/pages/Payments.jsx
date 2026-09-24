@@ -1,3 +1,5 @@
+import AppIcon from '../components/AppIcon'
+import PageHeader from '../components/PageHeader'
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../services/AuthContext'
 import { canManageFinance } from '../constants/roles'
@@ -86,17 +88,18 @@ export default function Payments() {
 
   return (
     <div className="page-shell">
-      <div className="section-head">
-        <div>
-          <span className="eyebrow">Collections Desk</span>
-          <h1 style={{ margin: '6px 0 0' }}>المدفوعات</h1>
-        </div>
-        {canManage && (
+      <PageHeader
+        icon="payments"
+        eyebrow="Collections Desk"
+        title="المدفوعات"
+        description="تتبع التحصيل والاستحقاقات وحالة كل دفعة مرتبطة بالبوليصة والعميل."
+        action={canManage ? (
           <button className="btn btn-primary" onClick={() => setShowForm((value) => !value)}>
-            {showForm ? 'إلغاء' : '+ تسجيل دفعة'}
+            <AppIcon name={showForm ? 'close' : 'plus'} size={14} />
+            {showForm ? 'إلغاء' : 'دفعة'}
           </button>
-        )}
-      </div>
+        ) : null}
+      />
 
       {error && <div className="alert">{error}</div>}
 
