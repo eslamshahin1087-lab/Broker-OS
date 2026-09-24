@@ -341,10 +341,15 @@ export default function Organizations() {
               </div>
 
               <input
+                key={selected.id}
                 className="field"
-                value={selected.name || ''}
-                onChange={() => {}}
-                onBlur={(event) => persistCurrent({ name: event.target.value })}
+                defaultValue={selected.name || ''}
+                onBlur={(event) => {
+                  const value = event.target.value.trim()
+                  if (value && value !== selected.name) {
+                    persistCurrent({ name: value })
+                  }
+                }}
                 placeholder="اسم المؤسسة"
               />
 
