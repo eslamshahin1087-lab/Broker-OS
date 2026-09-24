@@ -22,20 +22,33 @@ service cloud.firestore {
       return currentUserProfile().data.role;
     }
 
+    function accountIsActive() {
+      return userProfileExists() && (
+        !('status' in currentUserProfile().data) ||
+        currentUserProfile().data.status == 'active'
+      );
+    }
+
+    function isPlatformAdmin() {
+      return signedIn() && exists(
+        /databases/$(database)/documents/platformAdmins/$(request.auth.uid)
+      );
+    }
+
     function isOwnerOrAdmin() {
-      return userProfileExists() && currentRole() in ['owner', 'admin'];
+      return accountIsActive() && currentRole() in ['owner', 'admin'];
     }
 
     function canManageFinance() {
-      return userProfileExists() && currentRole() in ['owner', 'admin', 'finance'];
+      return accountIsActive() && currentRole() in ['owner', 'admin', 'finance'];
     }
 
     function canManageOperations() {
-      return userProfileExists() && currentRole() in ['owner', 'admin', 'operations', 'sales'];
+      return accountIsActive() && currentRole() in ['owner', 'admin', 'operations', 'sales'];
     }
 
     function sameOrganization(orgId) {
-      return userProfileExists() && orgId == currentOrganizationId();
+      return accountIsActive() && orgId == currentOrganizationId();
     }
 
     function validOrganizationChange() {
@@ -43,10 +56,35 @@ service cloud.firestore {
         && sameOrganization(request.resource.data.organizationId);
     }
 
+    match /platformAdmins/{adminId} {
+      allow read: if signedIn() && (
+        request.auth.uid == adminId || isPlatformAdmin()
+      );
+      allow create, update, delete: if false;
+    }
+
+    match /platformFeatures/{featureId} {
+      allow read: if accountIsActive();
+      allow create, update, delete: if isPlatformAdmin();
+    }
+
+    match /platformSettings/{settingId} {
+      allow read: if accountIsActive();
+      allow create, update, delete: if isPlatformAdmin();
+    }
+
+    match /platformAuditLogs/{logId} {
+      allow read: if isPlatformAdmin();
+      allow create: if isPlatformAdmin()
+        && request.resource.data.actorId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
     match /users/{userId} {
       allow read: if signedIn() && (
         request.auth.uid == userId ||
-        (isOwnerOrAdmin() && sameOrganization(resource.data.organizationId))
+        (isOwnerOrAdmin() && sameOrganization(resource.data.organizationId)) ||
+        isPlatformAdmin()
       );
 
       allow create: if signedIn()
@@ -74,7 +112,8 @@ service cloud.firestore {
           request.resource.data.role in ['owner', 'admin', 'sales', 'operations', 'finance'] &&
           (resource.data.role != 'owner' || currentRole() == 'owner') &&
           (request.resource.data.role != 'owner' || currentRole() == 'owner')
-        )
+        ) ||
+        isPlatformAdmin()
       );
 
       allow delete: if false;
