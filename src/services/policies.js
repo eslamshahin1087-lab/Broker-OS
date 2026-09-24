@@ -25,7 +25,6 @@ export function policyTypeLabel(value) {
   return POLICY_TYPES.find((t) => t.value === value)?.label || value
 }
 
-// بيرجع عدد الأيام الباقية لتاريخ التجديد، أو null لو مفيش تاريخ محدد
 export function daysUntilRenewal(renewalDate) {
   if (!renewalDate) return null
   const today = new Date()
@@ -35,7 +34,6 @@ export function daysUntilRenewal(renewalDate) {
   return Math.round((target - today) / (1000 * 60 * 60 * 24))
 }
 
-// البوالص اللي هتتجدد خلال عدد أيام معين (افتراضيًا 30)، مرتبة بالأقرب أولًا
 export function getUpcomingRenewals(policies, withinDays = 30) {
   return policies
     .map((p) => ({ ...p, daysLeft: daysUntilRenewal(p.renewalDate) }))
@@ -47,16 +45,26 @@ function sortDesc(rows) {
   return [...rows].sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0))
 }
 
-// كل البوالص الخاصة بمنظمة (org) — لشاشة Policies العامة و Home
 export function listenToPolicies(organizationId, onData, onError) {
   const q = query(policiesRef, where('organizationId', '==', organizationId))
-  return onSnapshot(q, (snap) => onData(sortDesc(snap.docs.map((d) => ({ id: d.id, ...d.data() })))), onError)
+  return onSnapshot(
+    q,
+    (snap) => onData(sortDesc(snap.docs.map((d) => ({ id: d.id, ...d.data() })))),
+    onError
+  )
 }
 
-// بوالص عميل معيّن — لشاشة Client 360
-export function listenToPoliciesByClient(clientId, onData, onError) {
-  const q = query(policiesRef, where('clientId', '==', clientId))
-  return onSnapshot(q, (snap) => onData(sortDesc(snap.docs.map((d) => ({ id: d.id, ...d.data() })))), onError)
+export function listenToPoliciesByClient(organizationId, clientId, onData, onError) {
+  const q = query(
+    policiesRef,
+    where('organizationId', '==', organizationId),
+    where('clientId', '==', clientId)
+  )
+  return onSnapshot(
+    q,
+    (snap) => onData(sortDesc(snap.docs.map((d) => ({ id: d.id, ...d.data() })))),
+    onError
+  )
 }
 
 export function addPolicy(organizationId, data) {
