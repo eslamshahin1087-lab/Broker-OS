@@ -1,7 +1,6 @@
 import {
   addDoc,
   collection,
-  deleteDoc,
   doc,
   onSnapshot,
   query,
@@ -50,5 +49,8 @@ export function updateInsurer(insurerId, data) {
 }
 
 export function deleteInsurer(insurerId) {
-  return deleteDoc(doc(db, 'insurers', insurerId))
+  return updateDoc(doc(db, 'insurers', insurerId), {
+    active: false,
+    updatedAt: serverTimestamp(),
+  })
 }
