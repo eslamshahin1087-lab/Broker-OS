@@ -10,6 +10,7 @@ import { listenToQuotes } from '../services/quotes'
 import { listenToClaims } from '../services/claims'
 import { listenToPayments } from '../services/payments'
 import {
+  buildClient360,
   calculateWorkflowHealth,
   getNextBestActions,
 } from '../services/workflowEngine'
@@ -109,6 +110,24 @@ export default function Home() {
       payments,
     }),
   }), [leads, opportunities, quotes, policies, claims, payments])
+
+  const clientSpotlight = useMemo(() => (
+    clients
+      .map((client) => ({
+        client,
+        ...buildClient360(client.id, {
+          leads,
+          opportunities,
+          quotes,
+          policies,
+          claims,
+          payments,
+        }),
+      }))
+      .filter((item) => item.premium > 0 || item.openClaims > 0 || item.outstandingPayments > 0)
+      .sort((a, b) => (b.premium + b.outstandingPayments) - (a.premium + a.outstandingPayments))
+      .slice(0, 5)
+  ), [clients, leads, opportunities, quotes, policies, claims, payments])
 
   const recentOpportunities = opportunities.slice(0, 5)
   const greeting = profile?.displayName || profile?.email?.split('@')[0] || 'وسيط التأمين'
@@ -248,6 +267,40 @@ export default function Home() {
                 </div>
               )}
             </div>
+          </section>
+
+          <section className="card client-360-panel">
+            <div className="section-head">
+              <div>
+                <span className="eyebrow">Client 360</span>
+                <h2>حسابات تستحق المتابعة</h2>
+              </div>
+              <Link to="/clients" className="text-link">كل العملاء</Link>
+            </div>
+
+            {clientSpotlight.length === 0 ? (
+              <div className="empty-state">لا توجد حسابات تشغيلية كافية لعرض Client 360 حتى الآن.</div>
+            ) : (
+              <div className="client-360-grid">
+                {clientSpotlight.map(({ client, premium, commission, openClaims, outstandingPayments }) => (
+                  <div className="client-360-card" key={client.id}>
+                    <div className="client-360-head">
+                      <div>
+                        <strong>{client.name || 'عميل'}</strong>
+                        <span>{client.phone || client.email || 'بيانات التواصل غير مكتملة'}</span>
+                      </div>
+                      <span className="client-360-tag">360°</span>
+                    </div>
+                    <div className="client-360-stats">
+                      <span><small>أقساط</small><b>{money(premium)}</b></span>
+                      <span><small>عمولات</small><b>{money(commission)}</b></span>
+                      <span><small>مطالبات</small><b>{openClaims}</b></span>
+                      <span><small>مستحقات</small><b>{money(outstandingPayments)}</b></span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
 
           <section className="card">
