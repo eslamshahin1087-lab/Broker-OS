@@ -1,3 +1,5 @@
+import AppIcon from '../components/AppIcon'
+import PageHeader from '../components/PageHeader'
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../services/AuthContext'
 import { listenToClients } from '../services/clients'
@@ -134,15 +136,18 @@ export default function Quotes() {
 
   return (
     <div className="page-shell">
-      <div className="section-head">
-        <div>
-          <span className="eyebrow">Sales Desk</span>
-          <h1 style={{ margin: '6px 0 0' }}>عروض الأسعار</h1>
-        </div>
-        <button className="btn btn-primary" onClick={() => setShowForm((value) => !value)} disabled={!activeInsurers.length || !activeProducts.length}>
-          {showForm ? 'إلغاء' : '+ عرض سعر جديد'}
-        </button>
-      </div>
+      <PageHeader
+        icon="quotes"
+        eyebrow="Sales Desk"
+        title="عروض الأسعار"
+        description="اربط العرض بالعميل والفرصة وشركة التأمين والمنتج من البداية."
+        action={
+          <button className="btn btn-primary" onClick={() => setShowForm((value) => !value)} disabled={!activeInsurers.length || !activeProducts.length}>
+            <AppIcon name={showForm ? 'close' : 'plus'} size={14} />
+            {showForm ? 'إلغاء' : 'عرض جديد'}
+          </button>
+        }
+      />
 
       {error && <div className="alert">{error}</div>}
 
