@@ -5,6 +5,7 @@ import { listenToClients } from '../services/clients'
 import { listenToLeads } from '../services/leadService'
 import { getUpcomingRenewals, listenToPolicies } from '../services/policies'
 import { listenToOpportunities, stageColor, stageLabel } from '../services/opportunities'
+import { listenToQuotes } from '../services/quotes'
 
 const money = (value) => Math.round(Number(value) || 0).toLocaleString('ar-EG') + ' ج.م'
 
@@ -14,6 +15,7 @@ export default function Home() {
   const [policies, setPolicies] = useState([])
   const [opportunities, setOpportunities] = useState([])
   const [leads, setLeads] = useState([])
+  const [quotes, setQuotes] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -26,7 +28,7 @@ export default function Home() {
     let ready = 0
     const markReady = () => {
       ready += 1
-      if (ready >= 4) setLoading(false)
+      if (ready >= 5) setLoading(false)
     }
 
     const onError = (err) => {
@@ -40,6 +42,7 @@ export default function Home() {
       listenToPolicies(organizationId, (rows) => { setPolicies(rows); markReady() }, onError),
       listenToOpportunities(organizationId, (rows) => { setOpportunities(rows); markReady() }, onError),
       listenToLeads(organizationId, (rows) => { setLeads(rows); markReady() }, onError),
+      listenToQuotes(organizationId, (rows) => { setQuotes(rows); markReady() }, onError),
     ]
 
     return () => unsubs.forEach((unsubscribe) => unsubscribe())
@@ -51,9 +54,10 @@ export default function Home() {
     const premium = policies.reduce((sum, p) => sum + (Number(p.premiumAmount) || 0), 0)
     const openOpportunities = opportunities.filter((p) => !['won', 'lost'].includes(p.stage)).length
     const wonOpportunities = opportunities.filter((p) => p.stage === 'won').length
+    const pendingQuotes = quotes.filter((quote) => !['accepted', 'rejected'].includes(quote.status)).length
     const renewals = getUpcomingRenewals(policies, 30)
 
-    return { clients: clients.length, activePolicies, commission, premium, openOpportunities, wonOpportunities, renewals }
+    return { clients: clients.length, activePolicies, commission, premium, openOpportunities, wonOpportunities, pendingQuotes, renewals }
   }, [clients, policies, opportunities])
 
   const recentOpportunities = opportunities.slice(0, 5)
@@ -100,6 +104,7 @@ export default function Home() {
                 <AttentionRow title="تجديدات خلال 30 يوم" value={metrics.renewals.length} tone={metrics.renewals.length ? 'warning' : 'success'} link="/policies" />
                 <AttentionRow title="فرص مفتوحة" value={metrics.openOpportunities} tone="info" link="/opportunities" />
                 <AttentionRow title="عملاء محتملون" value={leads.filter((lead) => !['won', 'lost'].includes(lead.status)).length} tone="neutral" link="/leads" />
+                <AttentionRow title="عروض تحتاج متابعة" value={metrics.pendingQuotes} tone="info" link="/quotes" />
               </div>
             </div>
 
