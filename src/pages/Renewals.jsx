@@ -76,7 +76,7 @@ export default function Renewals() {
                     <h3>{item.clientName || 'عميل'}</h3>
                   </div>
                   <span className="badge" style={{ background: urgent ? 'var(--danger)' : 'var(--primary-blue)' }}>
-                    {item.daysLeft < 0 ? \`متأخر \${Math.abs(item.daysLeft)} يوم\` : \`\${item.daysLeft} يوم\`}
+                    {item.daysLeft < 0 ? 'متأخر ' + Math.abs(item.daysLeft) + ' يوم' : item.daysLeft + ' يوم'}
                   </span>
                 </div>
 
