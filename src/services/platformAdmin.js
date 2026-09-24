@@ -20,6 +20,7 @@ const organizationsRef = collection(db, 'organizations')
 export const DEFAULT_PLATFORM_FEATURES = [
   ['dashboard', 'الرئيسية', 'لوحة مؤشرات المنصة'],
   ['workflowIntelligence', 'ذكاء التشغيل', 'اقتراح الخطوة التالية واكتشاف فجوات الربط بين الوحدات'],
+  ['activities', 'المهام والمتابعات', 'إدارة المتابعات والمكالمات والاجتماعات والمهام'],
   ['clients', 'العملاء', 'إدارة العملاء وClient 360'],
   ['leads', 'Leads', 'إدارة العملاء المحتملين'],
   ['opportunities', 'الفرص', 'Pipeline وإدارة الفرص'],
