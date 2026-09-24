@@ -35,9 +35,9 @@ service cloud.firestore {
     }
 
     function isPlatformAdmin() {
-      return signedIn() && exists(
-        /databases/$(database)/documents/platformAdmins/$(request.auth.uid)
-      );
+      return signedIn()
+        && exists(/databases/$(database)/documents/platformAdmins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/platformAdmins/$(request.auth.uid)).data.enabled == true;
     }
 
     function isOwnerOrAdmin() {
