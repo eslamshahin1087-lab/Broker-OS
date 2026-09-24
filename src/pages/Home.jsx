@@ -204,6 +204,7 @@ export default function Home() {
                 { to: '/renewals', icon: 'renewals', label: 'التجديدات', hint: 'الأولوية والاحتفاظ' },
                 { to: '/claims', icon: 'claims', label: 'المطالبات', hint: 'متابعة التعويضات' },
                 { to: '/activities', icon: 'activities', label: 'المهام', hint: 'تنفيذ المتابعات' },
+                { to: '/medical-analysis', icon: 'medical', label: 'التحليل الطبي', hint: 'تحليل الاستهلاكات بذكاء' },
               ].map((item) => (
                 <Link to={item.to} className="quick-access-item" key={item.to}>
                   <span className="quick-access-icon"><AppIcon name={item.icon} size={18} /></span>
