@@ -23,10 +23,15 @@ service cloud.firestore {
     }
 
     function accountIsActive() {
-      return userProfileExists() && (
-        !('status' in currentUserProfile().data) ||
-        currentUserProfile().data.status == 'active'
-      );
+      return userProfileExists()
+        && (
+          !('status' in currentUserProfile().data) ||
+          currentUserProfile().data.status == 'active'
+        )
+        && (
+          !exists(/databases/$(database)/documents/organizations/$(currentUserProfile().data.organizationId)) ||
+          get(/databases/$(database)/documents/organizations/$(currentUserProfile().data.organizationId)).data.status != 'suspended'
+        );
     }
 
     function isPlatformAdmin() {
@@ -54,6 +59,15 @@ service cloud.firestore {
     function validOrganizationChange() {
       return request.resource.data.organizationId == resource.data.organizationId
         && sameOrganization(request.resource.data.organizationId);
+    }
+
+    match /organizations/{organizationId} {
+      allow read: if isPlatformAdmin() || sameOrganization(organizationId);
+      allow create: if isPlatformAdmin()
+        && request.resource.data.organizationId == organizationId;
+      allow update: if isPlatformAdmin()
+        && request.resource.data.organizationId == organizationId;
+      allow delete: if false;
     }
 
     match /platformAdmins/{adminId} {
