@@ -2,282 +2,161 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() {
-      return request.auth != null;
-    }
-
+    function signedIn() { return request.auth != null; }
     function userProfileExists() {
       return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
     }
-
-    function currentUserProfile() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid));
-    }
-
-    function currentOrganizationId() {
-      return currentUserProfile().data.organizationId;
-    }
-
-    function currentRole() {
-      return currentUserProfile().data.role;
-    }
-
+    function currentUserProfile() { return get(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function currentOrganizationId() { return currentUserProfile().data.organizationId; }
+    function currentRole() { return currentUserProfile().data.role; }
     function accountIsActive() {
       return userProfileExists()
-        && (
-          !('status' in currentUserProfile().data) ||
-          currentUserProfile().data.status == 'active'
-        )
-        && (
-          !exists(/databases/$(database)/documents/organizations/$(currentUserProfile().data.organizationId)) ||
-          get(/databases/$(database)/documents/organizations/$(currentUserProfile().data.organizationId)).data.status != 'suspended'
-        );
+        && (!('status' in currentUserProfile().data) || currentUserProfile().data.status == 'active')
+        && (!('organizationId' in currentUserProfile().data)
+          || !exists(/databases/$(database)/documents/organizations/$(currentUserProfile().data.organizationId))
+          || get(/databases/$(database)/documents/organizations/$(currentUserProfile().data.organizationId)).data.status != 'suspended');
     }
-
     function isPlatformAdmin() {
       return signedIn()
         && exists(/databases/$(database)/documents/platformAdmins/$(request.auth.uid))
         && get(/databases/$(database)/documents/platformAdmins/$(request.auth.uid)).data.enabled == true;
     }
-
-    function isOwnerOrAdmin() {
-      return accountIsActive() && currentRole() in ['owner', 'admin'];
-    }
-
-    function canManageFinance() {
-      return accountIsActive() && currentRole() in ['owner', 'admin', 'finance'];
-    }
-
-    function canManageOperations() {
-      return accountIsActive() && currentRole() in ['owner', 'admin', 'operations', 'sales'];
-    }
-
-    function sameOrganization(orgId) {
-      return accountIsActive() && orgId == currentOrganizationId();
-    }
-
-    function validOrganizationChange() {
-      return request.resource.data.organizationId == resource.data.organizationId
-        && sameOrganization(request.resource.data.organizationId);
-    }
+    function isOwnerOrAdmin() { return accountIsActive() && currentRole() in ['owner', 'admin']; }
+    function canManageFinance() { return accountIsActive() && currentRole() in ['owner', 'admin', 'finance']; }
+    function canManageOperations() { return accountIsActive() && currentRole() in ['owner', 'admin', 'operations', 'sales']; }
+    function canManageCRM() { return accountIsActive() && currentRole() in ['owner', 'admin', 'operations', 'sales']; }
+    function sameOrganization(orgId) { return accountIsActive() && orgId == currentOrganizationId(); }
+    function immutableOrganization() { return request.resource.data.organizationId == resource.data.organizationId; }
 
     match /organizations/{organizationId} {
-      allow read: if isPlatformAdmin() || (
-        signedIn()
-        && userProfileExists()
-        && organizationId == currentOrganizationId()
-      );
-      allow create: if (
-        isPlatformAdmin()
-        && request.resource.data.organizationId == organizationId
-      ) || (
-        signedIn()
-        && request.auth.uid == organizationId
-        && request.resource.data.organizationId == organizationId
-        && request.resource.data.ownerId == request.auth.uid
-        && request.resource.data.status == 'active'
-      );
-      allow update: if isPlatformAdmin()
-        && request.resource.data.organizationId == organizationId;
+      allow read: if isPlatformAdmin() || (signedIn() && userProfileExists() && organizationId == currentOrganizationId());
+      allow create: if (isPlatformAdmin() && request.resource.data.organizationId == organizationId)
+        || (signedIn() && request.auth.uid == organizationId
+          && request.resource.data.organizationId == organizationId
+          && request.resource.data.ownerId == request.auth.uid
+          && request.resource.data.status == 'active');
+      allow update: if isPlatformAdmin();
       allow delete: if false;
     }
 
     match /platformAdmins/{adminId} {
-      allow read: if signedIn() && (
-        request.auth.uid == adminId || isPlatformAdmin()
-      );
+      allow read: if signedIn() && (request.auth.uid == adminId || isPlatformAdmin());
       allow create, update, delete: if false;
     }
-
     match /platformFeatures/{featureId} {
       allow read: if accountIsActive();
       allow create, update, delete: if isPlatformAdmin();
     }
-
     match /platformSettings/{settingId} {
       allow read: if accountIsActive();
       allow create, update, delete: if isPlatformAdmin();
     }
-
     match /platformAuditLogs/{logId} {
       allow read: if isPlatformAdmin();
-      allow create: if isPlatformAdmin()
-        && request.resource.data.actorId == request.auth.uid;
+      allow create: if isPlatformAdmin() && request.resource.data.actorId == request.auth.uid;
       allow update, delete: if false;
     }
 
     match /users/{userId} {
       allow read: if signedIn() && (
-        request.auth.uid == userId ||
-        (isOwnerOrAdmin() && sameOrganization(resource.data.organizationId)) ||
-        isPlatformAdmin()
-      );
+        request.auth.uid == userId
+        || (isOwnerOrAdmin() && sameOrganization(resource.data.organizationId))
+        || isPlatformAdmin());
 
       allow create: if signedIn()
         && request.auth.uid == userId
         && request.resource.data.organizationId == userId
-        && request.resource.data.role == 'owner';
+        && request.resource.data.ownerId == userId
+        && request.resource.data.role == 'owner'
+        && request.resource.data.status == 'active';
 
-      allow update: if signedIn() && (
-        (
-          request.auth.uid == userId &&
-          (
-            request.resource.data.organizationId == resource.data.organizationId ||
-            (
-              !('organizationId' in resource.data) &&
-              request.resource.data.organizationId == request.auth.uid
-            )
-          ) &&
-          request.resource.data.role == resource.data.role
-        ) ||
-        (
-          request.auth.uid != userId &&
-          isOwnerOrAdmin() &&
-          sameOrganization(resource.data.organizationId) &&
-          request.resource.data.organizationId == resource.data.organizationId &&
-          request.resource.data.role in ['owner', 'admin', 'sales', 'operations', 'finance'] &&
-          (resource.data.role != 'owner' || currentRole() == 'owner') &&
-          (request.resource.data.role != 'owner' || currentRole() == 'owner')
-        ) ||
-        isPlatformAdmin()
-      );
-
+      allow update: if isPlatformAdmin()
+        || (request.auth.uid == userId
+          && request.resource.data.organizationId == resource.data.organizationId
+          && request.resource.data.role == resource.data.role
+          && request.resource.data.status == resource.data.status)
+        || (request.auth.uid != userId
+          && isOwnerOrAdmin()
+          && sameOrganization(resource.data.organizationId)
+          && request.resource.data.organizationId == resource.data.organizationId
+          && request.resource.data.role in ['owner', 'admin', 'sales', 'operations', 'finance']
+          && (resource.data.role != 'owner' || currentRole() == 'owner')
+          && (request.resource.data.role != 'owner' || currentRole() == 'owner'));
       allow delete: if false;
     }
 
-    match /clients/{clientId} {
+    match /clients/{id} {
       allow read: if sameOrganization(resource.data.organizationId);
-      allow create: if sameOrganization(request.resource.data.organizationId);
-      allow update: if sameOrganization(resource.data.organizationId)
-        && validOrganizationChange();
-      allow delete: if sameOrganization(resource.data.organizationId);
+      allow create: if canManageCRM() && sameOrganization(request.resource.data.organizationId);
+      allow update: if canManageCRM() && sameOrganization(resource.data.organizationId) && immutableOrganization();
+      allow delete: if canManageCRM() && sameOrganization(resource.data.organizationId);
     }
-
-    match /leads/{leadId} {
+    match /leads/{id} {
       allow read: if sameOrganization(resource.data.organizationId);
-      allow create: if sameOrganization(request.resource.data.organizationId);
-      allow update: if sameOrganization(resource.data.organizationId)
-        && validOrganizationChange();
-      allow delete: if sameOrganization(resource.data.organizationId);
+      allow create: if canManageCRM() && sameOrganization(request.resource.data.organizationId);
+      allow update: if canManageCRM() && sameOrganization(resource.data.organizationId) && immutableOrganization();
+      allow delete: if canManageCRM() && sameOrganization(resource.data.organizationId);
     }
-
-    match /opportunities/{opportunityId} {
+    match /opportunities/{id} {
       allow read: if sameOrganization(resource.data.organizationId);
-      allow create: if sameOrganization(request.resource.data.organizationId);
-      allow update: if sameOrganization(resource.data.organizationId)
-        && validOrganizationChange();
-      allow delete: if sameOrganization(resource.data.organizationId);
+      allow create: if canManageCRM() && sameOrganization(request.resource.data.organizationId);
+      allow update: if canManageCRM() && sameOrganization(resource.data.organizationId) && immutableOrganization();
+      allow delete: if canManageCRM() && sameOrganization(resource.data.organizationId);
     }
-
-    match /policies/{policyId} {
+    match /quotes/{id} {
       allow read: if sameOrganization(resource.data.organizationId);
-      allow create: if sameOrganization(request.resource.data.organizationId);
-      allow update: if sameOrganization(resource.data.organizationId)
-        && validOrganizationChange();
-      allow delete: if sameOrganization(resource.data.organizationId);
+      allow create: if canManageCRM() && sameOrganization(request.resource.data.organizationId);
+      allow update: if canManageCRM() && sameOrganization(resource.data.organizationId) && immutableOrganization();
+      allow delete: if isOwnerOrAdmin() && sameOrganization(resource.data.organizationId);
     }
-
-    match /insurers/{insurerId} {
+    match /policies/{id} {
       allow read: if sameOrganization(resource.data.organizationId);
-      allow create: if sameOrganization(request.resource.data.organizationId);
-      allow update: if sameOrganization(resource.data.organizationId)
-        && validOrganizationChange();
-      allow delete: if sameOrganization(resource.data.organizationId);
+      allow create, update: if canManageOperations() && sameOrganization(request.resource.data.organizationId) && (request.method == 'create' || immutableOrganization());
+      allow delete: if isOwnerOrAdmin() && sameOrganization(resource.data.organizationId);
     }
-
-    match /products/{productId} {
+    match /insurers/{id} {
       allow read: if sameOrganization(resource.data.organizationId);
-      allow create: if sameOrganization(request.resource.data.organizationId);
-      allow update: if sameOrganization(resource.data.organizationId)
-        && validOrganizationChange();
-      allow delete: if sameOrganization(resource.data.organizationId);
+      allow create, update, delete: if isOwnerOrAdmin() && sameOrganization(request.resource.data.organizationId) && (request.method == 'create' || immutableOrganization());
     }
-
-    match /quotes/{quoteId} {
+    match /products/{id} {
       allow read: if sameOrganization(resource.data.organizationId);
-      allow create: if sameOrganization(request.resource.data.organizationId);
-      allow update: if sameOrganization(resource.data.organizationId)
-        && validOrganizationChange();
-      allow delete: if sameOrganization(resource.data.organizationId);
+      allow create, update, delete: if isOwnerOrAdmin() && sameOrganization(request.resource.data.organizationId) && (request.method == 'create' || immutableOrganization());
     }
-
-    
-    match /activities/{activityId} {
+    match /activities/{id} {
       allow read: if sameOrganization(resource.data.organizationId);
-
-      allow create: if signedIn()
-        && sameOrganization(request.resource.data.organizationId)
-        && request.resource.data.createdBy == request.auth.uid;
-
-      allow update: if signedIn()
-        && sameOrganization(resource.data.organizationId)
-        && request.resource.data.organizationId == resource.data.organizationId
-        && (
-          request.auth.uid == resource.data.createdBy ||
-          request.auth.uid == resource.data.assignedTo ||
-          isOwnerOrAdmin()
-        );
-
-      allow delete: if signedIn()
-        && sameOrganization(resource.data.organizationId)
-        && (
-          request.auth.uid == resource.data.createdBy ||
-          isOwnerOrAdmin()
-        );
+      allow create: if canManageOperations() && sameOrganization(request.resource.data.organizationId) && request.resource.data.createdBy == request.auth.uid;
+      allow update: if canManageOperations() && sameOrganization(resource.data.organizationId) && immutableOrganization()
+        && (request.auth.uid == resource.data.createdBy || request.auth.uid == resource.data.assignedTo || isOwnerOrAdmin());
+      allow delete: if canManageOperations() && sameOrganization(resource.data.organizationId) && (request.auth.uid == resource.data.createdBy || isOwnerOrAdmin());
     }
-
-    match /renewal_updates/{updateId} {
+    match /renewal_updates/{id} {
       allow read: if isOwnerOrAdmin() && sameOrganization(resource.data.organizationId);
-      allow create: if canManageOperations()
-        && sameOrganization(request.resource.data.organizationId)
-        && request.resource.data.actorId == request.auth.uid;
+      allow create: if canManageOperations() && sameOrganization(request.resource.data.organizationId) && request.resource.data.actorId == request.auth.uid;
       allow update, delete: if false;
     }
-
-    match /claims/{claimId} {
+    match /claims/{id} {
       allow read: if sameOrganization(resource.data.organizationId);
-      allow create: if canManageOperations()
-        && sameOrganization(request.resource.data.organizationId)
-        && request.resource.data.createdBy == request.auth.uid;
-      allow update: if canManageOperations()
-        && sameOrganization(resource.data.organizationId)
-        && request.resource.data.organizationId == resource.data.organizationId;
+      allow create: if canManageOperations() && sameOrganization(request.resource.data.organizationId) && request.resource.data.createdBy == request.auth.uid;
+      allow update: if canManageOperations() && sameOrganization(resource.data.organizationId) && immutableOrganization();
       allow delete: if canManageOperations() && sameOrganization(resource.data.organizationId);
     }
-
-    match /payments/{paymentId} {
+    match /payments/{id} {
       allow read: if sameOrganization(resource.data.organizationId);
-      allow create: if canManageFinance()
-        && sameOrganization(request.resource.data.organizationId)
-        && request.resource.data.createdBy == request.auth.uid;
-      allow update: if canManageFinance()
-        && sameOrganization(resource.data.organizationId)
-        && request.resource.data.organizationId == resource.data.organizationId;
+      allow create: if canManageFinance() && sameOrganization(request.resource.data.organizationId) && request.resource.data.createdBy == request.auth.uid;
+      allow update: if canManageFinance() && sameOrganization(resource.data.organizationId) && immutableOrganization();
       allow delete: if canManageFinance() && sameOrganization(resource.data.organizationId);
     }
-
-    match /auditLogs/{logId} {
+    match /auditLogs/{id} {
       allow read: if isOwnerOrAdmin() && sameOrganization(resource.data.organizationId);
-      allow create: if sameOrganization(request.resource.data.organizationId)
-        && request.resource.data.actorId == request.auth.uid;
+      allow create: if sameOrganization(request.resource.data.organizationId) && request.resource.data.actorId == request.auth.uid;
       allow update, delete: if false;
     }
-
-    match /documents/{documentId} {
+    match /documents/{id} {
       allow read: if sameOrganization(resource.data.organizationId);
-      allow create: if sameOrganization(request.resource.data.organizationId)
-        && request.resource.data.createdBy == request.auth.uid
-        && request.resource.data.documentUrl.matches('^https://.*');
-      allow update: if sameOrganization(resource.data.organizationId)
-        && request.resource.data.organizationId == resource.data.organizationId
-        && request.resource.data.createdBy == resource.data.createdBy
-        && request.resource.data.documentUrl.matches('^https://.*');
-      allow delete: if canManageOperations()
-        && sameOrganization(resource.data.organizationId);
+      allow create: if sameOrganization(request.resource.data.organizationId) && request.resource.data.createdBy == request.auth.uid && request.resource.data.documentUrl.matches('^https://.*');
+      allow update: if sameOrganization(resource.data.organizationId) && immutableOrganization() && request.resource.data.createdBy == resource.data.createdBy && request.resource.data.documentUrl.matches('^https://.*');
+      allow delete: if canManageOperations() && sameOrganization(resource.data.organizationId);
     }
-
-    match /{document=**} {
-      allow read, write: if false;
-    }
+    match /{document=**} { allow read, write: if false; }
   }
 }
