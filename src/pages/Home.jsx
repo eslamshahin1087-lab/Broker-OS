@@ -23,6 +23,17 @@ const priorityLabel = {
   info: 'متابعة',
 }
 
+function activityLink(item) {
+  const params = new URLSearchParams({
+    title: item.title,
+    description: item.description || '',
+    priority: item.priority || 'normal',
+    entityType: item.entity || '',
+    entityId: item.entityId || '',
+  })
+  return '/activities?' + params.toString()
+}
+
 export default function Home() {
   const { organizationId, profile } = useAuth()
   const [clients, setClients] = useState([])
@@ -184,7 +195,10 @@ export default function Home() {
                         <strong>{item.title}</strong>
                         <span>{item.description}</span>
                       </div>
-                      <span className="smart-action-arrow">←</span>
+                      <div className="smart-action-tools">
+                        <Link to={activityLink(item)} onClick={(event) => event.stopPropagation()} className="smart-task-link">+ مهمة</Link>
+                        <span className="smart-action-arrow">←</span>
+                      </div>
                     </Link>
                   ))}
                 </div>
