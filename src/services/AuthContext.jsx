@@ -116,6 +116,7 @@ export function AuthProvider({ children }) {
       organizationId: credential.user.uid,
       name: registration.brokerageName.trim() || displayName,
       ownerId: credential.user.uid,
+      ownerUserId: credential.user.uid,
       plan: 'free',
       status: 'active',
       industry: 'insurance-brokerage',
