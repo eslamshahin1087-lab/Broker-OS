@@ -26,6 +26,7 @@ const PATHS = {
   check: 'M5 12l4 4L19 6',
   next: 'M5 12h14M13 6l6 6-6 6',
   plus: 'M12 5v14M5 12h14',
+  close: 'M6 6l12 12M18 6 6 18',
   search: 'M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16ZM16.5 16.5 21 21',
   filter: 'M4 5h16l-6.5 7.5V19l-3 1v-7.5z',
   calendar: 'M6 3v3M18 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13H4V6a1 1 0 0 1 1-1zM8 13h.01M12 13h.01M16 13h.01M8 17h.01M12 17h.01',
