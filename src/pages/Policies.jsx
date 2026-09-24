@@ -1,3 +1,5 @@
+import AppIcon from '../components/AppIcon'
+import PageHeader from '../components/PageHeader'
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../services/AuthContext'
 import { listenToClients } from '../services/clients'
@@ -72,12 +74,18 @@ export default function Policies() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2>البوالص</h2>
-        <button onClick={() => setShowForm((s) => !s)} className="btn btn-primary" disabled={clients.length === 0}>
-          {showForm ? 'إلغاء' : '+ بوليصة جديدة'}
-        </button>
-      </div>
+      <PageHeader
+        icon="policies"
+        eyebrow="Policy Portfolio"
+        title="البوالص"
+        description="إدارة المحفظة، الأقساط والعمولات ومواعيد التجديد."
+        action={
+          <button onClick={() => setShowForm((s) => !s)} className="btn btn-primary" disabled={clients.length === 0}>
+            <AppIcon name={showForm ? 'close' : 'plus'} size={14} />
+            {showForm ? 'إلغاء' : 'بوليصة جديدة'}
+          </button>
+        }
+      />
 
       {clients.length === 0 && !loading && (
         <p style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>
