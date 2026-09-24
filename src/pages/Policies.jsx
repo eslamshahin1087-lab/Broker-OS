@@ -1,9 +1,11 @@
 import AppIcon from '../components/AppIcon'
 import PageHeader from '../components/PageHeader'
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { listenToClients } from '../services/clients'
 import { POLICY_TYPES, addPolicy, daysUntilRenewal, deletePolicy, listenToPolicies, policyTypeLabel } from '../services/policies'
+import { buildMedicalAnalysisLink } from '../services/relationshipEngine'
 
 const emptyForm = {
   clientId: '',
@@ -183,13 +185,18 @@ export default function Policies() {
                   {policyTypeLabel(p.type)}
                 </span>
               </div>
-              <button
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
+                <Link className="text-link" to={buildMedicalAnalysisLink({ clientId: p.clientId, policyId: p.id })}>
+                  <AppIcon name="spark" size={13} /> تحليل الاستهلاكات
+                </Link>
+                <button
                 onClick={() => handleDelete(p.id)}
                 className="btn-danger"
-                style={{ background: 'none', border: 'none', cursor: 'pointer', marginTop: 8, padding: 0, fontSize: 13 }}
-              >
-                حذف
-              </button>
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 13 }}
+                >
+                  حذف
+                </button>
+              </div>
             </div>
           ))}
         </div>
