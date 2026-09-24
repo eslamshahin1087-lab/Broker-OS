@@ -15,6 +15,7 @@ const platformFeaturesRef = collection(db, 'platformFeatures')
 const platformSettingsRef = collection(db, 'platformSettings')
 const platformAuditRef = collection(db, 'platformAuditLogs')
 const usersRef = collection(db, 'users')
+const organizationsRef = collection(db, 'organizations')
 
 export const DEFAULT_PLATFORM_FEATURES = [
   ['dashboard', 'الرئيسية', 'لوحة مؤشرات المنصة'],
@@ -119,6 +120,93 @@ export async function writePlatformAudit(actorId, action, entityType, entityId, 
     details,
     createdAt: serverTimestamp(),
   })
+}
+
+export function listenToPlatformOrganizations(onData, onError) {
+  return onSnapshot(
+    query(organizationsRef),
+    (snapshot) => {
+      onData(
+        snapshot.docs
+          .map((item) => ({ id: item.id, ...item.data() }))
+          .sort((a, b) => (a.name || a.id || '').localeCompare(b.name || b.id || ''))
+      )
+    },
+    onError
+  )
+}
+
+export async function saveOrganization(organizationId, data = {}) {
+  if (!organizationId?.trim()) throw new Error('ORGANIZATION_ID_REQUIRED')
+
+  const ref = doc(organizationsRef, organizationId.trim())
+  await setDoc(ref, {
+    organizationId: organizationId.trim(),
+    name: data.name?.trim() || organizationId.trim(),
+    plan: data.plan || 'free',
+    status: data.status || 'active',
+    ownerUserId: data.ownerUserId || '',
+    featureOverrides: data.featureOverrides || {},
+    updatedAt: serverTimestamp(),
+    ...(data.createdAt ? {} : { createdAt: serverTimestamp() }),
+  }, { merge: true })
+
+  return ref.id
+}
+
+export async function updateOrganization(organizationId, data = {}) {
+  if (!organizationId) throw new Error('ORGANIZATION_ID_REQUIRED')
+
+  await updateDoc(doc(organizationsRef, organizationId), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  })
+}
+
+export async function syncOrganizationsFromUsers(users = []) {
+  const grouped = new Map()
+
+  users.forEach((item) => {
+    if (!item.organizationId) return
+
+    const current = grouped.get(item.organizationId) || {
+      organizationId: item.organizationId,
+      ownerUserId: '',
+    }
+
+    if (!current.ownerUserId && item.role === 'owner') {
+      current.ownerUserId = item.id
+    }
+
+    grouped.set(item.organizationId, current)
+  })
+
+  for (const organization of grouped.values()) {
+    await saveOrganization(organization.organizationId, {
+      ownerUserId: organization.ownerUserId,
+    })
+  }
+
+  return grouped.size
+}
+
+export async function updateOrganizationFeature(organizationId, featureKey, enabled) {
+  if (!organizationId || !featureKey) throw new Error('INVALID_FEATURE_OVERRIDE')
+
+  await updateDoc(doc(organizationsRef, organizationId), {
+    [`featureOverrides.${featureKey}`]: enabled,
+    updatedAt: serverTimestamp(),
+  })
+}
+
+export function listenToPlatformOrganization(organizationId, onData, onError) {
+  if (!organizationId) return () => {}
+
+  return onSnapshot(
+    doc(organizationsRef, organizationId),
+    (snapshot) => onData(snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null),
+    onError
+  )
 }
 
 export async function seedDefaultPlatformFeatures() {
