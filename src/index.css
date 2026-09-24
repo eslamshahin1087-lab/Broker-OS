@@ -2471,3 +2471,238 @@ a { color: inherit; }
     border-radius: 14px;
   }
 }
+
+/* Native mobile application shell */
+body {
+  background:
+    radial-gradient(circle at 50% -10%, rgba(47, 128, 237, 0.16), transparent 34%),
+    #020817;
+}
+
+@media (min-width: 901px) {
+  body {
+    min-height: 100vh;
+    padding: 18px 0;
+    display: flex;
+    justify-content: center;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(47, 128, 237, 0.16), transparent 30%),
+      #020817;
+  }
+
+  #root {
+    width: min(100%, 520px);
+  }
+
+  .app-shell {
+    width: 100%;
+    max-width: 520px;
+    min-height: calc(100vh - 36px);
+    margin: 0 auto;
+    overflow: hidden;
+    position: relative;
+    border-radius: 30px;
+    border: 1px solid rgba(148, 163, 184, 0.13);
+    background:
+      radial-gradient(circle at 90% 0%, rgba(47, 128, 237, 0.11), transparent 32%),
+      #06101d;
+    box-shadow:
+      0 28px 80px rgba(0, 0, 0, 0.48),
+      inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  }
+
+  .app-sidebar,
+  .app-topbar {
+    display: none;
+  }
+
+  .app-main {
+    margin-right: 0;
+    min-height: calc(100vh - 36px);
+    padding-bottom: 86px;
+  }
+
+  .app-content {
+    width: 100%;
+    padding: 0 14px;
+  }
+
+  .mobile-app-header {
+    position: sticky;
+    top: 0;
+    z-index: 25;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 74px;
+    margin: 0 -14px;
+    padding: 10px 14px;
+    background: rgba(6, 16, 29, 0.94);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.09);
+    backdrop-filter: blur(18px);
+  }
+
+  .mobile-app-brand {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mobile-app-brand .app-logo {
+    width: 62px !important;
+    max-height: 26px;
+  }
+
+  .mobile-app-brand-copy {
+    min-width: 0;
+    display: grid;
+    gap: 1px;
+  }
+
+  .mobile-app-brand-copy strong {
+    font-size: 9px;
+    overflow: hidden;
+    max-width: 130px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .mobile-app-brand-copy span {
+    color: #64748b;
+    font-size: 7px;
+    font-weight: 800;
+  }
+
+  .mobile-app-page {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: auto;
+  }
+
+  .mobile-app-header-icon {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    color: var(--primary-blue-2);
+    background: rgba(47, 128, 237, 0.10);
+    border: 1px solid rgba(47, 128, 237, 0.18);
+    border-radius: 11px;
+  }
+
+  .mobile-app-header-copy strong {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .mobile-app-avatar {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 34px;
+    border: 1px solid rgba(47, 128, 237, 0.20);
+    border-radius: 11px;
+    color: #fff;
+    background: linear-gradient(145deg, rgba(47, 128, 237, 0.34), rgba(47, 128, 237, 0.12));
+    font-size: 11px;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  .page-shell {
+    width: 100%;
+    padding: 14px 0 12px;
+  }
+
+  .hero {
+    margin-bottom: 12px;
+  }
+
+  .hero h1 {
+    font-size: 26px;
+    line-height: 1.16;
+  }
+
+  .dashboard-grid,
+  .commercial-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .card,
+  .stat-card {
+    border-radius: 18px;
+  }
+
+  .mobile-nav {
+    display: grid;
+    position: fixed;
+    right: auto;
+    left: 50%;
+    bottom: 10px;
+    width: min(calc(100% - 28px), 492px);
+    transform: translateX(-50%);
+    z-index: 45;
+  }
+
+  .mobile-menu-overlay {
+    z-index: 60;
+  }
+}
+
+@media (max-width: 900px) {
+  .mobile-app-brand {
+    display: flex;
+  }
+
+  .mobile-app-page {
+    margin-right: auto;
+  }
+
+  .mobile-app-avatar {
+    border: 1px solid rgba(47, 128, 237, 0.20);
+  }
+}
+
+@media (max-width: 560px) {
+  .app-content {
+    padding: 0 12px;
+  }
+
+  .mobile-app-header {
+    margin: 0 -12px;
+    min-height: 66px;
+    padding: 9px 12px;
+  }
+
+  .mobile-app-brand-copy {
+    display: none;
+  }
+
+  .mobile-app-brand .app-logo {
+    width: 66px !important;
+  }
+
+  .mobile-app-page {
+    gap: 7px;
+  }
+
+  .mobile-app-header-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .mobile-app-avatar {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+  }
+}
