@@ -40,6 +40,9 @@ Do not deploy Firestore in test mode.
 - `/opportunities` — Opportunities
 - `/policies` — Policies + renewals
 - `/finance` — Financial dashboard
+- `/quotes` — Quotes and quote-to-policy conversion
+- `/insurers` — Insurer directory
+- `/products` — Insurer products
 
 ## Local development
 
