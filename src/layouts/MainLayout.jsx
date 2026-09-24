@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import Logo from '../components/Logo'
 import { useAuth } from '../services/AuthContext'
+import { canManageTeam } from '../constants/roles'
 
 const NAV_ITEMS = [
   { to: '/', label: 'الرئيسية', end: true },
@@ -13,7 +14,7 @@ const NAV_ITEMS = [
 ]
 
 export default function MainLayout() {
-  const { profile, logout } = useAuth()
+  const { profile, role, logout } = useAuth()
 
   const navStyle = ({ isActive }) => ({
     color: isActive ? 'var(--primary-blue-2)' : 'var(--text-muted)',
@@ -71,7 +72,7 @@ export default function MainLayout() {
         borderTop: '1px solid var(--border)',
         zIndex: 20,
       }}>
-        {NAV_ITEMS.map((item) => (
+        {NAV_ITEMS.filter((item) => item.to !== '/team' || canManageTeam(role)).map((item) => (
           <NavLink key={item.to} to={item.to} style={navStyle} end={item.end}>
             {item.label}
           </NavLink>
