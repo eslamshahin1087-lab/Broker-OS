@@ -4,6 +4,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
+  updateProfile,
 } from 'firebase/auth'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, db } from './firebase'
@@ -21,6 +22,7 @@ async function ensureProfile(firebaseUser) {
     const patch = {
       organizationId: data.organizationId || firebaseUser.uid,
       role: data.role || 'owner',
+      displayName: data.displayName || firebaseUser.displayName || '',
       updatedAt: serverTimestamp(),
     }
     await setDoc(ref, patch, { merge: true })
@@ -29,10 +31,14 @@ async function ensureProfile(firebaseUser) {
 
   const profileData = {
     email: firebaseUser.email || '',
+    displayName: firebaseUser.displayName || '',
     organizationId: firebaseUser.uid,
     role: 'owner',
+    status: 'active',
+    profileCompleted: false,
     createdAt: serverTimestamp(),
   }
+
   await setDoc(ref, profileData)
   return profileData
 }
@@ -72,7 +78,59 @@ export function AuthProvider({ children }) {
   }, [])
 
   const login = (email, password) => signInWithEmailAndPassword(auth, email, password)
-  const register = (email, password) => createUserWithEmailAndPassword(auth, email, password)
+
+  const register = async (registration) => {
+    const credential = await createUserWithEmailAndPassword(
+      auth,
+      registration.email.trim(),
+      registration.password
+    )
+
+    const displayName = registration.fullName.trim()
+    const userRef = doc(db, 'users', credential.user.uid)
+    const organizationRef = doc(db, 'organizations', credential.user.uid)
+
+    if (displayName) {
+      await updateProfile(credential.user, { displayName })
+    }
+
+    const profileData = {
+      email: credential.user.email || '',
+      displayName,
+      phone: registration.phone.trim(),
+      jobTitle: registration.jobTitle.trim(),
+      brokerageName: registration.brokerageName.trim(),
+      brokerageType: registration.brokerageType,
+      city: registration.city.trim(),
+      licenseNumber: registration.licenseNumber.trim(),
+      organizationId: credential.user.uid,
+      role: 'owner',
+      status: 'active',
+      profileCompleted: true,
+      onboardingStage: 'completed',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }
+
+    const organizationData = {
+      organizationId: credential.user.uid,
+      name: registration.brokerageName.trim() || displayName,
+      ownerId: credential.user.uid,
+      plan: 'free',
+      status: 'active',
+      industry: 'insurance-brokerage',
+      city: registration.city.trim(),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }
+
+    await setDoc(userRef, profileData, { merge: true })
+    await setDoc(organizationRef, organizationData, { merge: true })
+
+    setProfile(profileData)
+    return credential
+  }
+
   const logout = () => signOut(auth)
 
   return (
