@@ -32,3 +32,7 @@ export function canManageFinance(role) {
 export function canManageOperations(role) {
   return role === ROLES.OWNER || role === ROLES.ADMIN || role === ROLES.SALES || role === ROLES.OPERATIONS
 }
+
+export function canManageMedicalAnalysis(role) {
+  return role === ROLES.OWNER || role === ROLES.ADMIN || role === ROLES.OPERATIONS
+}
