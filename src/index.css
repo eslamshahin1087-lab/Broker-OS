@@ -281,3 +281,44 @@ a { color: inherit; }
   .stat-card { min-height: 132px; padding: 14px; }
   .renewal-grid { grid-template-columns: 1fr; }
 }
+
+.team-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.team-row:last-child { border-bottom: 0; }
+
+.team-role-select {
+  width: 150px;
+  margin: 0;
+}
+
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.role-chip {
+  display: grid;
+  gap: 3px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.role-chip span { font-weight: 700; font-size: 12px; }
+.role-chip small { color: var(--text-muted); font-size: 10px; }
+
+@media (max-width: 700px) {
+  .team-row { align-items: flex-start; flex-direction: column; }
+  .team-role-select { width: 100%; }
+  .role-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
