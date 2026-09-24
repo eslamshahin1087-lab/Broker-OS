@@ -347,7 +347,9 @@ export function BrokerOSUserShell() {
   const closeMobile = () => setMobileMenuOpen(false)
 
   return (
-    <a className="broker-skip-link" href="#broker-main-content">تخطي إلى المحتوى</a><div className="broker-shell" dir="rtl">
+    <>
+      <a className="broker-skip-link" href="#broker-main-content">تخطي إلى المحتوى</a>
+      <div className="broker-shell" dir="rtl">
       <aside className="broker-sidebar">
         <div className="broker-sidebar-top">
           <div className="broker-brand">
@@ -438,7 +440,8 @@ export function BrokerOSUserShell() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }
 
