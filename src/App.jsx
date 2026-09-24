@@ -19,6 +19,7 @@ import Payments from './pages/Payments'
 import AuditLogs from './pages/AuditLogs'
 import Documents from './pages/Documents'
 import PlatformAdmin from './pages/PlatformAdmin'
+import Organizations from './pages/Organizations'
 import Login from './pages/Login'
 import { PlatformFeaturesProvider } from './services/PlatformFeaturesContext'
 
@@ -31,6 +32,9 @@ function App() {
           <Route element={<PlatformFeaturesProvider />}>
             <Route path="/platform-admin" element={<RequirePlatformAdmin />}>
               <Route index element={<PlatformAdmin />} />
+            </Route>
+            <Route path="/organizations" element={<RequirePlatformAdmin />}>
+              <Organizations />
             </Route>
             <Route element={<MainLayout />}>
             <Route path="/" element={<Home />} />
