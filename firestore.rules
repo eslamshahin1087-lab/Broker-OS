@@ -26,6 +26,14 @@ service cloud.firestore {
       return userProfileExists() && currentRole() in ['owner', 'admin'];
     }
 
+    function canManageFinance() {
+      return userProfileExists() && currentRole() in ['owner', 'admin', 'finance'];
+    }
+
+    function canManageOperations() {
+      return userProfileExists() && currentRole() in ['owner', 'admin', 'operations', 'sales'];
+    }
+
     function sameOrganization(orgId) {
       return userProfileExists() && orgId == currentOrganizationId();
     }
@@ -126,6 +134,43 @@ service cloud.firestore {
       allow update: if sameOrganization(resource.data.organizationId)
         && validOrganizationChange();
       allow delete: if sameOrganization(resource.data.organizationId);
+    }
+
+    match /renewal_updates/{updateId} {
+      allow read: if isOwnerOrAdmin() && sameOrganization(resource.data.organizationId);
+      allow create: if canManageOperations()
+        && sameOrganization(request.resource.data.organizationId)
+        && request.resource.data.actorId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    match /claims/{claimId} {
+      allow read: if sameOrganization(resource.data.organizationId);
+      allow create: if canManageOperations()
+        && sameOrganization(request.resource.data.organizationId)
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update: if canManageOperations()
+        && sameOrganization(resource.data.organizationId)
+        && request.resource.data.organizationId == resource.data.organizationId;
+      allow delete: if canManageOperations() && sameOrganization(resource.data.organizationId);
+    }
+
+    match /payments/{paymentId} {
+      allow read: if sameOrganization(resource.data.organizationId);
+      allow create: if canManageFinance()
+        && sameOrganization(request.resource.data.organizationId)
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update: if canManageFinance()
+        && sameOrganization(resource.data.organizationId)
+        && request.resource.data.organizationId == resource.data.organizationId;
+      allow delete: if canManageFinance() && sameOrganization(resource.data.organizationId);
+    }
+
+    match /auditLogs/{logId} {
+      allow read: if isOwnerOrAdmin() && sameOrganization(resource.data.organizationId);
+      allow create: if sameOrganization(request.resource.data.organizationId)
+        && request.resource.data.actorId == request.auth.uid;
+      allow update, delete: if false;
     }
 
     match /{document=**} {
