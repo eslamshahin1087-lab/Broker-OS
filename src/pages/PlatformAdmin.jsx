@@ -29,6 +29,7 @@ export default function PlatformAdmin() {
   const [bootstrapping, setBootstrapping] = useState(false)
   const [error, setError] = useState('')
   const [savingSettings, setSavingSettings] = useState(false)
+  const [userSearch, setUserSearch] = useState('')
 
   useEffect(() => {
     const cleanups = [
@@ -69,6 +70,14 @@ export default function PlatformAdmin() {
 
     return Array.from(map.values()).sort((a, b) => b.users - a.users)
   }, [users])
+
+  const filteredUsers = users.filter((item) => {
+    const term = userSearch.trim().toLowerCase()
+    if (!term) return true
+    return [item.email, item.organizationId, item.role, item.status]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(term))
+  })
 
   const stats = {
     users: users.length,
@@ -163,24 +172,41 @@ export default function PlatformAdmin() {
 
       {error && <div className="alert">{error}</div>}
 
-      <div className="stat-grid">
+      <nav className="platform-section-nav">
+        <a href="#platform-overview">نظرة عامة</a>
+        <a href="#platform-users">المستخدمون</a>
+        <a href="#platform-features">المزايا</a>
+        <a href="#platform-organizations">المؤسسات</a>
+        <a href="#platform-settings">الإعدادات</a>
+        <a href="#platform-audit">السجل</a>
+      </nav>
+
+      <div id="platform-overview" className="stat-grid">
         <div className="stat-card"><div className="stat-label">إجمالي المستخدمين</div><div className="stat-value">{stats.users}</div></div>
         <div className="stat-card"><div className="stat-label">المستخدمون النشطون</div><div className="stat-value">{stats.activeUsers}</div></div>
         <div className="stat-card"><div className="stat-label">المؤسسات</div><div className="stat-value">{stats.organizations}</div></div>
         <div className="stat-card"><div className="stat-label">المزايا المفعلة</div><div className="stat-value">{stats.enabledFeatures}</div></div>
       </div>
 
-      <section className="card platform-section">
+      <section id="platform-users" className="card platform-section">
         <div className="section-head">
           <div>
             <span className="eyebrow">Users</span>
             <h2>المستخدمون</h2>
           </div>
-          <span className="mini-kpi">{users.length} مستخدم</span>
+          <div className="platform-section-actions">
+            <span className="mini-kpi">{users.length} مستخدم</span>
+            <input
+              className="platform-search"
+              value={userSearch}
+              onChange={(event) => setUserSearch(event.target.value)}
+              placeholder="ابحث بالبريد أو المؤسسة أو الدور..."
+            />
+          </div>
         </div>
 
         <div className="platform-table">
-          {users.map((item) => (
+          {filteredUsers.map((item) => (
             <div className="platform-user-row" key={item.id}>
               <div>
                 <strong>{item.email || item.id}</strong>
@@ -212,7 +238,7 @@ export default function PlatformAdmin() {
       </section>
 
       <div className="dashboard-grid">
-        <section className="card platform-section">
+        <section id="platform-features" className="card platform-section">
           <div className="section-head">
             <div>
               <span className="eyebrow">Features</span>
@@ -272,7 +298,7 @@ export default function PlatformAdmin() {
           </form>
         </section>
 
-        <section className="card platform-section">
+        <section id="platform-settings" className="card platform-section">
           <div className="section-head">
             <div>
               <span className="eyebrow">System Settings</span>
@@ -316,7 +342,7 @@ export default function PlatformAdmin() {
         </section>
       </div>
 
-      <section className="card platform-section">
+      <section id="platform-organizations" className="card platform-section">
         <div className="section-head">
           <div>
             <span className="eyebrow">Organizations</span>
@@ -344,7 +370,7 @@ export default function PlatformAdmin() {
         </div>
       </section>
 
-      <section className="card platform-section">
+      <section id="platform-audit" className="card platform-section">
         <div className="section-head">
           <div>
             <span className="eyebrow">Audit</span>
