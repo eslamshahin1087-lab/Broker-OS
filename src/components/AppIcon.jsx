@@ -25,6 +25,18 @@ const PATHS = {
   lock: 'M6 10V8a6 6 0 0 1 12 0v2M5 10h14v11H5z',
   check: 'M5 12l4 4L19 6',
   next: 'M5 12h14M13 6l6 6-6 6',
+  plus: 'M12 5v14M5 12h14',
+  search: 'M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16ZM16.5 16.5 21 21',
+  filter: 'M4 5h16l-6.5 7.5V19l-3 1v-7.5z',
+  calendar: 'M6 3v3M18 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13H4V6a1 1 0 0 1 1-1zM8 13h.01M12 13h.01M16 13h.01M8 17h.01M12 17h.01',
+  trash: 'M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5',
+  edit: 'M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4',
+  chevronDown: 'M6 9l6 6 6-6',
+  arrowLeft: 'M19 12H5M11 18l-6-6 6-6',
+  arrowRight: 'M5 12h14M13 6l6 6-6 6',
+  more: 'M5 12h.01M12 12h.01M19 12h.01',
+  shield: 'M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z',
+  spark: 'M12 3l1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6z',
 }
 
 export default function AppIcon({ name, size = 18, stroke = 1.8, className = '' }) {
