@@ -48,7 +48,7 @@ export default function MainLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const visibleItems = NAV_ITEMS.filter((item) => canSee(item, role, features))
-  const quickOrder = ['/', '/clients', '/opportunities', '/policies', '/renewals']
+  const quickOrder = ['/', '/clients', '/opportunities', '/policies', '/quotes']
   const quickItems = quickOrder
     .map((to) => visibleItems.find((item) => item.to === to))
     .filter(Boolean)
@@ -176,17 +176,6 @@ export default function MainLayout() {
             <small>{item.label}</small>
           </NavLink>
         ))}
-
-        <button
-          type="button"
-          className={'mobile-nav-link' + (mobileMenuOpen ? ' active' : '')}
-          onClick={() => setMobileMenuOpen((value) => !value)}
-          aria-label="فتح المزيد"
-          aria-expanded={mobileMenuOpen}
-        >
-          <span className="mobile-nav-icon"><AppIcon name="more" size={19} stroke={2} /></span>
-          <small>المزيد</small>
-        </button>
       </nav>
 
       {mobileMenuOpen && (
