@@ -1,3 +1,4 @@
+import PageHeader from '../components/PageHeader'
 import { useEffect, useState } from 'react'
 import { collection, onSnapshot, query, where } from 'firebase/firestore'
 import { useAuth } from '../services/AuthContext'
@@ -58,13 +59,12 @@ export default function AuditLogs() {
 
   return (
     <div className="page-shell">
-      <div className="section-head">
-        <div>
-          <span className="eyebrow">Security & Compliance</span>
-          <h1 style={{ margin: '6px 0 0' }}>سجل التدقيق</h1>
-        </div>
-        <span className="mini-kpi">{items.length} سجل ظاهر</span>
-      </div>
+      <PageHeader
+        icon="audit"
+        eyebrow="Security & Compliance"
+        title="سجل التدقيق"
+        description={items.length + ' سجل ظاهر من أحدث أحداث المؤسسة.'}
+      />
 
       {error && <div className="alert">{error}</div>}
 
