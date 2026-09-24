@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import FeatureGate from '../components/FeatureGate'
 import AppIcon from '../components/AppIcon'
+import { canManageMedicalAnalysis } from '../constants/roles'
 import { listenToClients } from '../services/clients'
 import { listenToLeads } from '../services/leadService'
 import { getUpcomingRenewals, listenToPolicies } from '../services/policies'
@@ -37,7 +38,7 @@ function activityLink(item) {
 }
 
 export default function Home() {
-  const { organizationId, profile } = useAuth()
+  const { organizationId, profile, role } = useAuth()
   const [clients, setClients] = useState([])
   const [policies, setPolicies] = useState([])
   const [opportunities, setOpportunities] = useState([])
@@ -182,6 +183,25 @@ export default function Home() {
             <MetricCard label="العمولات" value={money(metrics.commission)} hint="Calculated commission" icon="payments" />
           </section>
 
+          {canManageMedicalAnalysis(role) && (
+            <FeatureGate feature="medicalAI">
+              <section className="medical-home-card">
+                <div className="medical-home-icon">
+                  <AppIcon name="medical" size={25} />
+                </div>
+                <div className="medical-home-copy">
+                  <span className="eyebrow">Medical Intelligence</span>
+                  <h2>تحليل الاستهلاكات</h2>
+                  <p>أدخل أو استورد بيانات الاستهلاكات الطبية للحصول على تحليل تشغيلي شامل، مؤشرات تكلفة، تركّز، حالات تحتاج مراجعة، واتجاهات شهرية.</p>
+                </div>
+                <Link to="/medical-analysis" className="medical-home-action">
+                  <span>فتح التحليل</span>
+                  <AppIcon name="arrowLeft" size={16} />
+                </Link>
+              </section>
+            </FeatureGate>
+          )}
+
           <section className="quick-access-card">
             <div className="quick-access-head">
               <div className="section-head-title">
@@ -204,7 +224,7 @@ export default function Home() {
                 { to: '/renewals', icon: 'renewals', label: 'التجديدات', hint: 'الأولوية والاحتفاظ' },
                 { to: '/claims', icon: 'claims', label: 'المطالبات', hint: 'متابعة التعويضات' },
                 { to: '/activities', icon: 'activities', label: 'المهام', hint: 'تنفيذ المتابعات' },
-                { to: '/medical-analysis', icon: 'medical', label: 'التحليل الطبي', hint: 'تحليل الاستهلاكات بذكاء' },
+                { to: '/medical-analysis', icon: 'medical', label: 'تحليل الاستهلاكات', hint: 'تحليل طبي تشغيلي بذكاء' },
               ].map((item) => (
                 <Link to={item.to} className="quick-access-item" key={item.to}>
                   <span className="quick-access-icon"><AppIcon name={item.icon} size={18} /></span>
