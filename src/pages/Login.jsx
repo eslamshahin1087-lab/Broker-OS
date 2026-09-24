@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { sendPasswordResetEmail } from 'firebase/auth'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import AppIcon from '../components/AppIcon'
 import { useAuth } from '../services/AuthContext'
 import { auth } from '../services/firebase'
@@ -342,7 +342,7 @@ export default function Login({ initialMode = 'login' }) {
 
                   <label className="auth-terms">
                     <input type="checkbox" checked={registration.acceptTerms} onChange={(event) => updateRegistration('acceptTerms', event.target.checked)} />
-                    <span>أوافق على شروط استخدام Broker OS وسياسة إدارة بيانات الحساب.</span>
+                    <span>أوافق على <Link to="/legal" target="_blank" rel="noreferrer">شروط استخدام Broker OS وسياسة إدارة البيانات</Link>.</span>
                   </label>
                 </div>
               )}
