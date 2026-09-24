@@ -5,6 +5,7 @@ import AppIcon from '../components/AppIcon'
 import { useAuth } from '../services/AuthContext'
 import { canManageFinance, canManageMedicalAnalysis, canManageOperations, canManageTeam } from '../constants/roles'
 import { usePlatformFeatures } from '../services/PlatformFeaturesContext'
+import { useTheme } from '../services/ThemeContext'
 
 const NAV_ITEMS = [
   { to: '/', label: 'الرئيسية', end: true, feature: 'dashboard', icon: 'dashboard', group: 'workspace' },
@@ -46,11 +47,12 @@ function canSee(item, role, features) {
 export default function MainLayout() {
   const { profile, role, platformAdmin, logout } = useAuth()
   const { features } = usePlatformFeatures()
+  const { isDark, toggleTheme } = useTheme()
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const visibleItems = NAV_ITEMS.filter((item) => canSee(item, role, features))
-  const quickOrder = ['/', '/clients', '/opportunities', '/policies', '/quotes']
+  const quickOrder = ['/', '/clients', '/opportunities', '/medical-analysis', '/policies']
   const quickItems = quickOrder
     .map((to) => visibleItems.find((item) => item.to === to))
     .filter(Boolean)
@@ -132,6 +134,17 @@ export default function MainLayout() {
           </div>
 
           <div className="topbar-actions">
+            <span className="topbar-page-context">{activePage.label}</span>
+            <button
+              type="button"
+              className="theme-toggle"
+              onClick={toggleTheme}
+              aria-label={isDark ? 'التبديل إلى الوضع الفاتح' : 'التبديل إلى الوضع الداكن'}
+              title={isDark ? 'الوضع الفاتح' : 'الوضع الداكن'}
+            >
+              <AppIcon name={isDark ? 'sun' : 'moon'} size={16} stroke={1.9} />
+              <span>{isDark ? 'فاتح' : 'داكن'}</span>
+            </button>
             <span className="topbar-role">{role || 'owner'}</span>
             {platformAdmin && (
               <NavLink to="/platform-admin" className="topbar-admin">
@@ -178,10 +191,19 @@ export default function MainLayout() {
             end={item.end}
             className={({ isActive }) => 'mobile-nav-link' + (isActive ? ' active' : '')}
           >
-            <span className="mobile-nav-icon"><AppIcon name={item.icon} size={19} stroke={2} /></span>
+            <span className="mobile-nav-icon"><AppIcon name={item.icon} size={19} stroke={1.9} /></span>
             <small>{item.label}</small>
           </NavLink>
         ))}
+        <button
+          type="button"
+          className="mobile-nav-link mobile-more-button"
+          onClick={() => setMobileMenuOpen(true)}
+          aria-label="فتح باقي الوحدات"
+        >
+          <span className="mobile-nav-icon"><AppIcon name="more" size={19} stroke={1.9} /></span>
+          <small>المزيد</small>
+        </button>
       </nav>
 
       {mobileMenuOpen && (
@@ -190,9 +212,21 @@ export default function MainLayout() {
             <div className="mobile-menu-head">
               <div>
                 <span className="eyebrow">Broker OS</span>
-                <h3>كل الوحدات</h3>
+                <h3>مركز التنقل</h3>
+                <small>كل الوحدات والإعدادات في مكان واحد</small>
               </div>
-              <button type="button" className="btn btn-secondary" onClick={() => setMobileMenuOpen(false)}>إغلاق</button>
+              <div className="mobile-menu-head-actions">
+                <button
+                  type="button"
+                  className="theme-toggle compact"
+                  onClick={toggleTheme}
+                  aria-label={isDark ? 'الوضع الفاتح' : 'الوضع الداكن'}
+                >
+                  <AppIcon name={isDark ? 'sun' : 'moon'} size={15} />
+                  <span>{isDark ? 'فاتح' : 'داكن'}</span>
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={() => setMobileMenuOpen(false)}>إغلاق</button>
+              </div>
             </div>
 
             <div className="mobile-menu-grid">
