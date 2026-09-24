@@ -5,19 +5,19 @@ import {
   doc,
   onSnapshot,
   query,
+  runTransaction,
   serverTimestamp,
   updateDoc,
   where,
 } from 'firebase/firestore'
 import { db } from './firebase'
-import { addPolicy } from './policies'
 
 const opportunitiesRef = collection(db, 'opportunities')
 
 export const STAGES = [
-  { value: 'new', label: 'جديد', color: '#6b7280' },
+  { value: 'new', label: 'جديد', color: '#64748b' },
   { value: 'contacted', label: 'تواصل', color: '#f59e0b' },
-  { value: 'quoted', label: 'عرض سعر', color: '#2563eb' },
+  { value: 'quoted', label: 'عرض سعر', color: '#3b82f6' },
   { value: 'won', label: 'فاز', color: '#16a34a' },
   { value: 'lost', label: 'خاسر', color: '#ef4444' },
 ]
@@ -27,7 +27,7 @@ export function stageLabel(value) {
 }
 
 export function stageColor(value) {
-  return STAGES.find((s) => s.value === value)?.color || '#6b7280'
+  return STAGES.find((s) => s.value === value)?.color || '#64748b'
 }
 
 function sortDesc(rows) {
@@ -36,7 +36,11 @@ function sortDesc(rows) {
 
 export function listenToOpportunities(organizationId, onData, onError) {
   const q = query(opportunitiesRef, where('organizationId', '==', organizationId))
-  return onSnapshot(q, (snap) => onData(sortDesc(snap.docs.map((d) => ({ id: d.id, ...d.data() })))), onError)
+  return onSnapshot(
+    q,
+    (snap) => onData(sortDesc(snap.docs.map((d) => ({ id: d.id, ...d.data() })))),
+    onError
+  )
 }
 
 export function addOpportunity(organizationId, data) {
@@ -53,24 +57,52 @@ export function deleteOpportunity(opportunityId) {
   return deleteDoc(doc(db, 'opportunities', opportunityId))
 }
 
-// بيغيّر مرحلة الفرصة. لو المرحلة الجديدة "فاز" وأول مرة، بيعمل بوليصة أوتوماتيك من بيانات الفرصة.
 export async function moveOpportunityStage(organizationId, opportunity, newStage) {
   const opRef = doc(db, 'opportunities', opportunity.id)
 
-  if (newStage === 'won' && !opportunity.policyId) {
-    const policy = await addPolicy(organizationId, {
-      clientId: opportunity.clientId,
-      clientName: opportunity.clientName,
-      type: opportunity.type,
-      premiumAmount: opportunity.estimatedPremium || 0,
-      commissionRate: opportunity.commissionRate || 0,
-      policyNumber: '',
-      renewalDate: '',
-    })
-    await updateDoc(opRef, { stage: newStage, policyId: policy.id, updatedAt: serverTimestamp() })
-    return policy.id
-  }
+  return runTransaction(db, async (transaction) => {
+    const opSnap = await transaction.get(opRef)
 
-  await updateDoc(opRef, { stage: newStage, updatedAt: serverTimestamp() })
-  return null
+    if (!opSnap.exists()) throw new Error('Opportunity not found')
+
+    const current = opSnap.data()
+    if (current.organizationId !== organizationId) throw new Error('Organization mismatch')
+    if (current.stage === newStage) return current.policyId || null
+
+    if (newStage === 'won' && !current.policyId) {
+      const policyRef = doc(collection(db, 'policies'))
+      const premium = Number(current.estimatedPremium) || 0
+      const rate = Number(current.commissionRate) || 0
+
+      transaction.set(policyRef, {
+        clientId: current.clientId || '',
+        clientName: current.clientName || '',
+        type: current.type || 'other',
+        premiumAmount: premium,
+        commissionRate: rate,
+        commissionAmount: Math.round((premium * rate) / 100),
+        policyNumber: '',
+        renewalDate: '',
+        organizationId,
+        sourceOpportunityId: opportunity.id,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      })
+
+      transaction.update(opRef, {
+        stage: 'won',
+        policyId: policyRef.id,
+        updatedAt: serverTimestamp(),
+      })
+
+      return policyRef.id
+    }
+
+    transaction.update(opRef, {
+      stage: newStage,
+      updatedAt: serverTimestamp(),
+    })
+
+    return current.policyId || null
+  })
 }
