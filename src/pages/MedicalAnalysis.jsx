@@ -353,6 +353,25 @@ export default function MedicalAnalysis() {
             <AnalysisList title="أعلى المستفيدين" eyebrow="Members" items={report.topMembers} />
           </section>
 
+          <section className="dashboard-grid">
+            <TrendPanel items={report.monthlyTrend} />
+            <div className="card">
+              <div className="section-head">
+                <div>
+                  <span className="eyebrow">Data Quality</span>
+                  <h2>جودة البيانات وتركيز الإنفاق</h2>
+                </div>
+                <span className="workflow-score">{report.completenessRate}%</span>
+              </div>
+              <div className="medical-control-grid">
+                <Metric label="اكتمال البيانات" value={report.completenessRate + '%'} hint="Required fields" />
+                <Metric label="تركيز أعلى 10%" value={report.topMemberCostShare + '%'} hint="Top members cost share" />
+                <Metric label="الوسيط" value={money(report.medianEventCost)} hint="Median event cost" />
+                <Metric label="حد المراجعة" value={money(report.highCostThreshold)} hint="High-cost threshold" />
+              </div>
+            </div>
+          </section>
+
           <section className="card">
             <div className="section-head">
               <div>
@@ -448,6 +467,34 @@ function Metric({ label, value, hint, icon }) {
       <div className="stat-label">{label}</div>
       <div className="stat-value">{value}</div>
       <div className="stat-hint">{hint}</div>
+    </div>
+  )
+}
+
+function TrendPanel({ items = [] }) {
+  const max = Math.max(1, ...(items.map((item) => item.cost)))
+  return (
+    <div className="card">
+      <div className="section-head">
+        <div>
+          <span className="eyebrow">Monthly Trend</span>
+          <h2>اتجاه الإنفاق الشهري</h2>
+        </div>
+      </div>
+      <div className="medical-ranking-list">
+        {items.length === 0 ? <div className="empty-state">أدخل تواريخ كافية لعرض الاتجاه الشهري.</div> : items.slice(-8).map((item) => (
+          <div className="medical-ranking-item" key={item.month}>
+            <div className="medical-ranking-copy">
+              <strong>{item.month}</strong>
+              <span>{item.events} حركة</span>
+            </div>
+            <div className="medical-ranking-bar">
+              <span style={{ width: Math.max(4, (item.cost / max) * 100) + '%' }} />
+            </div>
+            <b>{money(item.cost)}</b>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
