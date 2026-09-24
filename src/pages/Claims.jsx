@@ -1,10 +1,12 @@
 import AppIcon from '../components/AppIcon'
 import PageHeader from '../components/PageHeader'
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { canManageOperations } from '../constants/roles'
 import { listenToPolicies } from '../services/policies'
 import { CLAIM_STATUSES, addClaim, deleteClaim, listenToClaims, updateClaim } from '../services/claims'
+import { buildMedicalAnalysisLink } from '../services/relationshipEngine'
 
 const emptyForm = {
   policyId: '',
@@ -165,6 +167,10 @@ export default function Claims() {
               </div>
 
               {claim.description && <p className="subtitle">{claim.description}</p>}
+
+              <Link className="text-link claim-smart-link" to={buildMedicalAnalysisLink({ clientId: claim.clientId, policyId: claim.policyId })}>
+                <AppIcon name="spark" size={13} /> تحليل استهلاكات العميل
+              </Link>
 
               {canManage && (
                 <button className="btn btn-danger-outline" onClick={() => remove(claim.id)}>
