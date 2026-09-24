@@ -7,6 +7,7 @@ import Home from './pages/Home'
 import Finance from './pages/Finance'
 import Opportunities from './pages/Opportunities'
 import Policies from './pages/Policies'
+import Team from './pages/Team'
 import Login from './pages/Login'
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
             <Route path="/opportunities" element={<Opportunities />} />
             <Route path="/policies" element={<Policies />} />
             <Route path="/finance" element={<Finance />} />
+            <Route path="/team" element={<Team />} />
           </Route>
         </Route>
       </Routes>
