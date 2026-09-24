@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import MainLayout from './layouts/MainLayout'
 import RequireAuth from './components/RequireAuth'
 import RequirePlatformAdmin from './components/RequirePlatformAdmin'
+import FeatureGate from './components/FeatureGate'
 import Clients from './pages/Clients.jsx'
 import LeadsBoard from './pages/Leads/LeadsBoard'
 import Home from './pages/Home'
@@ -19,6 +20,7 @@ import AuditLogs from './pages/AuditLogs'
 import Documents from './pages/Documents'
 import PlatformAdmin from './pages/PlatformAdmin'
 import Login from './pages/Login'
+import { PlatformFeaturesProvider } from './services/PlatformFeaturesContext'
 
 function App() {
   return (
@@ -26,25 +28,27 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route element={<RequireAuth />}>
-          <Route path="/platform-admin" element={<RequirePlatformAdmin />}>
-            <Route index element={<PlatformAdmin />} />
-          </Route>
-          <Route element={<MainLayout />}>
+          <Route element={<PlatformFeaturesProvider />}>
+            <Route path="/platform-admin" element={<RequirePlatformAdmin />}>
+              <Route index element={<PlatformAdmin />} />
+            </Route>
+            <Route element={<MainLayout />}>
             <Route path="/" element={<Home />} />
-            <Route path="/clients" element={<Clients />} />
-            <Route path="/leads" element={<LeadsBoard />} />
-            <Route path="/opportunities" element={<Opportunities />} />
-            <Route path="/policies" element={<Policies />} />
-            <Route path="/finance" element={<Finance />} />
-            <Route path="/team" element={<Team />} />
-            <Route path="/insurers" element={<Insurers />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/quotes" element={<Quotes />} />
-            <Route path="/renewals" element={<Renewals />} />
-            <Route path="/claims" element={<Claims />} />
-            <Route path="/payments" element={<Payments />} />
-            <Route path="/audit" element={<AuditLogs />} />
-            <Route path="/documents" element={<Documents />} />
+            <Route path="/clients" element={<FeatureGate feature="clients"><Clients /></FeatureGate>} />
+            <Route path="/leads" element={<FeatureGate feature="leads"><LeadsBoard /></FeatureGate>} />
+            <Route path="/opportunities" element={<FeatureGate feature="opportunities"><Opportunities /></FeatureGate>} />
+            <Route path="/policies" element={<FeatureGate feature="policies"><Policies /></FeatureGate>} />
+            <Route path="/finance" element={<FeatureGate feature="finance"><Finance /></FeatureGate>} />
+            <Route path="/team" element={<FeatureGate feature="team"><Team /></FeatureGate>} />
+            <Route path="/insurers" element={<FeatureGate feature="insurers"><Insurers /></FeatureGate>} />
+            <Route path="/products" element={<FeatureGate feature="products"><Products /></FeatureGate>} />
+            <Route path="/quotes" element={<FeatureGate feature="quotes"><Quotes /></FeatureGate>} />
+            <Route path="/renewals" element={<FeatureGate feature="renewals"><Renewals /></FeatureGate>} />
+            <Route path="/claims" element={<FeatureGate feature="claims"><Claims /></FeatureGate>} />
+            <Route path="/payments" element={<FeatureGate feature="payments"><Payments /></FeatureGate>} />
+            <Route path="/audit" element={<FeatureGate feature="audit"><AuditLogs /></FeatureGate>} />
+            <Route path="/documents" element={<FeatureGate feature="documents"><Documents /></FeatureGate>} />
+            </Route>
           </Route>
         </Route>
       </Routes>
