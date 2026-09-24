@@ -28,7 +28,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Login initialMode="login" />} />
+        <Route path="/register" element={<Login initialMode="register" />} />
         <Route element={<RequireAuth />}>
           <Route element={<PlatformFeaturesProvider />}>
             <Route path="/platform-admin" element={<RequirePlatformAdmin />}>
