@@ -1,3 +1,5 @@
+import AppIcon from '../components/AppIcon'
+import PageHeader from '../components/PageHeader'
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../services/AuthContext'
 import { INSURANCE_TYPE_LABELS, INSURANCE_TYPES } from '../constants'
@@ -89,15 +91,18 @@ export default function Products() {
 
   return (
     <div className="page-shell">
-      <div className="section-head">
-        <div>
-          <span className="eyebrow">Insurance Products</span>
-          <h1 style={{ margin: '6px 0 0' }}>المنتجات</h1>
-        </div>
-        <button className="btn btn-primary" onClick={() => setShowForm((value) => !value)} disabled={!activeInsurers.length}>
-          {showForm ? 'إلغاء' : '+ منتج جديد'}
-        </button>
-      </div>
+      <PageHeader
+        icon="products"
+        eyebrow="Insurance Products"
+        title="المنتجات"
+        description="كتالوج المنتجات ومعدلات العمولة مع ربط مباشر بشركات التأمين."
+        action={
+          <button className="btn btn-primary" onClick={() => setShowForm((value) => !value)} disabled={!activeInsurers.length}>
+            <AppIcon name={showForm ? 'close' : 'plus'} size={14} />
+            {showForm ? 'إلغاء' : 'منتج'}
+          </button>
+        }
+      />
 
       {!activeInsurers.length && (
         <div className="alert">أضف شركة تأمين نشطة أولًا حتى تتمكن من إنشاء منتجات.</div>
