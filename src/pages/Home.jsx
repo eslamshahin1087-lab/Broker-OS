@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
+import FeatureGate from '../components/FeatureGate'
 import { listenToClients } from '../services/clients'
 import { listenToLeads } from '../services/leadService'
 import { getUpcomingRenewals, listenToPolicies } from '../services/policies'
@@ -139,7 +140,8 @@ export default function Home() {
             <MetricCard label="العمولات" value={money(metrics.commission)} hint="Calculated commission" icon="📈" />
           </section>
 
-          <section className="dashboard-grid insight-grid">
+          <FeatureGate feature="workflowIntelligence">
+            <section className="dashboard-grid insight-grid">
             <div className="card smart-panel">
               <div className="section-head">
                 <div>
@@ -198,7 +200,8 @@ export default function Home() {
                 <Link to="/payments">المدفوعات</Link>
               </div>
             </div>
-          </section>
+            </section>
+          </FeatureGate>
 
           <section className="dashboard-grid">
             <div className="card">
