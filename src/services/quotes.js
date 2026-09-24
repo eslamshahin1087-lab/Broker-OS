@@ -108,12 +108,34 @@ export async function updateQuoteStatus(organizationId, quoteId, status) {
     }
 
     if (status === 'accepted' && !quote.policyId) {
+      if (!quote.clientId) {
+        throw new Error('CLIENT_REQUIRED_FOR_ACCEPTED_QUOTE')
+      }
+
       const policyRef = doc(collection(db, 'policies'))
       const premium = normalizeMoney(quote.premiumAmount)
       const rate = normalizeMoney(quote.commissionRate)
+      let opportunityRef = null
+
+      if (quote.opportunityId) {
+        opportunityRef = doc(db, 'opportunities', quote.opportunityId)
+        const opportunitySnap = await transaction.get(opportunityRef)
+
+        if (opportunitySnap.exists()) {
+          const opportunity = opportunitySnap.data()
+          if (opportunity.organizationId !== organizationId) {
+            throw new Error('Organization mismatch')
+          }
+          if (opportunity.clientId && opportunity.clientId !== quote.clientId) {
+            throw new Error('QUOTE_OPPORTUNITY_CLIENT_MISMATCH')
+          }
+        } else {
+          opportunityRef = null
+        }
+      }
 
       transaction.set(policyRef, {
-        clientId: quote.clientId || '',
+        clientId: quote.clientId,
         clientName: quote.clientName || '',
         type: quote.type || 'other',
         premiumAmount: premium,
@@ -137,6 +159,14 @@ export async function updateQuoteStatus(organizationId, quoteId, status) {
         policyId: policyRef.id,
         updatedAt: serverTimestamp(),
       })
+
+      if (opportunityRef) {
+        transaction.update(opportunityRef, {
+          stage: 'won',
+          policyId: policyRef.id,
+          updatedAt: serverTimestamp(),
+        })
+      }
 
       return policyRef.id
     }
