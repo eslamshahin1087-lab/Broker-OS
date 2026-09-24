@@ -3,30 +3,18 @@ import { useAuth } from '../services/AuthContext'
 import { canManageOperations } from '../constants/roles'
 import { listenToClients } from '../services/clients'
 import { listenToPolicies } from '../services/policies'
-import {
-  DOCUMENT_TYPES,
-  deleteDocument,
-  listenToDocuments,
-  uploadDocument,
-} from '../services/documents'
+import { DOCUMENT_TYPES, addDocument, deleteDocument, listenToDocuments } from '../services/documents'
 
 const emptyForm = {
+  fileName: '',
   documentType: 'policy',
   entityType: '',
   entityId: '',
+  documentUrl: '',
   notes: '',
 }
 
-const FILE_ACCEPT =
-  '.pdf,.jpg,.jpeg,.png,.webp,.txt,.doc,.docx,.xls,.xlsx'
-
-function formatSize(bytes = 0) {
-  if (bytes < 1024) return bytes + ' B'
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
-}
-
-function documentTypeLabel(type) {
+function label(type) {
   return DOCUMENT_TYPES.find((item) => item.value === type)?.label || 'مستند'
 }
 
@@ -36,107 +24,66 @@ export default function Documents() {
   const [clients, setClients] = useState([])
   const [policies, setPolicies] = useState([])
   const [form, setForm] = useState(emptyForm)
-  const [file, setFile] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
     if (!organizationId) return undefined
-
-    const unsub = listenToDocuments(
-      organizationId,
-      setDocuments,
-      (err) => {
-        console.error(err)
-        setError('تعذر تحميل المستندات')
-      }
-    )
-
+    const unsubDocs = listenToDocuments(organizationId, setDocuments, (err) => {
+      console.error(err)
+      setError('تعذر تحميل المستندات')
+    })
     const unsubClients = listenToClients(organizationId, setClients)
     const unsubPolicies = listenToPolicies(organizationId, setPolicies)
-
     return () => {
-      unsub?.()
+      unsubDocs?.()
       unsubClients?.()
       unsubPolicies?.()
     }
   }, [organizationId])
 
-  const referenceOptions = useMemo(() => {
-    if (form.entityType === 'client') {
-      return clients.map((client) => ({
-        id: client.id,
-        name: client.name,
-      }))
-    }
-
+  const references = useMemo(() => {
+    if (form.entityType === 'client') return clients.map((item) => ({ id: item.id, name: item.name }))
     if (form.entityType === 'policy') {
-      return policies.map((policy) => ({
-        id: policy.id,
-        name:
-          (policy.policyNumber ? '#' + policy.policyNumber + ' · ' : '') +
-          (policy.clientName || 'بوليصة'),
+      return policies.map((item) => ({
+        id: item.id,
+        name: (item.policyNumber ? '#' + item.policyNumber + ' · ' : '') + (item.clientName || 'بوليصة'),
       }))
     }
-
     return []
   }, [form.entityType, clients, policies])
 
-  const handleChange = (event) => {
-    const { name, value } = event.target
-    setForm((current) => ({
-      ...current,
-      [name]: value,
-      ...(name === 'entityType' ? { entityId: '' } : {}),
-    }))
+  const change = (e) => {
+    const { name, value } = e.target
+    setForm((current) => ({ ...current, [name]: value, ...(name === 'entityType' ? { entityId: '' } : {}) }))
   }
 
-  const handleUpload = async (event) => {
-    event.preventDefault()
+  const save = async (e) => {
+    e.preventDefault()
     setError('')
-
-    if (!file) {
-      setError('اختر ملفًا أولًا')
+    if (!form.fileName.trim() || !form.documentUrl.trim()) {
+      setError('اكتب اسم المستند والرابط')
       return
     }
-
     setSaving(true)
-
     try {
-      const selectedReference = referenceOptions.find(
-        (item) => item.id === form.entityId
-      )
-
-      await uploadDocument(organizationId, user.uid, file, {
-        documentType: form.documentType,
-        entityType: form.entityType,
-        entityId: form.entityId,
-        entityName: selectedReference?.name || '',
-        notes: form.notes.trim(),
-      })
-
-      setFile(null)
+      const ref = references.find((item) => item.id === form.entityId)
+      await addDocument(organizationId, user.uid, { ...form, entityName: ref?.name || '' })
       setForm(emptyForm)
       setShowForm(false)
-      event.target.reset()
     } catch (err) {
       console.error(err)
-      if (err.message === 'FILE_TOO_LARGE') {
-        setError('حجم الملف يتجاوز الحد المسموح 15 ميجابايت')
-      } else if (err.message === 'FILE_TYPE_NOT_ALLOWED') {
-        setError('نوع الملف غير مسموح به')
-      } else {
-        setError('تعذر رفع المستند')
-      }
+      setError(err.message === 'DOCUMENT_URL_MUST_BE_HTTPS'
+        ? 'رابط المستند يجب أن يبدأ بـ https://'
+        : 'تعذر حفظ المستند')
     } finally {
       setSaving(false)
     }
   }
 
-  const handleDelete = async (document) => {
-    if (!confirm('متأكد إنك عايز تحذف المستند ده؟')) return
-
+  const remove = async (document) => {
+    if (!confirm('متأكد إنك عايز تحذف سجل المستند ده؟')) return
     try {
       await deleteDocument(organizationId, user.uid, document)
     } catch (err) {
@@ -149,151 +96,71 @@ export default function Documents() {
     <div className="page-shell">
       <div className="hero">
         <div>
-          <span className="eyebrow">Document Vault</span>
+          <span className="eyebrow">Document Registry</span>
           <h1>المستندات</h1>
-          <p>ملفات العملاء والبوالص والمطالبات محفوظة داخل مساحة المؤسسة.</p>
+          <p>سجل المستندات وروابطها داخل المؤسسة، بدون Firebase Storage أو خطة مدفوعة.</p>
         </div>
-
-        <div className="hero-actions">
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => setShowForm((current) => !current)}
-          >
-            {showForm ? 'إلغاء' : '+ رفع مستند'}
-          </button>
-        </div>
+        <button type="button" className="btn btn-primary" onClick={() => setShowForm((v) => !v)}>
+          {showForm ? 'إلغاء' : '+ إضافة مستند'}
+        </button>
       </div>
 
       {error && <div className="alert">{error}</div>}
 
       {showForm && (
-        <form className="card" onSubmit={handleUpload} style={{ marginBottom: 18 }}>
+        <form className="card" onSubmit={save} style={{ marginBottom: 18 }}>
           <div className="section-head">
             <div>
-              <span className="eyebrow">Secure Upload</span>
-              <h2>رفع مستند جديد</h2>
+              <span className="eyebrow">External Document Link</span>
+              <h2>إضافة مستند</h2>
             </div>
-            <span className="subtitle">حتى 15 MB</span>
           </div>
+          <input name="fileName" value={form.fileName} onChange={change} className="field" placeholder="اسم المستند *" required />
+          <input name="documentUrl" type="url" value={form.documentUrl} onChange={change} className="field" placeholder="https://..." required />
 
           <div className="commercial-form-grid">
-            <select
-              name="documentType"
-              value={form.documentType}
-              onChange={handleChange}
-              className="field"
-            >
-              {DOCUMENT_TYPES.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
+            <select name="documentType" value={form.documentType} onChange={change} className="field">
+              {DOCUMENT_TYPES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
-
-            <select
-              name="entityType"
-              value={form.entityType}
-              onChange={handleChange}
-              className="field"
-            >
+            <select name="entityType" value={form.entityType} onChange={change} className="field">
               <option value="">بدون ربط بسجل</option>
               <option value="client">ربط بعميل</option>
               <option value="policy">ربط ببوليصة</option>
             </select>
-
-            <select
-              name="entityId"
-              value={form.entityId}
-              onChange={handleChange}
-              className="field"
-              disabled={!form.entityType}
-            >
-              <option value="">
-                {form.entityType ? 'اختر السجل المرتبط' : 'اختر نوع الربط أولًا'}
-              </option>
-              {referenceOptions.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
+            <select name="entityId" value={form.entityId} onChange={change} className="field" disabled={!form.entityType}>
+              <option value="">{form.entityType ? 'اختر السجل المرتبط' : 'اختر نوع الربط أولًا'}</option>
+              {references.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
             </select>
           </div>
 
-          <textarea
-            name="notes"
-            value={form.notes}
-            onChange={handleChange}
-            rows={3}
-            className="field"
-            placeholder="ملاحظات على المستند"
-          />
-
-          <input
-            type="file"
-            accept={FILE_ACCEPT}
-            className="field"
-            onChange={(event) => setFile(event.target.files?.[0] || null)}
-            required
-          />
-
-          <button
-            type="submit"
-            className="btn btn-primary btn-block"
-            disabled={saving}
-          >
-            {saving ? '...جارٍ الرفع' : 'رفع وحفظ المستند'}
+          <textarea name="notes" value={form.notes} onChange={change} rows={3} className="field" placeholder="ملاحظات على المستند" />
+          <button type="submit" className="btn btn-primary btn-block" disabled={saving}>
+            {saving ? '...جارٍ الحفظ' : 'حفظ المستند'}
           </button>
         </form>
       )}
 
       {documents.length === 0 ? (
-        <div className="card empty-state">
-          لا توجد مستندات بعد. ارفع أول مستند لبدء خزينة الملفات.
-        </div>
+        <div className="card empty-state">لا توجد مستندات بعد.</div>
       ) : (
         <div className="commercial-grid">
           {documents.map((document) => (
             <div key={document.id} className="card commercial-card">
               <div className="commercial-card-head">
                 <div>
-                  <span className="eyebrow">{documentTypeLabel(document.documentType)}</span>
+                  <span className="eyebrow">{label(document.documentType)}</span>
                   <h3>{document.fileName}</h3>
                 </div>
-                <span className="badge" style={{ background: 'var(--primary-blue)' }}>
-                  {formatSize(document.size)}
-                </span>
               </div>
-
               <div className="commercial-meta">
                 {document.entityName && <span>{document.entityName}</span>}
-                {document.contentType && <span>{document.contentType}</span>}
+                <span>رابط HTTPS</span>
               </div>
-
-              {document.notes && (
-                <p className="subtitle" style={{ lineHeight: 1.8 }}>
-                  {document.notes}
-                </p>
-              )}
-
+              {document.notes && <p className="subtitle">{document.notes}</p>}
               <div className="hero-actions" style={{ marginTop: 10 }}>
-                <a
-                  href={document.downloadUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn btn-secondary"
-                >
-                  فتح المستند
-                </a>
-
+                <a href={document.documentUrl} target="_blank" rel="noreferrer" className="btn btn-secondary">فتح المستند</a>
                 {canManageOperations(role) && (
-                  <button
-                    type="button"
-                    className="btn btn-danger-outline"
-                    onClick={() => handleDelete(document)}
-                  >
-                    حذف
-                  </button>
+                  <button type="button" className="btn btn-danger-outline" onClick={() => remove(document)}>حذف</button>
                 )}
               </div>
             </div>
