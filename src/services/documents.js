@@ -6,7 +6,6 @@ import {
   query,
   setDoc,
   serverTimestamp,
-  updateDoc,
   where,
 } from 'firebase/firestore'
 import {
@@ -115,6 +114,15 @@ export async function uploadDocument(organizationId, actorId, file, metadata = {
     await deleteObject(fileRef).catch(() => {})
     throw err
   }
+
+  await writeAuditLog(
+    organizationId,
+    actorId,
+    'document.created',
+    'document',
+    documentId,
+    { fileName: file.name, documentType: metadata.documentType || 'general' }
+  )
 
   return { documentId, storagePath, downloadUrl }
 }
