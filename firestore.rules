@@ -104,6 +104,30 @@ service cloud.firestore {
       allow delete: if sameOrganization(resource.data.organizationId);
     }
 
+    match /insurers/{insurerId} {
+      allow read: if sameOrganization(resource.data.organizationId);
+      allow create: if sameOrganization(request.resource.data.organizationId);
+      allow update: if sameOrganization(resource.data.organizationId)
+        && validOrganizationChange();
+      allow delete: if sameOrganization(resource.data.organizationId);
+    }
+
+    match /products/{productId} {
+      allow read: if sameOrganization(resource.data.organizationId);
+      allow create: if sameOrganization(request.resource.data.organizationId);
+      allow update: if sameOrganization(resource.data.organizationId)
+        && validOrganizationChange();
+      allow delete: if sameOrganization(resource.data.organizationId);
+    }
+
+    match /quotes/{quoteId} {
+      allow read: if sameOrganization(resource.data.organizationId);
+      allow create: if sameOrganization(request.resource.data.organizationId);
+      allow update: if sameOrganization(resource.data.organizationId)
+        && validOrganizationChange();
+      allow delete: if sameOrganization(resource.data.organizationId);
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
