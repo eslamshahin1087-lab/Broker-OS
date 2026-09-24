@@ -182,6 +182,41 @@ export default function Home() {
             <MetricCard label="العمولات" value={money(metrics.commission)} hint="Calculated commission" icon="payments" />
           </section>
 
+          <section className="quick-access-card">
+            <div className="quick-access-head">
+              <div className="section-head-title">
+                <span className="section-head-icon"><AppIcon name="spark" size={16} /></span>
+                <div>
+                  <span className="eyebrow">Quick Access</span>
+                  <h2>الوصول السريع</h2>
+                </div>
+              </div>
+              <span className="mini-kpi">تشغيل فوري</span>
+            </div>
+
+            <div className="quick-access-grid">
+              {[
+                { to: '/clients', icon: 'clients', label: 'العملاء', hint: 'إضافة ومراجعة العملاء' },
+                { to: '/leads', icon: 'leads', label: 'Leads', hint: 'متابعة العملاء المحتملين' },
+                { to: '/opportunities', icon: 'opportunities', label: 'الفرص', hint: 'إدارة الـPipeline' },
+                { to: '/quotes', icon: 'quotes', label: 'عروض الأسعار', hint: 'إنشاء ومتابعة العروض' },
+                { to: '/policies', icon: 'policies', label: 'البوالص', hint: 'إدارة المحفظة' },
+                { to: '/renewals', icon: 'renewals', label: 'التجديدات', hint: 'الأولوية والاحتفاظ' },
+                { to: '/claims', icon: 'claims', label: 'المطالبات', hint: 'متابعة التعويضات' },
+                { to: '/activities', icon: 'activities', label: 'المهام', hint: 'تنفيذ المتابعات' },
+              ].map((item) => (
+                <Link to={item.to} className="quick-access-item" key={item.to}>
+                  <span className="quick-access-icon"><AppIcon name={item.icon} size={18} /></span>
+                  <span className="quick-access-copy">
+                    <strong>{item.label}</strong>
+                    <small>{item.hint}</small>
+                  </span>
+                  <AppIcon name="arrowLeft" size={15} className="quick-access-arrow" />
+                </Link>
+              ))}
+            </div>
+          </section>
+
           <FeatureGate feature="workflowIntelligence">
             <section className="dashboard-grid insight-grid">
             <div className="card smart-panel">
