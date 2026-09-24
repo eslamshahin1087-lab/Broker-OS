@@ -8,8 +8,11 @@ const NAV_ITEMS = [
   { to: '/clients', label: 'العملاء' },
   { to: '/leads', label: 'Leads' },
   { to: '/opportunities', label: 'الفرص' },
+  { to: '/quotes', label: 'عروض الأسعار' },
   { to: '/policies', label: 'البوالص' },
   { to: '/finance', label: 'المالية' },
+  { to: '/insurers', label: 'شركات التأمين' },
+  { to: '/products', label: 'المنتجات' },
   { to: '/team', label: 'الفريق' },
 ]
 
