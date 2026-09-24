@@ -21,6 +21,7 @@ async function ensureProfile(firebaseUser) {
 
     const patch = {
       organizationId: data.organizationId || firebaseUser.uid,
+      ownerId: data.ownerId || firebaseUser.uid,
       role: data.role || 'owner',
       displayName: data.displayName || firebaseUser.displayName || '',
       updatedAt: serverTimestamp(),
