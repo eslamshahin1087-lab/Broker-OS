@@ -59,12 +59,7 @@ const LeadsBoard = () => {
       ) : (
         <div className="lead-board">
           {LEAD_STATUSES.map(({ value, label }) => (
-            <div key={value} style={{
-              minWidth: '250px',
-              background: 'var(--card-bg)',
-              borderRadius: '8px',
-              padding: '10px'
-            }}>
+            <div key={value} className="lead-column">
               <div className="lead-column-head">
                 <span className="lead-column-icon"><AppIcon name="leads" size={14} /></span>
                 <div>
@@ -73,13 +68,7 @@ const LeadsBoard = () => {
                 </div>
               </div>
               {leads.filter((lead) => lead.status === value).map((lead) => (
-                <div key={lead.id} style={{
-                  background: '#1A2A4A',
-                  padding: '10px',
-                  borderRadius: '5px',
-                  marginBottom: '10px',
-                  borderLeft: '3px solid var(--primary-blue)'
-                }}>
+                <div key={lead.id} className="lead-card">
                   <div className="lead-card-title">
                     <AppIcon name="user" size={14} />
                     <strong>{lead.name || 'عميل محتمل'}</strong>
