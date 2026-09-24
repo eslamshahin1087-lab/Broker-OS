@@ -1,7 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import Logo from '../components/Logo'
 import { useAuth } from '../services/AuthContext'
-import { canManageTeam } from '../constants/roles'
+import { canManageFinance, canManageOperations, canManageTeam } from '../constants/roles'
 
 const NAV_ITEMS = [
   { to: '/', label: 'الرئيسية', end: true },
@@ -13,7 +13,11 @@ const NAV_ITEMS = [
   { to: '/finance', label: 'المالية' },
   { to: '/insurers', label: 'شركات التأمين' },
   { to: '/products', label: 'المنتجات' },
+  { to: '/renewals', label: 'التجديدات' },
+  { to: '/claims', label: 'المطالبات' },
+  { to: '/payments', label: 'المدفوعات' },
   { to: '/team', label: 'الفريق' },
+  { to: '/audit', label: 'التدقيق' },
 ]
 
 export default function MainLayout() {
@@ -75,7 +79,12 @@ export default function MainLayout() {
         borderTop: '1px solid var(--border)',
         zIndex: 20,
       }}>
-        {NAV_ITEMS.filter((item) => item.to !== '/team' || canManageTeam(role)).map((item) => (
+        {NAV_ITEMS.filter((item) => {
+          if (item.to === '/team' || item.to === '/audit') return canManageTeam(role)
+          if (item.to === '/payments') return canManageFinance(role)
+          if (item.to === '/renewals' || item.to === '/claims') return canManageOperations(role)
+          return true
+        }).map((item) => (
           <NavLink key={item.to} to={item.to} style={navStyle} end={item.end}>
             {item.label}
           </NavLink>
