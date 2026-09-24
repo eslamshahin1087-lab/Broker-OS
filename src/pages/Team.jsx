@@ -5,7 +5,7 @@ import { db } from '../services/firebase'
 import { MANAGEABLE_ROLES, ROLE_LABELS, ROLES, canManageTeam } from '../constants/roles'
 
 export default function Team() {
-  const { organizationId, role: currentRole } = useAuth()
+  const { organizationId, role: currentRole, user } = useAuth()
   const [members, setMembers] = useState([])
   const [loading, setLoading] = useState(true)
   const [savingId, setSavingId] = useState('')
@@ -113,7 +113,7 @@ export default function Team() {
       ) : (
         <div className="card">
           {visibleMembers.map((member) => {
-            const isCurrentUser = member.id === useAuth().user?.uid
+            const isCurrentUser = member.id === user?.uid
             const isOwner = member.role === ROLES.OWNER
 
             return (
