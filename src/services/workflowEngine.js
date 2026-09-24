@@ -350,6 +350,24 @@ function indexByClient(items) {
   return index
 }
 
+export function buildClient360Indexes({
+  leads = [],
+  opportunities = [],
+  quotes = [],
+  policies = [],
+  claims = [],
+  payments = [],
+} = {}) {
+  return {
+    leads: indexByClient(leads),
+    opportunities: indexByClient(opportunities),
+    quotes: indexByClient(quotes),
+    policies: indexByClient(policies),
+    claims: indexByClient(claims),
+    payments: indexByClient(payments),
+  }
+}
+
 export function calculateWorkflowHealth({
   leads = [],
   opportunities = [],
@@ -395,14 +413,14 @@ export function buildClient360(clientId, {
   claims = [],
   payments = [],
 } = {}) {
-  const indexes = {
-    leads: indexByClient(leads),
-    opportunities: indexByClient(opportunities),
-    quotes: indexByClient(quotes),
-    policies: indexByClient(policies),
-    claims: indexByClient(claims),
-    payments: indexByClient(payments),
-  }
+  const indexes = buildClient360Indexes({
+    leads,
+    opportunities,
+    quotes,
+    policies,
+    claims,
+    payments,
+  })
 
   const clientLeads = indexes.leads.get(clientId) || []
   const clientOpportunities = indexes.opportunities.get(clientId) || []
