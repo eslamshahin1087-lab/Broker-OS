@@ -1,3 +1,5 @@
+import AppIcon from '../components/AppIcon'
+import PageHeader from '../components/PageHeader'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../services/AuthContext'
 import { listenToClients } from '../services/clients'
@@ -83,12 +85,18 @@ export default function Opportunities() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2>الفرص</h2>
-        <button onClick={() => setShowForm((s) => !s)} className="btn btn-primary" disabled={clients.length === 0}>
-          {showForm ? 'إلغاء' : '+ فرصة جديدة'}
-        </button>
-      </div>
+      <PageHeader
+        icon="opportunities"
+        eyebrow="Sales Pipeline"
+        title="الفرص"
+        description="حوّل كل فرصة إلى عرض سعر ثم بوليصة مع الحفاظ على الربط بين السجلات."
+        action={
+          <button onClick={() => setShowForm((s) => !s)} className="btn btn-primary" disabled={clients.length === 0}>
+            <AppIcon name={showForm ? 'close' : 'plus'} size={14} />
+            {showForm ? 'إلغاء' : 'فرصة جديدة'}
+          </button>
+        }
+      />
 
       {clients.length === 0 && !loading && (
         <p style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>
