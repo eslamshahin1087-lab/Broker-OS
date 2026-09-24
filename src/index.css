@@ -3430,3 +3430,11 @@ body {
     box-shadow: 0 9px 24px rgba(0,0,0,.14);
   }
 }
+
+
+/* Bottom dock now contains only direct destinations */
+@media (max-width: 900px) {
+  .mobile-nav {
+    display: grid;
+  }
+}
