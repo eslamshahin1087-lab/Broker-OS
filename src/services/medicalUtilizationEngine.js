@@ -238,6 +238,18 @@ export function analyzeMedicalUtilization(rows = []) {
   const top10Cost = memberGroups.slice(0, Math.max(1, Math.ceil(memberGroups.length * 0.1)))
     .reduce((sumValue, item) => sumValue + item.cost, 0)
 
+  const requiredFields = ['date', 'memberName', 'provider', 'category', 'service']
+  const missingFields = Object.fromEntries(
+    requiredFields.map((field) => [
+      field,
+      normalizedRows.filter((row) => !String(row[field] || '').trim()).length,
+    ])
+  )
+  const missingFieldTotal = Object.values(missingFields).reduce((total, value) => total + value, 0)
+  const completenessRate = totalEvents
+    ? round(Math.max(0, 100 - (missingFieldTotal / (totalEvents * requiredFields.length)) * 100), 1)
+    : 0
+
   const recommendations = []
   if (percent(networkOut, totalEvents) >= 15) recommendations.push('مراجعة نسبة الاستخدام خارج الشبكة وربط مقدمي الخدمة البدلاء الأكثر كفاءة.')
   if (percent(pending + rejected, totalEvents) >= 10) recommendations.push('تشديد متابعة الموافقات والحالات المعلقة والمرفوضة وربطها بخطوات تشغيلية واضحة.')
@@ -276,6 +288,9 @@ export function analyzeMedicalUtilization(rows = []) {
     approvedCount: approved,
     approvalRate: percent(approved, totalEvents),
     highCostThreshold,
+    topMemberCostShare: percent(top10Cost, totalCost),
+    completenessRate,
+    missingFields,
     topCategories: categoryGroups.slice(0, 6),
     topServices: serviceGroups.slice(0, 6),
     topProviders: providerGroups.slice(0, 6),
