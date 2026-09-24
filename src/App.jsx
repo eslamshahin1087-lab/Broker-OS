@@ -11,6 +11,10 @@ import Team from './pages/Team'
 import Insurers from './pages/Insurers'
 import Products from './pages/Products'
 import Quotes from './pages/Quotes'
+import Renewals from './pages/Renewals'
+import Claims from './pages/Claims'
+import Payments from './pages/Payments'
+import AuditLogs from './pages/AuditLogs'
 import Login from './pages/Login'
 
 function App() {
@@ -30,6 +34,10 @@ function App() {
             <Route path="/insurers" element={<Insurers />} />
             <Route path="/products" element={<Products />} />
             <Route path="/quotes" element={<Quotes />} />
+            <Route path="/renewals" element={<Renewals />} />
+            <Route path="/claims" element={<Claims />} />
+            <Route path="/payments" element={<Payments />} />
+            <Route path="/audit" element={<AuditLogs />} />
           </Route>
         </Route>
       </Routes>
