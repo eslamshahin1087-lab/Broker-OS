@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { Outlet } from 'react-router-dom'
 import { listenToPlatformFeatures } from './platformAdmin'
 
 const PlatformFeaturesContext = createContext(null)
@@ -34,7 +35,7 @@ export function PlatformFeaturesProvider({ children }) {
 
   return (
     <PlatformFeaturesContext.Provider value={value}>
-      {children}
+      {children || <Outlet />}
     </PlatformFeaturesContext.Provider>
   )
 }
