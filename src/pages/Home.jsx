@@ -189,17 +189,17 @@ export default function Home() {
               ) : (
                 <div className="smart-action-list">
                   {intelligence.actions.map((item) => (
-                    <Link to={item.link} className="smart-action" key={item.id}>
+                    <div className="smart-action" key={item.id}>
                       <span className={'smart-action-priority priority-' + item.priority}>{priorityLabel[item.priority]}</span>
-                      <div>
+                      <Link to={item.link} className="smart-action-content">
                         <strong>{item.title}</strong>
                         <span>{item.description}</span>
-                      </div>
+                      </Link>
                       <div className="smart-action-tools">
-                        <Link to={activityLink(item)} onClick={(event) => event.stopPropagation()} className="smart-task-link">+ مهمة</Link>
-                        <span className="smart-action-arrow">←</span>
+                        <Link to={activityLink(item)} className="smart-task-link">+ مهمة</Link>
+                        <Link to={item.link} className="smart-action-arrow">←</Link>
                       </div>
-                    </Link>
+                    </div>
                   ))}
                 </div>
               )}
