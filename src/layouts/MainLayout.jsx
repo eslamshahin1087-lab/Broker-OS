@@ -48,9 +48,11 @@ export default function MainLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const visibleItems = NAV_ITEMS.filter((item) => canSee(item, role, features))
-  const quickItems = visibleItems.filter((item) =>
-    ['/', '/clients', '/opportunities', '/policies'].includes(item.to)
-  ).slice(0, 4)
+  const quickOrder = ['/', '/clients', '/opportunities', '/policies', '/renewals']
+  const quickItems = quickOrder
+    .map((to) => visibleItems.find((item) => item.to === to))
+    .filter(Boolean)
+    .slice(0, 5)
 
   const activePage = [...visibleItems]
     .sort((a, b) => b.to.length - a.to.length)
