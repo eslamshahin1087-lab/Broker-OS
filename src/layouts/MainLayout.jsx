@@ -170,7 +170,7 @@ export default function MainLayout() {
             end={item.end}
             className={({ isActive }) => 'mobile-nav-link' + (isActive ? ' active' : '')}
           >
-            <span><AppIcon name={item.icon} size={16} /></span>
+            <span className="mobile-nav-icon"><AppIcon name={item.icon} size={19} stroke={2} /></span>
             <small>{item.label}</small>
           </NavLink>
         ))}
@@ -179,8 +179,10 @@ export default function MainLayout() {
           type="button"
           className={'mobile-nav-link' + (mobileMenuOpen ? ' active' : '')}
           onClick={() => setMobileMenuOpen((value) => !value)}
+          aria-label="فتح المزيد"
+          aria-expanded={mobileMenuOpen}
         >
-          <span><AppIcon name="dashboard" size={16} /></span>
+          <span className="mobile-nav-icon"><AppIcon name="more" size={19} stroke={2} /></span>
           <small>المزيد</small>
         </button>
       </nav>
