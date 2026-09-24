@@ -1,0 +1,16 @@
+:root {
+  --bg-dark: #0A192F;
+  --primary-blue: #007BFF;
+  --accent-orange: #FF6B00;
+  --text-white: #FFFFFF;
+  --text-muted: #8892B0;
+  --card-bg: #112240;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-white);
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+}

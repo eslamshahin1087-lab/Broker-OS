@@ -1,0 +1,314 @@
+diff --git a/src/pages/Clients.jsx b/src/pages/Clients.jsx
+index a22e9a2..b6e74e4 100644
+--- a/src/pages/Clients.jsx
++++ b/src/pages/Clients.jsx
+@@ -1,8 +1,180 @@
++import { useEffect, useState } from 'react'
++import { useAuth } from '../services/AuthContext'
++import { addClient, deleteClient, listenToClients, updateClient } from '../services/clients'
++
++const emptyForm = { name: '', phone: '', email: '', notes: '' }
++
+ export default function Clients() {
++  const { organizationId } = useAuth()
++  const [clients, setClients] = useState([])
++  const [loading, setLoading] = useState(true)
++  const [error, setError] = useState('')
++  const [showForm, setShowForm] = useState(false)
++  const [form, setForm] = useState(emptyForm)
++  const [selected, setSelected] = useState(null) // العميل المفتوح في شاشة الـ 360°
++  const [saving, setSaving] = useState(false)
++
++  useEffect(() => {
++    if (!organizationId) return
++    const unsub = listenToClients(
++      organizationId,
++      (rows) => {
++        setClients(rows)
++        setLoading(false)
++      },
++      (err) => {
++        console.error(err)
++        setError('تعذر تحميل العملاء')
++        setLoading(false)
++      }
++    )
++    return unsub
++  }, [organizationId])
++
++  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
++
++  const handleSubmit = async (e) => {
++    e.preventDefault()
++    if (!form.name.trim()) return
++    setSaving(true)
++    try {
++      await addClient(organizationId, form)
++      setForm(emptyForm)
++      setShowForm(false)
++    } catch (err) {
++      console.error(err)
++      setError('تعذر إضافة العميل')
++    } finally {
++      setSaving(false)
++    }
++  }
++
++  const handleDelete = async (clientId) => {
++    if (!confirm('متأكد إنك عايز تمسح العميل ده؟')) return
++    try {
++      await deleteClient(clientId)
++      setSelected(null)
++    } catch (err) {
++      console.error(err)
++      setError('تعذر حذف العميل')
++    }
++  }
++
++  if (selected) {
++    return <ClientDetail client={selected} onBack={() => setSelected(null)} onDelete={handleDelete} />
++  }
++
+   return (
+     <div>
+-      <h2>Clients</h2>
+-      <p>قيد الإنشاء.</p>
++      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
++        <h2>العملاء</h2>
++        <button onClick={() => setShowForm((s) => !s)} style={{ padding: '8px 14px' }}>
++          {showForm ? 'إلغاء' : '+ عميل جديد'}
++        </button>
++      </div>
++
++      {error && <p style={{ color: 'red' }}>{error}</p>}
++
++      {showForm && (
++        <form
++          onSubmit={handleSubmit}
++          style={{ border: '1px solid #eee', borderRadius: 8, padding: 12, marginBottom: 16 }}
++        >
++          <input
++            name="name"
++            placeholder="الاسم *"
++            value={form.name}
++            onChange={handleChange}
++            required
++            style={inputStyle}
++          />
++          <input
++            name="phone"
++            placeholder="رقم الموبايل"
++            value={form.phone}
++            onChange={handleChange}
++            style={inputStyle}
++          />
++          <input
++            name="email"
++            type="email"
++            placeholder="الإيميل"
++            value={form.email}
++            onChange={handleChange}
++            style={inputStyle}
++          />
++          <textarea
++            name="notes"
++            placeholder="ملاحظات"
++            value={form.notes}
++            onChange={handleChange}
++            rows={2}
++            style={inputStyle}
++          />
++          <button type="submit" disabled={saving} style={{ padding: '8px 14px' }}>
++            {saving ? '...جارٍ الحفظ' : 'حفظ العميل'}
++          </button>
++        </form>
++      )}
++
++      {loading ? (
++        <p>...جارٍ التحميل</p>
++      ) : clients.length === 0 ? (
++        <p style={{ color: '#666' }}>لسه مفيش عملاء. ابدأ بإضافة أول عميل.</p>
++      ) : (
++        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
++          {clients.map((c) => (
++            <button
++              key={c.id}
++              onClick={() => setSelected(c)}
++              style={{
++                textAlign: 'right',
++                border: '1px solid #eee',
++                borderRadius: 8,
++                padding: 12,
++                background: '#fff',
++                cursor: 'pointer',
++              }}
++            >
++              <div style={{ fontWeight: 'bold' }}>{c.name}</div>
++              <div style={{ fontSize: 13, color: '#666' }}>{c.phone || c.email || '—'}</div>
++            </button>
++          ))}
++        </div>
++      )}
+     </div>
+   )
+ }
++
++function ClientDetail({ client, onBack, onDelete }) {
++  return (
++    <div>
++      <button onClick={onBack} style={{ marginBottom: 12 }}>← رجوع للعملاء</button>
++      <h2>{client.name}</h2>
++      <div style={{ border: '1px solid #eee', borderRadius: 8, padding: 12, marginBottom: 12 }}>
++        <Row label="الموبايل" value={client.phone} />
++        <Row label="الإيميل" value={client.email} />
++        <Row label="ملاحظات" value={client.notes} />
++      </div>
++
++      {/* المكان ده جاهز لاحقًا لعرض الـ Policies و Quotations الخاصة بالعميل */}
++      <h3>Policies</h3>
++      <p style={{ color: '#666' }}>لسه مفيش بوالص مربوطة بالعميل ده.</p>
++
++      <button onClick={() => onDelete(client.id)} style={{ color: '#ef4444', marginTop: 16 }}>
++        حذف العميل
++      </button>
++    </div>
++  )
++}
++
++function Row({ label, value }) {
++  return (
++    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
++      <span style={{ color: '#666' }}>{label}</span>
++      <span>{value || '—'}</span>
++    </div>
++  )
++}
++
++const inputStyle = { display: 'block', width: '100%', marginBottom: 10, padding: 8 }
+diff --git a/src/services/AuthContext.jsx b/src/services/AuthContext.jsx
+index 23815c3..987e588 100644
+--- a/src/services/AuthContext.jsx
++++ b/src/services/AuthContext.jsx
+@@ -5,28 +5,63 @@ import {
+   createUserWithEmailAndPassword,
+   signOut,
+ } from 'firebase/auth'
+-import { auth } from './firebase'
++import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
++import { auth, db } from './firebase'
+ 
+ const AuthContext = createContext(null)
+ 
+ export function AuthProvider({ children }) {
+   const [user, setUser] = useState(null)
++  const [profile, setProfile] = useState(null) // مستند users/{uid} — فيه organizationId
+   const [loading, setLoading] = useState(true)
+ 
+   useEffect(() => {
+-    const unsub = onAuthStateChanged(auth, (u) => {
++    const unsub = onAuthStateChanged(auth, async (u) => {
+       setUser(u)
++      if (u) {
++        const ref = doc(db, 'users', u.uid)
++        const snap = await getDoc(ref)
++        setProfile(snap.exists() ? snap.data() : null)
++      } else {
++        setProfile(null)
++      }
+       setLoading(false)
+     })
+     return unsub
+   }, [])
+ 
+   const login = (email, password) => signInWithEmailAndPassword(auth, email, password)
+-  const register = (email, password) => createUserWithEmailAndPassword(auth, email, password)
++
++  // كل مستخدم جديد بيبقى Broker مستقل بمنظمته الخاصة (organizationId = uid بتاعه)
++  // لاحقًا لو حبينا ندعم فريق بيوزر أكتر من واحد، هنبني شاشة "Invite teammate" بتحط نفس organizationId
++  const register = async (email, password) => {
++    const cred = await createUserWithEmailAndPassword(auth, email, password)
++    const organizationId = cred.user.uid
++    const profileData = {
++      email,
++      organizationId,
++      role: 'owner',
++      createdAt: serverTimestamp(),
++    }
++    await setDoc(doc(db, 'users', cred.user.uid), profileData)
++    setProfile(profileData)
++    return cred
++  }
++
+   const logout = () => signOut(auth)
+ 
+   return (
+-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
++    <AuthContext.Provider
++      value={{
++        user,
++        profile,
++        organizationId: profile?.organizationId ?? null,
++        loading,
++        login,
++        register,
++        logout,
++      }}
++    >
+       {children}
+     </AuthContext.Provider>
+   )
+diff --git a/src/services/clients.js b/src/services/clients.js
+new file mode 100644
+index 0000000..727f25a
+--- /dev/null
++++ b/src/services/clients.js
+@@ -0,0 +1,49 @@
++import {
++  addDoc,
++  collection,
++  deleteDoc,
++  doc,
++  onSnapshot,
++  query,
++  serverTimestamp,
++  updateDoc,
++  where,
++} from 'firebase/firestore'
++import { db } from './firebase'
++
++const clientsRef = collection(db, 'clients')
++
++// بيرجع unsub function — استخدمها جوه useEffect وارجعها في الـ cleanup
++// الترتيب بيحصل في الكود (مش orderBy في الـ query) عشان نتجنب الحاجة لـ composite index في Firestore
++export function listenToClients(organizationId, onData, onError) {
++  const q = query(clientsRef, where('organizationId', '==', organizationId))
++  return onSnapshot(
++    q,
++    (snap) => {
++      const rows = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
++      rows.sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0))
++      onData(rows)
++    },
++    onError
++  )
++}
++
++export function addClient(organizationId, data) {
++  return addDoc(clientsRef, {
++    ...data,
++    organizationId,
++    createdAt: serverTimestamp(),
++    updatedAt: serverTimestamp(),
++  })
++}
++
++export function updateClient(clientId, data) {
++  return updateDoc(doc(db, 'clients', clientId), {
++    ...data,
++    updatedAt: serverTimestamp(),
++  })
++}
++
++export function deleteClient(clientId) {
++  return deleteDoc(doc(db, 'clients', clientId))
++}
