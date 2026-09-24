@@ -20,6 +20,8 @@ const emptyForm = {
   type: 'task',
   priority: 'normal',
   dueDate: '',
+  entityType: '',
+  entityId: '',
 }
 
 const statusLabel = (value) => ACTIVITY_STATUSES.find((item) => item.value === value)?.label || value
@@ -58,6 +60,8 @@ export default function Activities() {
       priority: searchParams.get('priority') || current.priority,
       description: searchParams.get('description') || current.description,
       dueDate: searchParams.get('dueDate') || current.dueDate,
+      entityType: searchParams.get('entityType') || current.entityType,
+      entityId: searchParams.get('entityId') || current.entityId,
     }))
     setSearchParams({}, { replace: true })
     setNotice('تم نقل التوصية من ذكاء التشغيل إلى نموذج مهمة جديدة.')
@@ -148,6 +152,12 @@ export default function Activities() {
           <div className='section-head'><div><span className='eyebrow'>New Activity</span><h2>مهمة جديدة</h2></div></div>
           <input className='field' placeholder='عنوان المهمة *' value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} required />
           <textarea className='field' rows={4} placeholder='تفاصيل أو ملاحظات' value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} />
+          {form.entityId && (
+            <div className='activity-linked-entity'>
+              <span>مرتبط تلقائيًا</span>
+              <strong>{form.entityType || 'entity'} · {form.entityId}</strong>
+            </div>
+          )}
           <div className='commercial-form-grid'>
             <select className='field' value={form.type} onChange={(event) => setForm({ ...form, type: event.target.value })}>
               {ACTIVITY_TYPES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
@@ -172,6 +182,7 @@ export default function Activities() {
                       <div className='activity-title-row'><strong>{item.title}</strong><span className={'activity-priority priority-' + item.priority}>{priorityLabel(item.priority)}</span></div>
                       <p>{item.description || 'بدون تفاصيل إضافية.'}</p>
                       <div className='activity-meta'>
+                        {item.entityId && <span>مرتبط: {item.entityType} · {item.entityId}</span>}
                         <span>{typeLabel(item.type)}</span>
                         <span>{item.dueDate ? 'استحقاق: ' + item.dueDate : 'بدون موعد'}</span>
                         <span>{statusLabel(item.status)}</span>
