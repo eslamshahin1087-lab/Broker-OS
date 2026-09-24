@@ -1,3 +1,5 @@
+import AppIcon from '../components/AppIcon'
+import PageHeader from '../components/PageHeader'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../services/AuthContext'
 import { addInsurer, deleteInsurer, listenToInsurers, updateInsurer } from '../services/insurers'
@@ -72,15 +74,18 @@ export default function Insurers() {
 
   return (
     <div className="page-shell">
-      <div className="section-head">
-        <div>
-          <span className="eyebrow">Market Directory</span>
-          <h1 style={{ margin: '6px 0 0' }}>شركات التأمين</h1>
-        </div>
-        <button className="btn btn-primary" onClick={() => setShowForm((value) => !value)}>
-          {showForm ? 'إلغاء' : '+ شركة جديدة'}
-        </button>
-      </div>
+      <PageHeader
+        icon="insurers"
+        eyebrow="Market Directory"
+        title="شركات التأمين"
+        description="دليل شركات التأمين، بيانات التواصل وحالة النشاط."
+        action={
+          <button className="btn btn-primary" onClick={() => setShowForm((value) => !value)}>
+            <AppIcon name={showForm ? 'close' : 'plus'} size={14} />
+            {showForm ? 'إلغاء' : 'شركة'}
+          </button>
+        }
+      />
 
       {error && <div className="alert">{error}</div>}
 
