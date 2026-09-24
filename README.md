@@ -24,8 +24,6 @@ organization-scoped collections
   ├── auditLogs
   └── documents
 
-Storage
-  └── organizations/{organizationId}/documents/{documentId}/{fileName}
 ```
 
 The commercial and operational flow is:
@@ -45,15 +43,14 @@ When an opportunity is moved to **won**, the policy creation and opportunity upd
 ## Security
 
 - `firestore.rules` is the authorization boundary for Firestore data.
-- `storage.rules` isolates uploaded files by `organizationId`.
 - User roles are stored in `users/{uid}`.
 - Existing operational collections are organization-scoped.
-- Document metadata is kept in Firestore while files live in Firebase Storage.
-- Document uploads are limited to 15 MB and a controlled set of document/image formats.
+- Document metadata is kept in Firestore while the actual file stays in the external document provider referenced by its HTTPS URL.
+- Document links must use HTTPS.
 - Document deletion is restricted to owner/admin/operations at the rules layer.
 - Audit entries are immutable.
 
-Do not deploy Firestore or Storage in test mode.
+Do not deploy Firestore in test mode.
 
 ## Main routes
 
@@ -94,10 +91,10 @@ The repository now pins Firebase project `broker-os-7df4b` through `.firebaserc`
 
 ```bash
 npm run build
-firebase deploy --only hosting,firestore:rules,storage
+firebase deploy --project broker-os-7df4b --only hosting,firestore:rules
 ```
 
-Before the first Storage deployment, make sure Firebase Storage is enabled for the project.
+Broker OS intentionally stays compatible with the Firebase Spark no-cost plan. Cloud Storage is not used; the Documents screen stores only secure HTTPS links to external files.
 
 ## Next architectural layers
 
