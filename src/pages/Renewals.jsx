@@ -1,3 +1,4 @@
+import PageHeader from '../components/PageHeader'
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../services/AuthContext'
 import { canManageOperations } from '../constants/roles'
@@ -44,19 +45,21 @@ export default function Renewals() {
 
   return (
     <div className="page-shell">
-      <div className="section-head">
-        <div>
-          <span className="eyebrow">Retention Desk</span>
-          <h1 style={{ margin: '6px 0 0' }}>التجديدات</h1>
-        </div>
-        <select className="status-select" value={filter} onChange={(event) => setFilter(event.target.value)}>
-          <option value="all">كل التجديدات</option>
-          <option value="overdue">متأخرة</option>
-          <option value="7">خلال 7 أيام</option>
-          <option value="30">خلال 30 يوم</option>
-          <option value="90">خلال 90 يوم</option>
-        </select>
-      </div>
+      <PageHeader
+        icon="renewals"
+        eyebrow="Retention Desk"
+        title="التجديدات"
+        description="الأولوية حسب قرب موعد التجديد، مع سجل آخر متابعة وحالة التجديد."
+        action={
+          <select className="status-select" value={filter} onChange={(event) => setFilter(event.target.value)}>
+            <option value="all">كل التجديدات</option>
+            <option value="overdue">متأخرة</option>
+            <option value="7">خلال 7 أيام</option>
+            <option value="30">خلال 30 يوم</option>
+            <option value="90">خلال 90 يوم</option>
+          </select>
+        }
+      />
 
       {error && <div className="alert">{error}</div>}
 
