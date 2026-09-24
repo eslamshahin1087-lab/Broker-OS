@@ -1,7 +1,6 @@
 import {
   addDoc,
   collection,
-  deleteDoc,
   doc,
   onSnapshot,
   query,
@@ -61,5 +60,8 @@ export function updateProduct(productId, data) {
 }
 
 export function deleteProduct(productId) {
-  return deleteDoc(doc(db, 'products', productId))
+  return updateDoc(doc(db, 'products', productId), {
+    status: 'inactive',
+    updatedAt: serverTimestamp(),
+  })
 }
