@@ -6,6 +6,8 @@ import { listenToLeads } from '../services/leadService'
 import { getUpcomingRenewals, listenToPolicies } from '../services/policies'
 import { listenToOpportunities, stageColor, stageLabel } from '../services/opportunities'
 import { listenToQuotes } from '../services/quotes'
+import { listenToClaims } from '../services/claims'
+import { listenToPayments } from '../services/payments'
 
 const money = (value) => Math.round(Number(value) || 0).toLocaleString('ar-EG') + ' ج.م'
 
@@ -16,6 +18,8 @@ export default function Home() {
   const [opportunities, setOpportunities] = useState([])
   const [leads, setLeads] = useState([])
   const [quotes, setQuotes] = useState([])
+  const [claims, setClaims] = useState([])
+  const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -28,7 +32,7 @@ export default function Home() {
     let ready = 0
     const markReady = () => {
       ready += 1
-      if (ready >= 5) setLoading(false)
+      if (ready >= 7) setLoading(false)
     }
 
     const onError = (err) => {
@@ -43,6 +47,8 @@ export default function Home() {
       listenToOpportunities(organizationId, (rows) => { setOpportunities(rows); markReady() }, onError),
       listenToLeads(organizationId, (rows) => { setLeads(rows); markReady() }, onError),
       listenToQuotes(organizationId, (rows) => { setQuotes(rows); markReady() }, onError),
+      listenToClaims(organizationId, (rows) => { setClaims(rows); markReady() }, onError),
+      listenToPayments(organizationId, (rows) => { setPayments(rows); markReady() }, onError),
     ]
 
     return () => unsubs.forEach((unsubscribe) => unsubscribe())
@@ -55,9 +61,11 @@ export default function Home() {
     const openOpportunities = opportunities.filter((p) => !['won', 'lost'].includes(p.stage)).length
     const wonOpportunities = opportunities.filter((p) => p.stage === 'won').length
     const pendingQuotes = quotes.filter((quote) => !['accepted', 'rejected'].includes(quote.status)).length
+    const openClaims = claims.filter((claim) => !['paid', 'rejected'].includes(claim.status)).length
+    const pendingPayments = payments.filter((payment) => payment.status !== 'paid').reduce((sum, payment) => sum + (Number(payment.amount) || 0), 0)
     const renewals = getUpcomingRenewals(policies, 30)
 
-    return { clients: clients.length, activePolicies, commission, premium, openOpportunities, wonOpportunities, pendingQuotes, renewals }
+    return { clients: clients.length, activePolicies, commission, premium, openOpportunities, wonOpportunities, pendingQuotes, openClaims, pendingPayments, renewals }
   }, [clients, policies, opportunities])
 
   const recentOpportunities = opportunities.slice(0, 5)
@@ -105,6 +113,8 @@ export default function Home() {
                 <AttentionRow title="فرص مفتوحة" value={metrics.openOpportunities} tone="info" link="/opportunities" />
                 <AttentionRow title="عملاء محتملون" value={leads.filter((lead) => !['won', 'lost'].includes(lead.status)).length} tone="neutral" link="/leads" />
                 <AttentionRow title="عروض تحتاج متابعة" value={metrics.pendingQuotes} tone="info" link="/quotes" />
+                <AttentionRow title="مطالبات مفتوحة" value={metrics.openClaims} tone="warning" link="/claims" />
+                <AttentionRow title="مدفوعات مستحقة" value={money(metrics.pendingPayments)} tone="neutral" link="/payments" />
               </div>
             </div>
 
