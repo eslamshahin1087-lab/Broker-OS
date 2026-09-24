@@ -412,8 +412,9 @@ export function buildClient360(clientId, {
   policies = [],
   claims = [],
   payments = [],
+  indexes = null,
 } = {}) {
-  const indexes = buildClient360Indexes({
+  const relationshipIndexes = indexes || buildClient360Indexes({
     leads,
     opportunities,
     quotes,
@@ -422,12 +423,12 @@ export function buildClient360(clientId, {
     payments,
   })
 
-  const clientLeads = indexes.leads.get(clientId) || []
-  const clientOpportunities = indexes.opportunities.get(clientId) || []
-  const clientQuotes = indexes.quotes.get(clientId) || []
-  const clientPolicies = indexes.policies.get(clientId) || []
-  const clientClaims = indexes.claims.get(clientId) || []
-  const clientPayments = indexes.payments.get(clientId) || []
+  const clientLeads = relationshipIndexes.leads.get(clientId) || []
+  const clientOpportunities = relationshipIndexes.opportunities.get(clientId) || []
+  const clientQuotes = relationshipIndexes.quotes.get(clientId) || []
+  const clientPolicies = relationshipIndexes.policies.get(clientId) || []
+  const clientClaims = relationshipIndexes.claims.get(clientId) || []
+  const clientPayments = relationshipIndexes.payments.get(clientId) || []
 
   return {
     leads: clientLeads,
