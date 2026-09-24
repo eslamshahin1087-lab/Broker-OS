@@ -58,7 +58,7 @@ export function AuthProvider({ children }) {
         const profileData = await ensureProfile(firebaseUser)
         setProfile(profileData)
         const platformAdminSnap = await getDoc(doc(db, 'platformAdmins', firebaseUser.uid))
-        setPlatformAdmin(platformAdminSnap.exists())
+        setPlatformAdmin(platformAdminSnap.exists() && platformAdminSnap.data()?.enabled === true)
       } catch (err) {
         console.error('تعذر تحميل/إنشاء ملف تعريف المستخدم', err)
         setProfile(null)
