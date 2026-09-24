@@ -72,7 +72,8 @@ export function getNextBestActions({
         'متابعة فرصة',
         `${opportunity.clientName || 'عميل'} · الفرصة لم تصل بعد إلى عرض سعر.`,
         '/opportunities',
-        'opportunity'
+        'opportunity',
+        opportunity.id
       ))
     }
   })
@@ -98,7 +99,8 @@ export function getNextBestActions({
         'تابع عرض السعر',
         `${quote.clientName || 'العميل'} · العرض ما زال في دورة المتابعة.`,
         '/quotes',
-        'quote'
+        'quote',
+        quote.id
       ))
     }
   })
@@ -135,7 +137,8 @@ export function getNextBestActions({
         'ابدأ التجديد',
         `${policy.clientName || 'عميل'} · متبقي ${daysLeft} يوم.`,
         '/renewals',
-        'policy'
+        'policy',
+        policy.id
       ))
     }
   })
@@ -161,7 +164,8 @@ export function getNextBestActions({
         'تابع المطالبة',
         `${claim.clientName || 'عميل'} · الحالة تحتاج متابعة.`,
         '/claims',
-        'claim'
+        'claim',
+        claim.id
       ))
     }
   })
@@ -188,7 +192,8 @@ export function getNextBestActions({
         'تحصيل متأخر',
         `${payment.clientName || 'عميل'} · توجد دفعة متأخرة.`,
         '/payments',
-        'payment'
+        'payment',
+        payment.id
       ))
     } else if (payment.status === 'pending' || payment.status === 'partial') {
       actions.push(action(
