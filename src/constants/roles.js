@@ -24,3 +24,11 @@ export const MANAGEABLE_ROLES = [
 export function canManageTeam(role) {
   return role === ROLES.OWNER || role === ROLES.ADMIN
 }
+
+export function canManageFinance(role) {
+  return role === ROLES.OWNER || role === ROLES.ADMIN || role === ROLES.FINANCE
+}
+
+export function canManageOperations(role) {
+  return role === ROLES.OWNER || role === ROLES.ADMIN || role === ROLES.SALES || role === ROLES.OPERATIONS
+}
