@@ -78,12 +78,12 @@ export default function Products() {
   }
 
   const remove = async (id) => {
-    if (!window.confirm('حذف المنتج؟')) return
+    if (!window.confirm('تعطيل المنتج؟')) return
     try {
       await deleteProduct(id)
     } catch (err) {
       console.error(err)
-      setError('تعذر حذف المنتج')
+      setError('تعذر تعطيل المنتج')
     }
   }
 
@@ -170,8 +170,8 @@ export default function Products() {
 
               {item.description && <p className="subtitle">{item.description}</p>}
 
-              <button className="btn btn-danger-outline" onClick={() => remove(item.id)}>
-                حذف
+              <button className="btn btn-danger-outline" onClick={() => remove(item.id)} disabled={item.status !== "active"}>
+                {item.status === "active" ? "تعطيل المنتج" : "معطل"}
               </button>
             </div>
           ))}
