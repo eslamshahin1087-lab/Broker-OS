@@ -201,6 +201,31 @@ service cloud.firestore {
       allow delete: if sameOrganization(resource.data.organizationId);
     }
 
+    
+    match /activities/{activityId} {
+      allow read: if sameOrganization(resource.data.organizationId);
+
+      allow create: if signedIn()
+        && sameOrganization(request.resource.data.organizationId)
+        && request.resource.data.createdBy == request.auth.uid;
+
+      allow update: if signedIn()
+        && sameOrganization(resource.data.organizationId)
+        && request.resource.data.organizationId == resource.data.organizationId
+        && (
+          request.auth.uid == resource.data.createdBy ||
+          request.auth.uid == resource.data.assignedTo ||
+          isOwnerOrAdmin()
+        );
+
+      allow delete: if signedIn()
+        && sameOrganization(resource.data.organizationId)
+        && (
+          request.auth.uid == resource.data.createdBy ||
+          isOwnerOrAdmin()
+        );
+    }
+
     match /renewal_updates/{updateId} {
       allow read: if isOwnerOrAdmin() && sameOrganization(resource.data.organizationId);
       allow create: if canManageOperations()
