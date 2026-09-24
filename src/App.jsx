@@ -21,6 +21,8 @@ import Documents from './pages/Documents'
 import Activities from './pages/Activities'
 import PlatformAdmin from './pages/PlatformAdmin'
 import Organizations from './pages/Organizations'
+import MedicalAnalysis from './pages/MedicalAnalysis'
+import Legal from './pages/Legal'
 import Login from './pages/Login'
 import { PlatformFeaturesProvider } from './services/PlatformFeaturesContext'
 
@@ -30,6 +32,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login initialMode="login" />} />
         <Route path="/register" element={<Login initialMode="register" />} />
+        <Route path="/legal" element={<Legal />} />
         <Route element={<RequireAuth />}>
           <Route element={<PlatformFeaturesProvider />}>
             <Route path="/platform-admin" element={<RequirePlatformAdmin />}>
@@ -55,6 +58,7 @@ function App() {
             <Route path="/audit" element={<FeatureGate feature="audit"><AuditLogs /></FeatureGate>} />
             <Route path="/documents" element={<FeatureGate feature="documents"><Documents /></FeatureGate>} />
             <Route path="/activities" element={<FeatureGate feature="activities"><Activities /></FeatureGate>} />
+            <Route path="/medical-analysis" element={<FeatureGate feature="medicalAI"><MedicalAnalysis /></FeatureGate>} />
             </Route>
           </Route>
         </Route>
