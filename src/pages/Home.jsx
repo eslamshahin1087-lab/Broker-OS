@@ -138,12 +138,7 @@ export default function Home() {
       .map((client) => ({
         client,
         ...buildClient360(client.id, {
-          leads: clientIndexes.leads.get(client.id) || [],
-          opportunities: clientIndexes.opportunities.get(client.id) || [],
-          quotes: clientIndexes.quotes.get(client.id) || [],
-          policies: clientIndexes.policies.get(client.id) || [],
-          claims: clientIndexes.claims.get(client.id) || [],
-          payments: clientIndexes.payments.get(client.id) || [],
+          indexes: clientIndexes,
         }),
       }))
       .filter((item) => item.premium > 0 || item.openClaims > 0 || item.outstandingPayments > 0)
