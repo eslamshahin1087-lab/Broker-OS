@@ -1,27 +1,28 @@
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import Logo from '../components/Logo'
+import AppIcon from '../components/AppIcon'
 import { useAuth } from '../services/AuthContext'
 import { canManageFinance, canManageOperations, canManageTeam } from '../constants/roles'
 import { usePlatformFeatures } from '../services/PlatformFeaturesContext'
 
 const NAV_ITEMS = [
-  { to: '/', label: 'الرئيسية', end: true, feature: 'dashboard', icon: '⌂', group: 'workspace' },
-  { to: '/clients', label: 'العملاء', feature: 'clients', icon: '◉', group: 'workspace' },
-  { to: '/leads', label: 'Leads', feature: 'leads', icon: '◎', group: 'workspace' },
-  { to: '/opportunities', label: 'الفرص', feature: 'opportunities', icon: '◇', group: 'workspace' },
-  { to: '/quotes', label: 'عروض الأسعار', feature: 'quotes', icon: '▣', group: 'commercial' },
-  { to: '/policies', label: 'البوالص', feature: 'policies', icon: '▤', group: 'commercial' },
-  { to: '/insurers', label: 'شركات التأمين', feature: 'insurers', icon: '◈', group: 'commercial' },
-  { to: '/products', label: 'المنتجات', feature: 'products', icon: '◆', group: 'commercial' },
-  { to: '/renewals', label: 'التجديدات', feature: 'renewals', icon: '↻', group: 'operations' },
-  { to: '/claims', label: 'المطالبات', feature: 'claims', icon: '△', group: 'operations' },
-  { to: '/documents', label: 'المستندات', feature: 'documents', icon: '□', group: 'operations' },
-  { to: '/activities', label: 'المهام والمتابعات', feature: 'activities', icon: '✓', group: 'operations' },
-  { to: '/payments', label: 'المدفوعات', feature: 'payments', icon: '₤', group: 'finance' },
-  { to: '/finance', label: 'المالية', feature: 'finance', icon: '◫', group: 'finance' },
-  { to: '/team', label: 'الفريق', feature: 'team', icon: '♙', group: 'management' },
-  { to: '/audit', label: 'التدقيق', feature: 'audit', icon: '⌁', group: 'management' },
+  { to: '/', label: 'الرئيسية', end: true, feature: 'dashboard', icon: 'dashboard', group: 'workspace' },
+  { to: '/clients', label: 'العملاء', feature: 'clients', icon: 'clients', group: 'workspace' },
+  { to: '/leads', label: 'Leads', feature: 'leads', icon: 'leads', group: 'workspace' },
+  { to: '/opportunities', label: 'الفرص', feature: 'opportunities', icon: 'opportunities', group: 'workspace' },
+  { to: '/quotes', label: 'عروض الأسعار', feature: 'quotes', icon: 'quotes', group: 'commercial' },
+  { to: '/policies', label: 'البوالص', feature: 'policies', icon: 'policies', group: 'commercial' },
+  { to: '/insurers', label: 'شركات التأمين', feature: 'insurers', icon: 'insurers', group: 'commercial' },
+  { to: '/products', label: 'المنتجات', feature: 'products', icon: 'products', group: 'commercial' },
+  { to: '/renewals', label: 'التجديدات', feature: 'renewals', icon: 'renewals', group: 'operations' },
+  { to: '/claims', label: 'المطالبات', feature: 'claims', icon: 'claims', group: 'operations' },
+  { to: '/documents', label: 'المستندات', feature: 'documents', icon: 'documents', group: 'operations' },
+  { to: '/activities', label: 'المهام والمتابعات', feature: 'activities', icon: 'activities', group: 'operations' },
+  { to: '/payments', label: 'المدفوعات', feature: 'payments', icon: 'payments', group: 'finance' },
+  { to: '/finance', label: 'المالية', feature: 'finance', icon: 'finance', group: 'finance' },
+  { to: '/team', label: 'الفريق', feature: 'team', icon: 'team', group: 'management' },
+  { to: '/audit', label: 'التدقيق', feature: 'audit', icon: 'audit', group: 'management' },
 ]
 
 const GROUPS = [
@@ -84,7 +85,7 @@ export default function MainLayout() {
                     end={item.end}
                     className={({ isActive }) => 'sidebar-link' + (isActive ? ' active' : '')}
                   >
-                    <span className="sidebar-link-icon">{item.icon}</span>
+                    <span className="sidebar-link-icon"><AppIcon name={item.icon} size={15} /></span>
                     <span>{item.label}</span>
                   </NavLink>
                 ))}
@@ -96,12 +97,12 @@ export default function MainLayout() {
         <div className="sidebar-bottom">
           {platformAdmin && (
             <NavLink to="/platform-admin" className="sidebar-admin-link">
-              <span>◆</span>
+              <span><AppIcon name="products" size={15} /></span>
               إدارة المنصة
             </NavLink>
           )}
           <button type="button" className="sidebar-logout" onClick={logout}>
-            <span>↪</span>
+            <span><AppIcon name="next" size={15} /></span>
             تسجيل الخروج
           </button>
         </div>
@@ -143,7 +144,7 @@ export default function MainLayout() {
             end={item.end}
             className={({ isActive }) => 'mobile-nav-link' + (isActive ? ' active' : '')}
           >
-            <span>{item.icon}</span>
+            <span><AppIcon name={item.icon} size={16} /></span>
             <small>{item.label}</small>
           </NavLink>
         ))}
@@ -178,7 +179,7 @@ export default function MainLayout() {
                   className={({ isActive }) => 'mobile-menu-item' + (isActive ? ' active' : '')}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <span>{item.icon}</span>
+                  <span><AppIcon name={item.icon} size={16} /></span>
                   <strong>{item.label}</strong>
                 </NavLink>
               ))}
@@ -189,7 +190,7 @@ export default function MainLayout() {
                   className="mobile-menu-item admin"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <span>◆</span>
+                  <span><AppIcon name="products" size={16} /></span>
                   <strong>إدارة المنصة</strong>
                 </NavLink>
               )}
