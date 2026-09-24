@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { sendPasswordResetEmail } from 'firebase/auth'
 import { Link, useNavigate } from 'react-router-dom'
 import AppIcon from '../components/AppIcon'
+import ThemeToggle from '../components/ThemeToggle'
 import { useAuth } from '../services/AuthContext'
 import { auth } from '../services/firebase'
 
@@ -214,6 +215,9 @@ export default function Login({ initialMode = 'login' }) {
           <strong>Broker OS</strong>
           <span>Insurance Operating System</span>
         </div>
+      </div>
+      <div className="auth-theme-control">
+        <ThemeToggle compact />
       </div>
 
       <div className={'auth-layout' + (mode === 'register' ? ' register-mode' : '')}>
