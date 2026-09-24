@@ -68,13 +68,16 @@ export function listenToPoliciesByClient(organizationId, clientId, onData, onErr
 }
 
 export function addPolicy(organizationId, data) {
-  const premium = Number(data.premiumAmount) || 0
-  const rate = Number(data.commissionRate) || 0
+  const premium = Number(data.premiumAmount)
+  const rate = Number(data.commissionRate)
+  const safePremium = Number.isFinite(premium) && premium >= 0 ? premium : 0
+  const safeRate = Number.isFinite(rate) && rate >= 0 ? rate : 0
+
   return addDoc(policiesRef, {
     ...data,
-    premiumAmount: premium,
-    commissionRate: rate,
-    commissionAmount: Math.round((premium * rate) / 100),
+    premiumAmount: safePremium,
+    commissionRate: safeRate,
+    commissionAmount: Math.round((safePremium * safeRate) / 100),
     organizationId,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -83,13 +86,22 @@ export function addPolicy(organizationId, data) {
 
 export function updatePolicy(policyId, data) {
   const patch = { ...data, updatedAt: serverTimestamp() }
+
   if (data.premiumAmount !== undefined || data.commissionRate !== undefined) {
-    const premium = Number(data.premiumAmount)
-    const rate = Number(data.commissionRate)
-    if (!Number.isNaN(premium) && !Number.isNaN(rate)) {
-      patch.commissionAmount = Math.round((premium * rate) / 100)
+    const premium = data.premiumAmount !== undefined ? Number(data.premiumAmount) : null
+    const rate = data.commissionRate !== undefined ? Number(data.commissionRate) : null
+
+    if (premium !== null && Number.isFinite(premium)) patch.premiumAmount = Math.max(0, premium)
+    if (rate !== null && Number.isFinite(rate)) patch.commissionRate = Math.max(0, rate)
+
+    if (premium !== null || rate !== null) {
+      patch.commissionAmount = Math.round(
+        ((premium !== null ? Math.max(0, premium) : Number(data.premiumAmount ?? 0)) *
+          (rate !== null ? Math.max(0, rate) : Number(data.commissionRate ?? 0))) / 100
+      )
     }
   }
+
   return updateDoc(doc(db, 'policies', policyId), patch)
 }
 
