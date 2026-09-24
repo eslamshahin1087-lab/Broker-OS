@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import Logo from '../components/Logo'
+import { useAuth } from '../services/AuthContext'
 
 const NAV_ITEMS = [
   { to: '/', label: 'الرئيسية', end: true },
@@ -11,18 +12,42 @@ const NAV_ITEMS = [
 ]
 
 export default function MainLayout() {
+  const { profile, logout } = useAuth()
+
   const navStyle = ({ isActive }) => ({
-    color: isActive ? 'var(--primary-blue)' : 'var(--text-muted)',
+    color: isActive ? 'var(--primary-blue-2)' : 'var(--text-muted)',
     textDecoration: 'none',
     fontSize: '12px',
     fontWeight: 'bold',
     whiteSpace: 'nowrap',
+    padding: '6px 8px',
   })
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-dark)' }} dir="rtl">
-      <header style={{ padding: '10px 20px', borderBottom: '1px solid #1A2A4A' }}>
+      <header style={{
+        padding: '10px 20px',
+        borderBottom: '1px solid #1A2A4A',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 14,
+      }}>
         <Logo width={100} />
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>
+            {profile?.email || 'Broker'}
+          </span>
+          <button
+            type="button"
+            className="btn"
+            onClick={logout}
+            style={{ background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
+          >
+            خروج
+          </button>
+        </div>
       </header>
 
       <main style={{ paddingBottom: '78px' }}>
@@ -39,9 +64,10 @@ export default function MainLayout() {
         alignItems: 'center',
         gap: '8px',
         overflowX: 'auto',
-        background: 'var(--card-bg)',
-        padding: '10px 8px',
-        borderTop: '1px solid #1A2A4A',
+        background: 'rgba(15, 29, 49, 0.96)',
+        backdropFilter: 'blur(14px)',
+        padding: '9px 8px',
+        borderTop: '1px solid var(--border)',
         zIndex: 20,
       }}>
         {NAV_ITEMS.map((item) => (
