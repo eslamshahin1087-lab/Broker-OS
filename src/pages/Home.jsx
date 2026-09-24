@@ -377,7 +377,12 @@ export default function Home() {
             </div>
 
             {metrics.renewals.length === 0 ? (
-              <div className="empty-state">لا توجد تجديدات مستحقة خلال 30 يومًا.</div>
+              <div className="empty-state empty-state-visual">
+                <span className="empty-state-icon"><AppIcon name="renewals" size={19} /></span>
+                <strong>المحفظة مستقرة حاليًا</strong>
+                <span>لا توجد تجديدات مستحقة خلال 30 يومًا.</span>
+                <Link to="/renewals" className="text-link">فتح مركز التجديدات ←</Link>
+              </div>
             ) : (
               <div className="renewal-grid">
                 {metrics.renewals.slice(0, 6).map((policy) => (
