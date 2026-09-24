@@ -1,10 +1,10 @@
 import {
-  addDoc,
   collection,
   deleteDoc,
   doc,
   onSnapshot,
   query,
+  setDoc,
   serverTimestamp,
   updateDoc,
   where,
@@ -76,7 +76,8 @@ export async function uploadDocument(organizationId, actorId, file, metadata = {
     throw new Error('FILE_TYPE_NOT_ALLOWED')
   }
 
-  const documentId = crypto.randomUUID()
+  const docRef = doc(documentsRef)
+  const documentId = docRef.id
   const safeName = normalizeFileName(file.name)
   const storagePath = `organizations/${organizationId}/documents/${documentId}/${safeName}`
   const fileRef = storageRef(storage, storagePath)
@@ -93,35 +94,22 @@ export async function uploadDocument(organizationId, actorId, file, metadata = {
   const downloadUrl = await getDownloadURL(fileRef)
 
   try {
-    const docRef = doc(documentsRef, documentId)
-    await addDoc(collection(db, '_document_write_guard'), {
+    await setDoc(docRef, {
       organizationId,
-      documentId,
       createdBy: actorId,
-      createdAt: serverTimestamp(),
-    })
-
-    await updateDoc(docRef, {
+      fileName: file.name,
+      storedFileName: safeName,
+      storagePath,
       downloadUrl,
+      contentType: file.type,
+      size: file.size,
+      documentType: metadata.documentType || 'general',
+      entityType: metadata.entityType || '',
+      entityId: metadata.entityId || '',
+      entityName: metadata.entityName || '',
+      notes: metadata.notes || '',
+      createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-    }).catch(async () => {
-      await addDoc(documentsRef, {
-        organizationId,
-        createdBy: actorId,
-        fileName: file.name,
-        storedFileName: safeName,
-        storagePath,
-        downloadUrl,
-        contentType: file.type,
-        size: file.size,
-        documentType: metadata.documentType || 'general',
-        entityType: metadata.entityType || '',
-        entityId: metadata.entityId || '',
-        entityName: metadata.entityName || '',
-        notes: metadata.notes || '',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      })
     })
   } catch (err) {
     await deleteObject(fileRef).catch(() => {})
