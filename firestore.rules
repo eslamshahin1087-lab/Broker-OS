@@ -173,6 +173,17 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    match /documents/{documentId} {
+      allow read: if sameOrganization(resource.data.organizationId);
+      allow create: if sameOrganization(request.resource.data.organizationId)
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update: if sameOrganization(resource.data.organizationId)
+        && request.resource.data.organizationId == resource.data.organizationId
+        && request.resource.data.createdBy == resource.data.createdBy;
+      allow delete: if canManageOperations()
+        && sameOrganization(resource.data.organizationId);
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
