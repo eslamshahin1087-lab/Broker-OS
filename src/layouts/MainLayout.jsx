@@ -3,7 +3,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import Logo from '../components/Logo'
 import AppIcon from '../components/AppIcon'
 import { useAuth } from '../services/AuthContext'
-import { canManageFinance, canManageOperations, canManageTeam } from '../constants/roles'
+import { canManageFinance, canManageMedicalAnalysis, canManageOperations, canManageTeam } from '../constants/roles'
 import { usePlatformFeatures } from '../services/PlatformFeaturesContext'
 
 const NAV_ITEMS = [
@@ -19,6 +19,7 @@ const NAV_ITEMS = [
   { to: '/claims', label: 'المطالبات', feature: 'claims', icon: 'claims', group: 'operations' },
   { to: '/documents', label: 'المستندات', feature: 'documents', icon: 'documents', group: 'operations' },
   { to: '/activities', label: 'المهام والمتابعات', feature: 'activities', icon: 'activities', group: 'operations' },
+  { to: '/medical-analysis', label: 'تحليل الاستهلاكات', feature: 'medicalAI', icon: 'medical', group: 'operations' },
   { to: '/payments', label: 'المدفوعات', feature: 'payments', icon: 'payments', group: 'finance' },
   { to: '/finance', label: 'المالية', feature: 'finance', icon: 'finance', group: 'finance' },
   { to: '/team', label: 'الفريق', feature: 'team', icon: 'team', group: 'management' },
@@ -38,6 +39,7 @@ function canSee(item, role, features) {
   if (item.to === '/team' || item.to === '/audit') return canManageTeam(role)
   if (item.to === '/payments') return canManageFinance(role)
   if (item.to === '/renewals' || item.to === '/claims') return canManageOperations(role)
+  if (item.to === '/medical-analysis') return canManageMedicalAnalysis(role)
   return true
 }
 
@@ -108,6 +110,10 @@ export default function MainLayout() {
               إدارة المنصة
             </NavLink>
           )}
+          <NavLink to="/legal" className="sidebar-admin-link legal-link">
+            <span><AppIcon name="shield" size={15} /></span>
+            الشروط والسياسات
+          </NavLink>
           <button type="button" className="sidebar-logout" onClick={logout}>
             <span><AppIcon name="next" size={15} /></span>
             تسجيل الخروج
@@ -213,6 +219,14 @@ export default function MainLayout() {
                   <strong>إدارة المنصة</strong>
                 </NavLink>
               )}
+              <NavLink
+                to="/legal"
+                className="mobile-menu-item legal-link"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span><AppIcon name="shield" size={16} /></span>
+                <strong>الشروط والسياسات</strong>
+              </NavLink>
             </div>
           </div>
         </div>
