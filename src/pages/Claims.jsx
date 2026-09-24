@@ -82,7 +82,7 @@ export default function Claims() {
   const remove = async (id) => {
     if (!canManage || !window.confirm('حذف المطالبة؟')) return
     try {
-      await deleteClaim(id)
+      await deleteClaim(organizationId, user.uid, id)
     } catch (err) {
       console.error(err)
       setError('تعذر حذف المطالبة')
