@@ -163,8 +163,14 @@ export default function Home() {
           <p>كل ما يحتاج انتباهك اليوم في شاشة واحدة — والبيانات تتحول تلقائيًا إلى خطوات تشغيلية.</p>
         </div>
         <div className="hero-actions">
-          <Link to="/clients" className="btn btn-primary">+ عميل جديد</Link>
-          <Link to="/opportunities" className="btn btn-secondary">+ فرصة جديدة</Link>
+          <Link to="/clients" className="btn btn-primary">
+            <AppIcon name="plus" size={14} />
+            عميل جديد
+          </Link>
+          <Link to="/opportunities" className="btn btn-secondary">
+            <AppIcon name="opportunities" size={14} />
+            فرصة جديدة
+          </Link>
         </div>
       </section>
 
@@ -188,6 +194,7 @@ export default function Home() {
                 <div>
                   <span className="eyebrow">Next Best Action</span>
                   <h2>ماذا يجب أن أفعل الآن؟</h2>
+                  </div>
                 </div>
                 <span className="mini-kpi">{intelligence.actions.length} خطوة</span>
               </div>
