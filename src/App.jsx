@@ -36,7 +36,7 @@ function App() {
               <Route index element={<PlatformAdmin />} />
             </Route>
             <Route path="/organizations" element={<RequirePlatformAdmin />}>
-              <Organizations />
+              <Route index element={<Organizations />} />
             </Route>
             <Route element={<MainLayout />}>
             <Route path="/" element={<Home />} />
