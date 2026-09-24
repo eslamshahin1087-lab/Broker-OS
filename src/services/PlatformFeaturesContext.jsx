@@ -1,11 +1,17 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { Outlet } from 'react-router-dom'
-import { listenToPlatformFeatures } from './platformAdmin'
+import { useAuth } from './AuthContext'
+import {
+  listenToPlatformFeatures,
+  listenToPlatformOrganization,
+} from './platformAdmin'
 
 const PlatformFeaturesContext = createContext(null)
 
 export function PlatformFeaturesProvider({ children }) {
-  const [features, setFeatures] = useState({})
+  const { organizationId } = useAuth()
+  const [globalFeatures, setGlobalFeatures] = useState({})
+  const [organizationOverrides, setOrganizationOverrides] = useState({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -15,7 +21,7 @@ export function PlatformFeaturesProvider({ children }) {
         rows.forEach((item) => {
           map[item.key] = item.enabled !== false
         })
-        setFeatures(map)
+        setGlobalFeatures(map)
         setLoading(false)
       },
       (error) => {
@@ -26,6 +32,35 @@ export function PlatformFeaturesProvider({ children }) {
 
     return unsubscribe
   }, [])
+
+  useEffect(() => {
+    if (!organizationId) {
+      setOrganizationOverrides({})
+      return undefined
+    }
+
+    const unsubscribe = listenToPlatformOrganization(
+      organizationId,
+      (organization) => {
+        setOrganizationOverrides(organization?.featureOverrides || {})
+      },
+      (error) => console.error('تعذر تحميل مزايا المؤسسة', error)
+    )
+
+    return unsubscribe
+  }, [organizationId])
+
+  const features = useMemo(() => {
+    const merged = { ...globalFeatures }
+
+    Object.entries(organizationOverrides).forEach(([key, enabled]) => {
+      if (globalFeatures[key] !== false) {
+        merged[key] = enabled !== false
+      }
+    })
+
+    return merged
+  }, [globalFeatures, organizationOverrides])
 
   const value = useMemo(() => ({
     features,
