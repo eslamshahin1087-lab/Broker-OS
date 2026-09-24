@@ -3,6 +3,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   onSnapshot,
   query,
   serverTimestamp,
@@ -84,25 +85,26 @@ export function addPolicy(organizationId, data) {
   })
 }
 
-export function updatePolicy(policyId, data) {
-  const patch = { ...data, updatedAt: serverTimestamp() }
+export async function updatePolicy(policyId, data) {
+  const policyRef = doc(db, 'policies', policyId)
+  const currentSnap = await getDoc(policyRef)
 
-  if (data.premiumAmount !== undefined || data.commissionRate !== undefined) {
-    const premium = data.premiumAmount !== undefined ? Number(data.premiumAmount) : null
-    const rate = data.commissionRate !== undefined ? Number(data.commissionRate) : null
+  if (!currentSnap.exists()) throw new Error('Policy not found')
 
-    if (premium !== null && Number.isFinite(premium)) patch.premiumAmount = Math.max(0, premium)
-    if (rate !== null && Number.isFinite(rate)) patch.commissionRate = Math.max(0, rate)
+  const current = currentSnap.data()
+  const premiumInput = data.premiumAmount !== undefined ? Number(data.premiumAmount) : Number(current.premiumAmount)
+  const rateInput = data.commissionRate !== undefined ? Number(data.commissionRate) : Number(current.commissionRate)
 
-    if (premium !== null || rate !== null) {
-      patch.commissionAmount = Math.round(
-        ((premium !== null ? Math.max(0, premium) : Number(data.premiumAmount ?? 0)) *
-          (rate !== null ? Math.max(0, rate) : Number(data.commissionRate ?? 0))) / 100
-      )
-    }
-  }
+  const premium = Number.isFinite(premiumInput) ? Math.max(0, premiumInput) : 0
+  const rate = Number.isFinite(rateInput) ? Math.max(0, rateInput) : 0
 
-  return updateDoc(doc(db, 'policies', policyId), patch)
+  return updateDoc(policyRef, {
+    ...data,
+    premiumAmount: premium,
+    commissionRate: rate,
+    commissionAmount: Math.round((premium * rate) / 100),
+    updatedAt: serverTimestamp(),
+  })
 }
 
 export function deletePolicy(policyId) {
