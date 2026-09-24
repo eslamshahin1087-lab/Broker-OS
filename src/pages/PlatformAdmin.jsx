@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { NavLink } from 'react-router-dom'
 import {
   DEFAULT_PLATFORM_FEATURES,
   listenToPlatformAuditLogs,
@@ -154,7 +155,10 @@ export default function PlatformAdmin() {
           <h1>إدارة Broker OS</h1>
           <p>صلاحيات على مستوى المنصة بالكامل، منفصلة عن مديري المؤسسات.</p>
         </div>
-        <button type="button" className="btn btn-secondary" onClick={logout}>خروج</button>
+        <div className="hero-actions">
+          <NavLink to="/organizations" className="btn btn-primary">إدارة المؤسسات</NavLink>
+          <button type="button" className="btn btn-secondary" onClick={logout}>خروج</button>
+        </div>
       </header>
 
       {error && <div className="alert">{error}</div>}
@@ -316,8 +320,9 @@ export default function PlatformAdmin() {
         <div className="section-head">
           <div>
             <span className="eyebrow">Organizations</span>
-            <h2>المؤسسات</h2>
+            <h2>ملخص المؤسسات</h2>
           </div>
+          <NavLink to="/organizations" className="text-link">فتح الإدارة الكاملة ←</NavLink>
         </div>
 
         <div className="commercial-grid">
