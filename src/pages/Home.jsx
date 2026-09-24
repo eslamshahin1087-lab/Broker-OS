@@ -8,8 +8,18 @@ import { listenToOpportunities, stageColor, stageLabel } from '../services/oppor
 import { listenToQuotes } from '../services/quotes'
 import { listenToClaims } from '../services/claims'
 import { listenToPayments } from '../services/payments'
+import {
+  calculateWorkflowHealth,
+  getNextBestActions,
+} from '../services/workflowEngine'
 
 const money = (value) => Math.round(Number(value) || 0).toLocaleString('ar-EG') + ' ج.م'
+
+const priorityLabel = {
+  critical: 'عاجل',
+  warning: 'مهم',
+  info: 'متابعة',
+}
 
 export default function Home() {
   const { organizationId, profile } = useAuth()
@@ -62,14 +72,45 @@ export default function Home() {
     const wonOpportunities = opportunities.filter((p) => p.stage === 'won').length
     const pendingQuotes = quotes.filter((quote) => !['accepted', 'rejected'].includes(quote.status)).length
     const openClaims = claims.filter((claim) => !['paid', 'rejected'].includes(claim.status)).length
-    const pendingPayments = payments.filter((payment) => payment.status !== 'paid').reduce((sum, payment) => sum + (Number(payment.amount) || 0), 0)
+    const pendingPayments = payments
+      .filter((payment) => payment.status !== 'paid')
+      .reduce((sum, payment) => sum + (Number(payment.amount) || 0), 0)
     const renewals = getUpcomingRenewals(policies, 30)
 
-    return { clients: clients.length, activePolicies, commission, premium, openOpportunities, wonOpportunities, pendingQuotes, openClaims, pendingPayments, renewals }
-  }, [clients, policies, opportunities])
+    return {
+      clients: clients.length,
+      activePolicies,
+      commission,
+      premium,
+      openOpportunities,
+      wonOpportunities,
+      pendingQuotes,
+      openClaims,
+      pendingPayments,
+      renewals,
+    }
+  }, [clients, policies, opportunities, quotes, claims, payments])
+
+  const intelligence = useMemo(() => ({
+    actions: getNextBestActions({
+      leads,
+      opportunities,
+      quotes,
+      policies,
+      claims,
+      payments,
+    }),
+    health: calculateWorkflowHealth({
+      opportunities,
+      quotes,
+      policies,
+      claims,
+      payments,
+    }),
+  }), [leads, opportunities, quotes, policies, claims, payments])
 
   const recentOpportunities = opportunities.slice(0, 5)
-  const greeting = profile?.email?.split('@')[0] || 'وسيط التأمين'
+  const greeting = profile?.displayName || profile?.email?.split('@')[0] || 'وسيط التأمين'
 
   return (
     <div className="page-shell">
@@ -77,7 +118,7 @@ export default function Home() {
         <div>
           <span className="eyebrow">Broker OS · Command Center</span>
           <h1>مرحبًا {greeting}</h1>
-          <p>كل ما يحتاج انتباهك اليوم في شاشة واحدة.</p>
+          <p>كل ما يحتاج انتباهك اليوم في شاشة واحدة — والبيانات تتحول تلقائيًا إلى خطوات تشغيلية.</p>
         </div>
         <div className="hero-actions">
           <Link to="/clients" className="btn btn-primary">+ عميل جديد</Link>
@@ -98,6 +139,67 @@ export default function Home() {
             <MetricCard label="العمولات" value={money(metrics.commission)} hint="Calculated commission" icon="📈" />
           </section>
 
+          <section className="dashboard-grid insight-grid">
+            <div className="card smart-panel">
+              <div className="section-head">
+                <div>
+                  <span className="eyebrow">Next Best Action</span>
+                  <h2>ماذا يجب أن أفعل الآن؟</h2>
+                </div>
+                <span className="mini-kpi">{intelligence.actions.length} خطوة</span>
+              </div>
+
+              {intelligence.actions.length === 0 ? (
+                <div className="smart-empty">
+                  <strong>لا توجد مهام حرجة الآن.</strong>
+                  <span>الـworkflow الحالي متوازن، ويمكنك التركيز على النمو وإضافة فرص جديدة.</span>
+                </div>
+              ) : (
+                <div className="smart-action-list">
+                  {intelligence.actions.map((item) => (
+                    <Link to={item.link} className="smart-action" key={item.id}>
+                      <span className={'smart-action-priority priority-' + item.priority}>{priorityLabel[item.priority]}</span>
+                      <div>
+                        <strong>{item.title}</strong>
+                        <span>{item.description}</span>
+                      </div>
+                      <span className="smart-action-arrow">←</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="card workflow-health">
+              <div className="section-head">
+                <div>
+                  <span className="eyebrow">Workflow Intelligence</span>
+                  <h2>سلامة الربط بين الوحدات</h2>
+                </div>
+                <span className="workflow-score">{intelligence.health.score}%</span>
+              </div>
+
+              <div className="workflow-meter">
+                <div style={{ width: intelligence.health.score + '%' }} />
+              </div>
+
+              <p>
+                {intelligence.health.total
+                  ? `تم ربط ${intelligence.health.connected} من ${intelligence.health.total} علاقة تشغيلية مكتشفة بين العملاء والفرص والعروض والبوالص والمطالبات والمدفوعات.`
+                  : 'أضف أول بيانات تشغيلية ليبدأ محرك الربط الذكي في اكتشاف العلاقات.'}
+              </p>
+
+              <div className="workflow-chips">
+                <Link to="/clients">العملاء</Link>
+                <Link to="/opportunities">الفرص</Link>
+                <Link to="/quotes">العروض</Link>
+                <Link to="/policies">البوالص</Link>
+                <Link to="/claims">المطالبات</Link>
+                <Link to="/payments">المدفوعات</Link>
+              </div>
+            </div>
+          </section>
+
           <section className="dashboard-grid">
             <div className="card">
               <div className="section-head">
@@ -109,7 +211,7 @@ export default function Home() {
               </div>
 
               <div className="attention-list">
-                <AttentionRow title="تجديدات خلال 30 يوم" value={metrics.renewals.length} tone={metrics.renewals.length ? 'warning' : 'success'} link="/policies" />
+                <AttentionRow title="تجديدات خلال 30 يوم" value={metrics.renewals.length} tone={metrics.renewals.length ? 'warning' : 'success'} link="/renewals" />
                 <AttentionRow title="فرص مفتوحة" value={metrics.openOpportunities} tone="info" link="/opportunities" />
                 <AttentionRow title="عملاء محتملون" value={leads.filter((lead) => !['won', 'lost'].includes(lead.status)).length} tone="neutral" link="/leads" />
                 <AttentionRow title="عروض تحتاج متابعة" value={metrics.pendingQuotes} tone="info" link="/quotes" />
@@ -151,7 +253,7 @@ export default function Home() {
                 <span className="eyebrow">Renewal Radar</span>
                 <h2>أقرب التجديدات</h2>
               </div>
-              <Link to="/policies" className="text-link">إدارة البوالص</Link>
+              <Link to="/renewals" className="text-link">إدارة التجديدات</Link>
             </div>
 
             {metrics.renewals.length === 0 ? (
