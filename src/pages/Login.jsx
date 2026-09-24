@@ -60,10 +60,10 @@ function authErrorMessage(code, mode) {
     : 'تعذر إنشاء الحساب. تحقق من البيانات وحاول مرة أخرى.')
 }
 
-export default function Login() {
+export default function Login({ initialMode = 'login' }) {
   const { login, register } = useAuth()
   const navigate = useNavigate()
-  const [mode, setMode] = useState('login')
+  const [mode, setMode] = useState(initialMode)
   const [step, setStep] = useState(1)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
