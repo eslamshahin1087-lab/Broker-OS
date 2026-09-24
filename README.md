@@ -1,60 +1,67 @@
-# Broker OS — Step 1 (MVP Scaffold)
+# Broker OS
 
-هذا أول إصدار من هيكل المشروع: React + Vite + Firebase (Auth + Firestore + Hosting)، مع أول شاشتين فعليتين: **Login** و **Home (Dashboard)**، وباقي شاشات الـ Bottom Nav كـ placeholders جاهزة للبناء عليها.
+Broker OS is a React + Vite + Firebase workspace for insurance brokers. The current architecture keeps existing top-level Firestore collections while enforcing tenant isolation through `organizationId`.
 
-## الخطوات اللي محتاج تعملها إنت (تحتاج حسابك الشخصي)
+## Current architecture
 
-### 1. GitHub Repository
-1. روح على github.com وسجّل دخول.
-2. اعمل New Repository باسم `broker-os` (خليه Private في البداية).
-3. من جهازك، بعد ما تفك ضغط الملفات دي:
-   ```bash
-   cd broker-os
-   git init
-   git add .
-   git commit -m "Initial scaffold: auth + dashboard shell"
-   git branch -M main
-   git remote add origin https://github.com/<username>/broker-os.git
-   git push -u origin main
-   ```
+```
+Auth
+  ↓
+users/{uid}
+  ├── organizationId
+  └── role
 
-### 2. Firebase Project
-1. روح على console.firebase.google.com.
-2. Add project → اسمه مثلاً `broker-os`.
-3. من داخل المشروع: Build → Authentication → Get started → فعّل **Email/Password**.
-4. Build → Firestore Database → Create database → ابدأ في **test mode** مؤقتًا (هنرفعله بعد كده بالـ rules اللي في `firestore.rules`).
-5. Project settings (⚙️) → Your apps → Add app → Web (</>) → هياديك بيانات الـ config.
-6. انسخ الملف `.env.example` باسم `.env` واملأ فيه القيم من الخطوة اللي فاتت.
+organization-scoped collections
+  ├── clients
+  ├── leads
+  ├── opportunities
+  └── policies
+```
 
-### 3. تشغيل المشروع محليًا
+The current business flow is:
+
+```
+LEAD → OPPORTUNITY → CLIENT → POLICY → COMMISSION → RENEWAL
+```
+
+When an opportunity is moved to **won**, the policy creation and opportunity update are performed in one Firestore transaction.
+
+## Security
+
+`firestore.rules` is the authorization boundary. Reads/writes for operational collections are restricted to the organization stored in the signed-in user's `users/{uid}` profile.
+
+Do not deploy Firestore in test mode.
+
+## Main routes
+
+- `/` — Command Center / Dashboard
+- `/clients` — Clients + Client 360
+- `/leads` — Leads pipeline
+- `/opportunities` — Opportunities
+- `/policies` — Policies + renewals
+- `/finance` — Financial dashboard
+
+## Local development
+
 ```bash
 npm install
 npm run dev
 ```
-هيفتحلك على `http://localhost:5173`.
 
-### 4. النشر (Free — Firebase Hosting)
+## Build
+
 ```bash
-npm install -g firebase-tools
-firebase login
-firebase init hosting   # اختار المشروع اللي عملته، ولو سألك عن الملفات اختار "no" عشان firebase.json موجود بالفعل
-npm run deploy
+npm run build
 ```
 
-## هيكل المشروع
-```
-src/
-  layouts/MainLayout.jsx     ← Bottom Navigation (Home, Clients, Opportunities, Policies, Finance, More)
-  pages/                     ← كل شاشة رئيسية (Home جاهزة، الباقي placeholder)
-  services/firebase.js       ← تهيئة Firebase
-  services/AuthContext.jsx   ← إدارة تسجيل الدخول في كل التطبيق
-  components/RequireAuth.jsx ← حماية الصفحات من غير تسجيل دخول
-firestore.rules              ← صلاحيات قاعدة البيانات (Multi-tenant بـ organizationId)
-```
+A GitHub Actions workflow is included at `.github/workflows/ci.yml` to run dependency installation and the production build on pushes to the main/foundation branches and pull requests.
 
-## الخطوة الجاية
-بعد ما تعمل الـ push والـ Firebase project، أقترح نبدأ بـ:
-- **Clients module**: نموذج بيانات Firestore + شاشة إضافة/عرض عميل (Client 360°)
-- أو **Leads Pipeline**: نفس الفكرة بس للـ leads
+## Next architectural layers
 
-قولّي أنهي واحدة تحب تبدأ بيها وهكمل معاك خطوة بخطوة.
+The next planned layers are:
+
+1. Organization membership and role-based permissions.
+2. Quotes / insurers / products.
+3. Renewals, claims, documents, payments and tasks.
+4. Audit logs and notifications.
+5. Reporting and broker performance analytics.
