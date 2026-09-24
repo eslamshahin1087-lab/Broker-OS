@@ -1,0 +1,79 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userProfileExists() {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function currentUserProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function currentOrganizationId() {
+      return currentUserProfile().data.organizationId;
+    }
+
+    function sameOrganization(orgId) {
+      return userProfileExists() && orgId == currentOrganizationId();
+    }
+
+    function validOrganizationChange() {
+      return request.resource.data.organizationId == resource.data.organizationId
+        && sameOrganization(request.resource.data.organizationId);
+    }
+
+    match /users/{userId} {
+      allow read: if signedIn() && request.auth.uid == userId;
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.organizationId == userId
+        && request.resource.data.role == 'owner';
+      allow update: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.organizationId == resource.data.organizationId
+        && request.resource.data.role == resource.data.role;
+      allow delete: if false;
+    }
+
+    match /clients/{clientId} {
+      allow read: if sameOrganization(resource.data.organizationId);
+      allow create: if sameOrganization(request.resource.data.organizationId);
+      allow update: if sameOrganization(resource.data.organizationId)
+        && validOrganizationChange();
+      allow delete: if sameOrganization(resource.data.organizationId);
+    }
+
+    match /leads/{leadId} {
+      allow read: if sameOrganization(resource.data.organizationId);
+      allow create: if sameOrganization(request.resource.data.organizationId);
+      allow update: if sameOrganization(resource.data.organizationId)
+        && validOrganizationChange();
+      allow delete: if sameOrganization(resource.data.organizationId);
+    }
+
+    match /opportunities/{opportunityId} {
+      allow read: if sameOrganization(resource.data.organizationId);
+      allow create: if sameOrganization(request.resource.data.organizationId);
+      allow update: if sameOrganization(resource.data.organizationId)
+        && validOrganizationChange();
+      allow delete: if sameOrganization(resource.data.organizationId);
+    }
+
+    match /policies/{policyId} {
+      allow read: if sameOrganization(resource.data.organizationId);
+      allow create: if sameOrganization(request.resource.data.organizationId);
+      allow update: if sameOrganization(resource.data.organizationId)
+        && validOrganizationChange();
+      allow delete: if sameOrganization(resource.data.organizationId);
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
