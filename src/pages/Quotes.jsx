@@ -55,7 +55,7 @@ export default function Quotes() {
   const activeInsurers = useMemo(() => insurers.filter((item) => item.active), [insurers])
   const activeProducts = useMemo(() => products.filter((item) => item.status === 'active'), [products])
   const filteredProducts = useMemo(
-    () => activeProducts.filter((item) => !form.insurerId || item.insurerId === form.insurerId),
+    () => activeProducts.filter((item) => form.insurerId && item.insurerId === form.insurerId),
     [activeProducts, form.insurerId]
   )
 
@@ -82,6 +82,12 @@ export default function Quotes() {
     const client = clients.find((item) => item.id === form.clientId)
     const insurer = insurers.find((item) => item.id === form.insurerId)
     const product = products.find((item) => item.id === form.productId)
+    const opportunity = opportunities.find((item) => item.id === form.opportunityId)
+
+    if (opportunity && opportunity.clientId !== form.clientId) {
+      setError('الفرصة المختارة مرتبطة بعميل مختلف. اختر نفس العميل أو ألغِ ربط الفرصة.')
+      return
+    }
 
     setSaving(true)
     setError('')
@@ -164,8 +170,8 @@ export default function Quotes() {
               {activeInsurers.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
             </select>
 
-            <select className="field" name="productId" value={form.productId} onChange={change} required>
-              <option value="">المنتج *</option>
+            <select className="field" name="productId" value={form.productId} onChange={change} required disabled={!form.insurerId}>
+              <option value="">{form.insurerId ? "المنتج *" : "اختر شركة التأمين أولًا"}</option>
               {filteredProducts.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
             </select>
 
