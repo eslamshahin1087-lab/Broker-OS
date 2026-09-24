@@ -1,28 +1,40 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import Logo from '../components/Logo'
 import { useAuth } from '../services/AuthContext'
 import { canManageFinance, canManageOperations, canManageTeam } from '../constants/roles'
+import { listenToPlatformFeatures } from '../services/platformAdmin'
 
 const NAV_ITEMS = [
-  { to: '/', label: 'الرئيسية', end: true },
-  { to: '/clients', label: 'العملاء' },
-  { to: '/leads', label: 'Leads' },
-  { to: '/opportunities', label: 'الفرص' },
-  { to: '/quotes', label: 'عروض الأسعار' },
-  { to: '/policies', label: 'البوالص' },
-  { to: '/finance', label: 'المالية' },
-  { to: '/insurers', label: 'شركات التأمين' },
-  { to: '/products', label: 'المنتجات' },
-  { to: '/renewals', label: 'التجديدات' },
-  { to: '/claims', label: 'المطالبات' },
-  { to: '/payments', label: 'المدفوعات' },
-  { to: '/team', label: 'الفريق' },
-  { to: '/audit', label: 'التدقيق' },
-  { to: '/documents', label: 'المستندات' },
+  { to: '/', label: 'الرئيسية', end: true, feature: 'dashboard' },
+  { to: '/clients', label: 'العملاء', feature: 'clients' },
+  { to: '/leads', label: 'Leads', feature: 'leads' },
+  { to: '/opportunities', label: 'الفرص', feature: 'opportunities' },
+  { to: '/quotes', label: 'عروض الأسعار', feature: 'quotes' },
+  { to: '/policies', label: 'البوالص', feature: 'policies' },
+  { to: '/finance', label: 'المالية', feature: 'finance' },
+  { to: '/insurers', label: 'شركات التأمين', feature: 'insurers' },
+  { to: '/products', label: 'المنتجات', feature: 'products' },
+  { to: '/renewals', label: 'التجديدات', feature: 'renewals' },
+  { to: '/claims', label: 'المطالبات', feature: 'claims' },
+  { to: '/payments', label: 'المدفوعات', feature: 'payments' },
+  { to: '/team', label: 'الفريق', feature: 'team' },
+  { to: '/audit', label: 'التدقيق', feature: 'audit' },
+  { to: '/documents', label: 'المستندات', feature: 'documents' },
 ]
 
 export default function MainLayout() {
-  const { profile, role, logout } = useAuth()
+  const { profile, role, platformAdmin, logout } = useAuth()
+  const [features, setFeatures] = useState({})
+
+  useEffect(() => {
+    const unsub = listenToPlatformFeatures((rows) => {
+      const next = {}
+      rows.forEach((item) => { next[item.key] = item.enabled !== false })
+      setFeatures(next)
+    }, (err) => console.error(err))
+    return unsub
+  }, [])
 
   const navStyle = ({ isActive }) => ({
     color: isActive ? 'var(--primary-blue-2)' : 'var(--text-muted)',
@@ -49,6 +61,11 @@ export default function MainLayout() {
           <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>
             {profile?.email || 'Broker'}
           </span>
+          {platformAdmin && (
+            <NavLink to="/platform-admin" className="btn btn-secondary" style={{ whiteSpace: 'nowrap' }}>
+              إدارة المنصة
+            </NavLink>
+          )}
           <button
             type="button"
             className="btn"
@@ -81,6 +98,7 @@ export default function MainLayout() {
         zIndex: 20,
       }}>
         {NAV_ITEMS.filter((item) => {
+          if (item.feature && features[item.feature] === false) return false
           if (item.to === '/team' || item.to === '/audit') return canManageTeam(role)
           if (item.to === '/payments') return canManageFinance(role)
           if (item.to === '/renewals' || item.to === '/claims') return canManageOperations(role)
