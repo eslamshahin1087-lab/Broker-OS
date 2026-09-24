@@ -18,6 +18,14 @@ service cloud.firestore {
       return currentUserProfile().data.organizationId;
     }
 
+    function currentRole() {
+      return currentUserProfile().data.role;
+    }
+
+    function isOwnerOrAdmin() {
+      return userProfileExists() && currentRole() in ['owner', 'admin'];
+    }
+
     function sameOrganization(orgId) {
       return userProfileExists() && orgId == currentOrganizationId();
     }
@@ -28,15 +36,37 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if signedIn() && request.auth.uid == userId;
+      allow read: if signedIn() && (
+        request.auth.uid == userId ||
+        (isOwnerOrAdmin() && sameOrganization(resource.data.organizationId))
+      );
+
       allow create: if signedIn()
         && request.auth.uid == userId
         && request.resource.data.organizationId == userId
         && request.resource.data.role == 'owner';
-      allow update: if signedIn()
-        && request.auth.uid == userId
-        && request.resource.data.organizationId == resource.data.organizationId
-        && request.resource.data.role == resource.data.role;
+
+      allow update: if signedIn() && (
+        (
+          request.auth.uid == userId &&
+          (
+            request.resource.data.organizationId == resource.data.organizationId ||
+            (
+              !('organizationId' in resource.data) &&
+              request.resource.data.organizationId == request.auth.uid
+            )
+          ) &&
+          request.resource.data.role == resource.data.role
+        ) ||
+        (
+          request.auth.uid != userId &&
+          isOwnerOrAdmin() &&
+          sameOrganization(resource.data.organizationId) &&
+          request.resource.data.organizationId == resource.data.organizationId &&
+          request.resource.data.role in ['owner', 'admin', 'sales', 'operations', 'finance']
+        )
+      );
+
       allow delete: if false;
     }
 
