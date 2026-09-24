@@ -113,7 +113,7 @@ export default function Payments() {
               <option value="">البوليصة *</option>
               {policies.map((policy) => (
                 <option key={policy.id} value={policy.id}>
-                  {(policy.clientName || 'عميل') + (policy.policyNumber ? \` · #\${policy.policyNumber}\` : '')}
+                  {(policy.clientName || 'عميل') + (policy.policyNumber ? ' · #' + policy.policyNumber : '')}
                 </option>
               ))}
             </select>
