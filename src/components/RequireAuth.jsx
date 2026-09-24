@@ -1,4 +1,4 @@
-import { Link, Outlet } from 'react-router-dom'
+import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 
 export default function RequireAuth() {
@@ -9,7 +9,7 @@ export default function RequireAuth() {
   }
 
   if (!user) {
-    return <Link to="/login" replace />
+    return <Navigate to="/login" replace />
   }
 
   if (!profile?.organizationId) {
