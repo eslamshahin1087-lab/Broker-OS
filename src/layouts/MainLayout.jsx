@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import Logo from '../components/Logo'
 import AppIcon from '../components/AppIcon'
 import { useAuth } from '../services/AuthContext'
@@ -44,12 +44,17 @@ function canSee(item, role, features) {
 export default function MainLayout() {
   const { profile, role, platformAdmin, logout } = useAuth()
   const { features } = usePlatformFeatures()
+  const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const visibleItems = NAV_ITEMS.filter((item) => canSee(item, role, features))
   const quickItems = visibleItems.filter((item) =>
     ['/', '/clients', '/opportunities', '/policies'].includes(item.to)
   ).slice(0, 4)
+
+  const activePage = [...visibleItems]
+    .sort((a, b) => b.to.length - a.to.length)
+    .find((item) => location.pathname === item.to || (!item.end && location.pathname.startsWith(item.to + '/'))) || NAV_ITEMS[0]
 
   const displayName = profile?.displayName || profile?.brokerageName || profile?.email || 'Broker'
   const initials = displayName.trim().slice(0, 1).toUpperCase()
@@ -132,6 +137,19 @@ export default function MainLayout() {
         </header>
 
         <main className="app-content">
+          <div className="mobile-app-header">
+            <div className="mobile-app-header-icon">
+              <AppIcon name={activePage.icon} size={19} stroke={1.9} />
+            </div>
+            <div className="mobile-app-header-copy">
+              <strong>{activePage.label}</strong>
+              <span>{profile?.brokerageName || 'Broker OS'}</span>
+            </div>
+            <div className="mobile-app-header-status">
+              <span className="mobile-online-dot" />
+            </div>
+          </div>
+
           <Outlet />
         </main>
       </div>
@@ -154,7 +172,7 @@ export default function MainLayout() {
           className={'mobile-nav-link' + (mobileMenuOpen ? ' active' : '')}
           onClick={() => setMobileMenuOpen((value) => !value)}
         >
-          <span>☰</span>
+          <span><AppIcon name="dashboard" size={16} /></span>
           <small>المزيد</small>
         </button>
       </nav>
