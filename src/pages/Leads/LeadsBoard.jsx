@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import PageHeader from '../../components/PageHeader'
+import AppIcon from '../../components/AppIcon'
 import { useAuth } from '../../services/AuthContext'
 import { LEAD_STATUSES, listenToLeads, updateLeadStatus } from '../../services/leadService'
 
@@ -44,13 +46,18 @@ const LeadsBoard = () => {
   }
 
   return (
-    <div style={{ padding: '20px', overflowX: 'auto' }}>
-      <h2 style={{ color: 'var(--accent-orange)' }}>مسار العملاء المحتملين</h2>
+    <div className="page-shell">
+      <PageHeader
+        icon="leads"
+        eyebrow="Lead Pipeline"
+        title="العملاء المحتملون"
+        description="تابع مراحل العميل المحتمل وحوّله إلى فرصة وعميل بدون فقدان السياق."
+      />
       {error && <p className="error-text">{error}</p>}
       {loading ? (
         <p style={{ color: 'var(--text-muted)' }}>جارٍ تحميل العملاء المحتملين...</p>
       ) : (
-        <div style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
+        <div className="lead-board">
           {LEAD_STATUSES.map(({ value, label }) => (
             <div key={value} style={{
               minWidth: '250px',
@@ -58,9 +65,13 @@ const LeadsBoard = () => {
               borderRadius: '8px',
               padding: '10px'
             }}>
-              <h4 style={{ borderBottom: '1px solid #333', paddingBottom: '5px' }}>
-                {label}
-              </h4>
+              <div className="lead-column-head">
+                <span className="lead-column-icon"><AppIcon name="leads" size={14} /></span>
+                <div>
+                  <strong>{label}</strong>
+                  <small>{leads.filter((lead) => lead.status === value).length} سجل</small>
+                </div>
+              </div>
               {leads.filter((lead) => lead.status === value).map((lead) => (
                 <div key={lead.id} style={{
                   background: '#1A2A4A',
@@ -69,11 +80,14 @@ const LeadsBoard = () => {
                   marginBottom: '10px',
                   borderLeft: '3px solid var(--primary-blue)'
                 }}>
-                  <p style={{ fontWeight: 'bold' }}>{lead.name || 'عميل محتمل'}</p>
+                  <div className="lead-card-title">
+                    <AppIcon name="user" size={14} />
+                    <strong>{lead.name || 'عميل محتمل'}</strong>
+                  </div>
                   <select
                     value={lead.status}
                     onChange={(e) => handleStatusChange(lead.id, e.target.value)}
-                    style={{ width: '100%', marginTop: '5px', background: 'var(--bg-dark)', color: '#fff', border: '1px solid #333' }}
+                    className="status-select lead-status-select"
                   >
                     {LEAD_STATUSES.map((status) => (
                       <option key={status.value} value={status.value}>{status.label}</option>
