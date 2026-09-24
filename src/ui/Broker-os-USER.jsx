@@ -277,6 +277,34 @@ export function BrokerOSPageHeader({ icon='dashboard', eyebrow='Broker OS', titl
   )
 }
 
+const navItems = [
+  { to: '/', label: 'الرئيسية', end: true, feature: 'dashboard', icon: 'dashboard', group: 'workspace', priority: 1 },
+  { to: '/clients', label: 'العملاء', feature: 'clients', icon: 'clients', group: 'workspace', priority: 2 },
+  { to: '/leads', label: 'Leads', feature: 'leads', icon: 'leads', group: 'workspace' },
+  { to: '/opportunities', label: 'الفرص', feature: 'opportunities', icon: 'opportunities', group: 'workspace', priority: 3 },
+  { to: '/quotes', label: 'عروض الأسعار', feature: 'quotes', icon: 'quotes', group: 'commercial', priority: 5 },
+  { to: '/policies', label: 'البوالص', feature: 'policies', icon: 'policies', group: 'commercial' },
+  { to: '/insurers', label: 'شركات التأمين', feature: 'insurers', icon: 'insurers', group: 'commercial' },
+  { to: '/products', label: 'المنتجات', feature: 'products', icon: 'products', group: 'commercial' },
+  { to: '/renewals', label: 'التجديدات', feature: 'renewals', icon: 'renewals', group: 'operations' },
+  { to: '/claims', label: 'المطالبات', feature: 'claims', icon: 'claims', group: 'operations' },
+  { to: '/documents', label: 'المستندات', feature: 'documents', icon: 'documents', group: 'operations' },
+  { to: '/activities', label: 'المهام والمتابعات', feature: 'activities', icon: 'activities', group: 'operations' },
+  { to: '/medical-analysis', label: 'تحليل الاستهلاكات', feature: 'medicalAI', icon: 'medical', group: 'operations', priority: 4, highlight: true },
+  { to: '/payments', label: 'المدفوعات', feature: 'payments', icon: 'payments', group: 'finance' },
+  { to: '/finance', label: 'المالية', feature: 'finance', icon: 'finance', group: 'finance' },
+  { to: '/team', label: 'الفريق', feature: 'team', icon: 'team', group: 'management' },
+  { to: '/audit', label: 'التدقيق', feature: 'audit', icon: 'audit', group: 'management' },
+]
+
+const groups = [
+  { key: 'workspace', label: 'مساحة العمل' },
+  { key: 'commercial', label: 'التجاري' },
+  { key: 'operations', label: 'التشغيل' },
+  { key: 'finance', label: 'المالية' },
+  { key: 'management', label: 'الإدارة' },
+]
+
 function canSee(item, role, features) {
   if (item.feature && features[item.feature] === false) return false
   if (item.to === '/team' || item.to === '/audit') return canManageTeam(role)
