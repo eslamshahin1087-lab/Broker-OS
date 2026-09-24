@@ -10,14 +10,25 @@ import { auth, db } from './firebase'
 
 const AuthContext = createContext(null)
 
-// بينشئ مستند users/{uid} لو مش موجود (broker مستقل بمنظمته الخاصة)
 async function ensureProfile(firebaseUser) {
   const ref = doc(db, 'users', firebaseUser.uid)
   const snap = await getDoc(ref)
-  if (snap.exists()) return snap.data()
+
+  if (snap.exists()) {
+    const data = snap.data()
+    if (data.organizationId && data.role) return data
+
+    const patch = {
+      organizationId: data.organizationId || firebaseUser.uid,
+      role: data.role || 'owner',
+      updatedAt: serverTimestamp(),
+    }
+    await setDoc(ref, patch, { merge: true })
+    return { ...data, ...patch }
+  }
 
   const profileData = {
-    email: firebaseUser.email,
+    email: firebaseUser.email || '',
     organizationId: firebaseUser.uid,
     role: 'owner',
     createdAt: serverTimestamp(),
@@ -32,21 +43,26 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (u) => {
-      setUser(u)
-      if (u) {
-        try {
-          const profileData = await ensureProfile(u)
-          setProfile(profileData)
-        } catch (err) {
-          console.error('تعذر تحميل/إنشاء ملف تعريف المستخدم', err)
-          setProfile(null)
-        }
-      } else {
+    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+      setUser(firebaseUser)
+
+      if (!firebaseUser) {
         setProfile(null)
+        setLoading(false)
+        return
       }
-      setLoading(false)
+
+      try {
+        const profileData = await ensureProfile(firebaseUser)
+        setProfile(profileData)
+      } catch (err) {
+        console.error('تعذر تحميل/إنشاء ملف تعريف المستخدم', err)
+        setProfile(null)
+      } finally {
+        setLoading(false)
+      }
     })
+
     return unsub
   }, [])
 
@@ -60,6 +76,7 @@ export function AuthProvider({ children }) {
         user,
         profile,
         organizationId: profile?.organizationId ?? null,
+        role: profile?.role ?? null,
         loading,
         login,
         register,
