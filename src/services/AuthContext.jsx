@@ -110,6 +110,7 @@ export function AuthProvider({ children }) {
       teamSize: registration.teamSize,
       specializations: registration.specializations || [],
       organizationId: credential.user.uid,
+      ownerId: credential.user.uid,
       role: 'owner',
       status: 'active',
       profileCompleted: true,
