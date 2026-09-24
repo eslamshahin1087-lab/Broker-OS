@@ -1,3 +1,5 @@
+import AppIcon from '../components/AppIcon'
+import PageHeader from '../components/PageHeader'
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
@@ -121,11 +123,17 @@ export default function Activities() {
 
   return (
     <div className='page-shell'>
-      <section className='hero'>
+      <PageHeader
+        icon="activities"
+        eyebrow="Activity Center"
+        title="المهام والمتابعات"
+        description="مركز واحد للمكالمات والمتابعات والاجتماعات والمهام المرتبطة بدورة العميل."
+        action={null}
+      />
+      <section className='hero activity-filter-bar'>
         <div>
-          <span className='eyebrow'>Activity Center</span>
-          <h1>المهام والمتابعات</h1>
-          <p>مركز واحد للمكالمات والمتابعات والاجتماعات والمهام المرتبطة بدورة العميل.</p>
+          <span className='eyebrow'>Queue</span>
+          <h2>طابور التنفيذ</h2>
         </div>
         <div className='hero-actions'>
           <select className='status-select' value={filter} onChange={(event) => setFilter(event.target.value)}>
