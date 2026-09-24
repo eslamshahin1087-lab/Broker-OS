@@ -21,16 +21,40 @@ function authErrorMessage(code, mode) {
     : 'تعذر إنشاء الحساب. تحقق من البيانات وحاول مرة أخرى.')
 }
 
+const initialRegistration = {
+  fullName: '',
+  phone: '',
+  jobTitle: '',
+  brokerageName: '',
+  brokerageType: 'broker',
+  city: '',
+  licenseNumber: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+}
+
 export default function Login() {
   const { login, register } = useAuth()
   const navigate = useNavigate()
   const [mode, setMode] = useState('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [registration, setRegistration] = useState(initialRegistration)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [resetting, setResetting] = useState(false)
+
+  const updateRegistration = (field, value) => {
+    setRegistration((current) => ({ ...current, [field]: value }))
+  }
+
+  const switchMode = (nextMode) => {
+    setMode(nextMode)
+    setError('')
+    setNotice('')
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -39,8 +63,40 @@ export default function Login() {
     setSubmitting(true)
 
     try {
-      if (mode === 'login') await login(email.trim(), password)
-      else await register(email.trim(), password)
+      if (mode === 'login') {
+        await login(email.trim(), password)
+      } else {
+        const requiredFields = [
+          ['fullName', 'الاسم بالكامل'],
+          ['phone', 'رقم الموبايل'],
+          ['jobTitle', 'المسمى الوظيفي'],
+          ['brokerageName', 'اسم شركة/مكتب الوساطة'],
+          ['city', 'المدينة'],
+          ['email', 'البريد الإلكتروني'],
+        ]
+
+        const missing = requiredFields.find(([key]) => !registration[key].trim())
+        if (missing) {
+          setError(`من فضلك أكمل حقل ${missing[1]}.`)
+          setSubmitting(false)
+          return
+        }
+
+        if (registration.password.length < 6) {
+          setError('كلمة المرور يجب أن تكون 6 أحرف على الأقل.')
+          setSubmitting(false)
+          return
+        }
+
+        if (registration.password !== registration.confirmPassword) {
+          setError('تأكيد كلمة المرور غير مطابق.')
+          setSubmitting(false)
+          return
+        }
+
+        await register(registration)
+      }
+
       navigate('/', { replace: true })
     } catch (err) {
       console.error(err)
@@ -72,79 +128,193 @@ export default function Login() {
   }
 
   return (
-    <div style={{ maxWidth: 420, margin: '70px auto', padding: '0 16px' }} dir="rtl">
-      <div style={{ textAlign: 'center', marginBottom: 24 }}>
-        <div style={{ fontSize: 34, marginBottom: 4 }}>◈</div>
-        <h2 style={{ marginBottom: 4 }}>Broker OS</h2>
-        <p style={{ color: 'var(--color-text-muted)', fontSize: 13, margin: 0 }}>
-          {mode === 'login' ? 'مركز تشغيل أعمال وسيط التأمين' : 'إنشاء حساب Broker OS'}
-        </p>
+    <div className="auth-page" dir="rtl">
+      <div className="auth-brand">
+        <div className="auth-brand-mark">◆</div>
+        <div>
+          <strong>Broker OS</strong>
+          <span>Insurance Operating System</span>
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="card">
-        <input
-          type="email"
-          placeholder="البريد الإلكتروني"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="field"
-          autoComplete="email"
-          required
-        />
+      <div className={'auth-layout' + (mode === 'register' ? ' register-mode' : '')}>
+        <section className="auth-intro">
+          <span className="eyebrow">Broker OS</span>
+          <h1>{mode === 'login' ? 'إدارة أعمال الوساطة من مكان واحد.' : 'أنشئ مساحة العمل الخاصة بك.'}</h1>
+          <p>
+            {mode === 'login'
+              ? 'تسجيل العملاء، إدارة الفرص، عروض الأسعار، البوالص، المطالبات والمدفوعات في تدفق واحد.'
+              : 'سجّل بياناتك المهنية مرة واحدة لنجهّز حسابك ومساحة العمل الأساسية تلقائيًا.'}
+          </p>
 
-        <input
-          type="password"
-          placeholder="كلمة المرور"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="field"
-          autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-          minLength={6}
-          required
-        />
+          <div className="auth-benefits">
+            <div><span>01</span><strong>CRM موحد</strong><small>رحلة العميل من Lead حتى الوثيقة.</small></div>
+            <div><span>02</span><strong>ربط ذكي</strong><small>كل فرصة وعرض وبوليصة مرتبطة بسجلها.</small></div>
+            <div><span>03</span><strong>رؤية تشغيلية</strong><small>مهام وتنبيهات مبنية على البيانات الفعلية.</small></div>
+          </div>
+        </section>
 
-        {error && <p className="error-text">{error}</p>}
-        {notice && <p style={{ color: 'var(--success)', fontSize: 13 }}>{notice}</p>}
+        <form onSubmit={handleSubmit} className="card auth-card">
+          <div className="auth-card-head">
+            <div>
+              <span className="eyebrow">{mode === 'login' ? 'Sign in' : 'Get started'}</span>
+              <h2>{mode === 'login' ? 'تسجيل الدخول' : 'إنشاء حساب جديد'}</h2>
+            </div>
+            <span className="auth-free-badge">Free</span>
+          </div>
 
-        <button type="submit" disabled={submitting} className="btn btn-primary btn-block">
-          {submitting ? '...جارٍ التنفيذ' : mode === 'login' ? 'تسجيل الدخول' : 'إنشاء الحساب'}
-        </button>
+          {mode === 'register' ? (
+            <>
+              <div className="auth-section-title">البيانات الشخصية</div>
+              <div className="auth-form-grid">
+                <input
+                  className="field"
+                  placeholder="الاسم بالكامل *"
+                  value={registration.fullName}
+                  onChange={(e) => updateRegistration('fullName', e.target.value)}
+                  autoComplete="name"
+                  required
+                />
+                <input
+                  className="field"
+                  placeholder="رقم الموبايل *"
+                  value={registration.phone}
+                  onChange={(e) => updateRegistration('phone', e.target.value)}
+                  autoComplete="tel"
+                  inputMode="tel"
+                  required
+                />
+                <input
+                  className="field"
+                  placeholder="المسمى الوظيفي *"
+                  value={registration.jobTitle}
+                  onChange={(e) => updateRegistration('jobTitle', e.target.value)}
+                  required
+                />
+                <input
+                  className="field"
+                  placeholder="المدينة *"
+                  value={registration.city}
+                  onChange={(e) => updateRegistration('city', e.target.value)}
+                  required
+                />
+              </div>
 
-        {mode === 'login' && (
-          <button
-            type="button"
-            onClick={handleReset}
-            disabled={resetting}
-            className="btn"
-            style={{ width: '100%', marginTop: 8, background: 'transparent', color: 'var(--primary-blue-2)' }}
-          >
-            {resetting ? '...جارٍ الإرسال' : 'نسيت كلمة المرور؟'}
+              <div className="auth-section-title">بيانات الوساطة</div>
+              <div className="auth-form-grid">
+                <input
+                  className="field"
+                  placeholder="اسم شركة/مكتب الوساطة *"
+                  value={registration.brokerageName}
+                  onChange={(e) => updateRegistration('brokerageName', e.target.value)}
+                  required
+                />
+                <select
+                  className="field"
+                  value={registration.brokerageType}
+                  onChange={(e) => updateRegistration('brokerageType', e.target.value)}
+                >
+                  <option value="broker">وسيط تأمين</option>
+                  <option value="corporate_broker">شركة وساطة</option>
+                  <option value="agency">مكتب/وكالة</option>
+                  <option value="individual">نشاط فردي</option>
+                </select>
+                <input
+                  className="field auth-span-2"
+                  placeholder="رقم الترخيص (اختياري)"
+                  value={registration.licenseNumber}
+                  onChange={(e) => updateRegistration('licenseNumber', e.target.value)}
+                />
+              </div>
+
+              <div className="auth-section-title">بيانات الدخول</div>
+              <div className="auth-form-grid">
+                <input
+                  type="email"
+                  className="field auth-span-2"
+                  placeholder="البريد الإلكتروني *"
+                  value={registration.email}
+                  onChange={(e) => updateRegistration('email', e.target.value)}
+                  autoComplete="email"
+                  required
+                />
+                <input
+                  type="password"
+                  className="field"
+                  placeholder="كلمة المرور *"
+                  value={registration.password}
+                  onChange={(e) => updateRegistration('password', e.target.value)}
+                  autoComplete="new-password"
+                  minLength={6}
+                  required
+                />
+                <input
+                  type="password"
+                  className="field"
+                  placeholder="تأكيد كلمة المرور *"
+                  value={registration.confirmPassword}
+                  onChange={(e) => updateRegistration('confirmPassword', e.target.value)}
+                  autoComplete="new-password"
+                  minLength={6}
+                  required
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <input
+                type="email"
+                placeholder="البريد الإلكتروني"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="field"
+                autoComplete="email"
+                required
+              />
+              <input
+                type="password"
+                placeholder="كلمة المرور"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="field"
+                autoComplete="current-password"
+                minLength={6}
+                required
+              />
+            </>
+          )}
+
+          {error && <p className="error-text">{error}</p>}
+          {notice && <p className="auth-success">{notice}</p>}
+
+          <button type="submit" disabled={submitting} className="btn btn-primary btn-block auth-submit">
+            {submitting ? '...جارٍ التنفيذ' : mode === 'login' ? 'تسجيل الدخول' : 'إنشاء مساحة العمل'}
           </button>
-        )}
-      </form>
 
-      <p style={{ textAlign: 'center', marginTop: 16, fontSize: 14, color: 'var(--text-muted)' }}>
+          {mode === 'login' && (
+            <button
+              type="button"
+              onClick={handleReset}
+              disabled={resetting}
+              className="btn"
+              style={{ width: '100%', marginTop: 8, background: 'transparent', color: 'var(--primary-blue-2)' }}
+            >
+              {resetting ? '...جارٍ الإرسال' : 'نسيت كلمة المرور؟'}
+            </button>
+          )}
+        </form>
+      </div>
+
+      <p className="auth-switch">
         {mode === 'login' ? (
           <>
             مفيش حساب؟{' '}
-            <button
-              onClick={() => { setMode('register'); setError(''); setNotice('') }}
-              className="btn-ghost"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 700, color: 'var(--primary-blue-2)' }}
-            >
-              إنشاء حساب جديد
-            </button>
+            <button type="button" onClick={() => switchMode('register')}>إنشاء حساب جديد</button>
           </>
         ) : (
           <>
             عندك حساب بالفعل؟{' '}
-            <button
-              onClick={() => { setMode('login'); setError(''); setNotice('') }}
-              className="btn-ghost"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 700, color: 'var(--primary-blue-2)' }}
-            >
-              تسجيل الدخول
-            </button>
+            <button type="button" onClick={() => switchMode('login')}>تسجيل الدخول</button>
           </>
         )}
       </p>
