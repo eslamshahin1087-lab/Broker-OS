@@ -1,37 +1,40 @@
-/* ═══════════════════════════════════════════════════
-   useClients — Hook لمتابعة قائمة العملاء
-   ═══════════════════════════════════════════════════ */
-
-import { useEffect, useState } from 'react';
-import { subscribeToClients } from '../services/clients';
+import { useEffect, useState } from 'react'
+import { subscribeToClients } from '../services/clients'
 
 export function useClients(orgId, options = {}) {
-  const [clients, setClients] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [clients, setClients] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (!orgId) {
-      setClients([]);
-      setLoading(false);
-      return;
+      setClients([])
+      setLoading(false)
+      setError(null)
+      return
     }
 
-    setLoading(true);
-    setError(null);
+    setLoading(true)
+    setError(null)
 
     const unsubscribe = subscribeToClients(
       orgId,
       (data) => {
-        setClients(data);
-        setLoading(false);
+        setClients(data)
+        setLoading(false)
       },
-      options
-    );
+      {
+        ...options,
+        onError: (err) => {
+          console.error('useClients error:', err)
+          setError(err)
+          setLoading(false)
+        },
+      }
+    )
 
-    return () => unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orgId, options.status]);
+    return () => unsubscribe()
+  }, [orgId, options.status])
 
-  return { clients, loading, error };
+  return { clients, loading, error }
 }
