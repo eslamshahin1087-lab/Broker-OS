@@ -1,3 +1,5 @@
+import AppIcon from '../components/AppIcon'
+import PageHeader from '../components/PageHeader'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../services/AuthContext'
 import { addClient, deleteClient, listenToClients } from '../services/clients'
@@ -67,12 +69,18 @@ export default function Clients() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2>العملاء</h2>
-        <button onClick={() => setShowForm((s) => !s)} className="btn btn-primary">
-          {showForm ? 'إلغاء' : '+ عميل جديد'}
-        </button>
-      </div>
+      <PageHeader
+        icon="clients"
+        eyebrow="Client 360"
+        title="العملاء"
+        description="ملف العميل، البوالص، المتابعة والعلاقة التجارية في مكان واحد."
+        action={
+          <button onClick={() => setShowForm((s) => !s)} className="btn btn-primary">
+            <AppIcon name={showForm ? 'close' : 'plus'} size={14} />
+            {showForm ? 'إلغاء' : 'عميل جديد'}
+          </button>
+        }
+      />
 
       {error && <p className="error-text">{error}</p>}
 
