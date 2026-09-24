@@ -93,6 +93,7 @@ export default function Login({ initialMode = 'login' }) {
     setStep(1)
     setError('')
     setNotice('')
+    navigate(nextMode === 'register' ? '/register' : '/login', { replace: true })
   }
 
   const validateStep = (currentStep) => {
