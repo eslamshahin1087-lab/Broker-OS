@@ -138,16 +138,24 @@ export default function MainLayout() {
 
         <main className="app-content">
           <div className="mobile-app-header">
-            <div className="mobile-app-header-icon">
-              <AppIcon name={activePage.icon} size={19} stroke={1.9} />
+            <div className="mobile-app-brand">
+              <Logo width={68} />
+              <div className="mobile-app-brand-copy">
+                <strong>{profile?.brokerageName || 'Broker OS'}</strong>
+                <span>Broker OS</span>
+              </div>
             </div>
-            <div className="mobile-app-header-copy">
-              <strong>{activePage.label}</strong>
-              <span>{profile?.brokerageName || 'Broker OS'}</span>
+            <div className="mobile-app-page">
+              <div className="mobile-app-header-icon">
+                <AppIcon name={activePage.icon} size={19} stroke={1.9} />
+              </div>
+              <div className="mobile-app-header-copy">
+                <strong>{activePage.label}</strong>
+              </div>
             </div>
-            <div className="mobile-app-header-status">
-              <span className="mobile-online-dot" />
-            </div>
+            <button type="button" className="mobile-app-avatar" onClick={() => setMobileMenuOpen(true)} aria-label="فتح قائمة الحساب">
+              {initials}
+            </button>
           </div>
 
           <Outlet />
