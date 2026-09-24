@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import MainLayout from './layouts/MainLayout'
 import RequireAuth from './components/RequireAuth'
-import ClientsList from './pages/Clients/ClientsList'
+import Clients from './pages/Clients.jsx'
 import LeadsBoard from './pages/Leads/LeadsBoard'
 import Home from './pages/Home'
 import Finance from './pages/Finance'
@@ -17,7 +17,7 @@ function App() {
         <Route element={<RequireAuth />}>
           <Route element={<MainLayout />}>
             <Route path="/" element={<Home />} />
-            <Route path="/clients" element={<ClientsList />} />
+            <Route path="/clients" element={<Clients />} />
             <Route path="/leads" element={<LeadsBoard />} />
             <Route path="/opportunities" element={<Opportunities />} />
             <Route path="/policies" element={<Policies />} />
