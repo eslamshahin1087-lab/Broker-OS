@@ -49,6 +49,9 @@ export default function MainLayout() {
     ['/', '/clients', '/opportunities', '/policies'].includes(item.to)
   ).slice(0, 4)
 
+  const displayName = profile?.displayName || profile?.brokerageName || profile?.email || 'Broker'
+  const initials = displayName.trim().slice(0, 1).toUpperCase()
+
   return (
     <div className="app-shell" dir="rtl">
       <aside className="app-sidebar">
@@ -58,12 +61,10 @@ export default function MainLayout() {
         </div>
 
         <div className="sidebar-user">
-          <div className="sidebar-avatar">
-            {(profile?.email || 'B').slice(0, 1).toUpperCase()}
-          </div>
+          <div className="sidebar-avatar">{initials}</div>
           <div>
-            <strong>{profile?.email || 'Broker'}</strong>
-            <span>{role || 'owner'}</span>
+            <strong>{displayName}</strong>
+            <span>{profile?.jobTitle || role || 'owner'}</span>
           </div>
         </div>
 
@@ -110,7 +111,7 @@ export default function MainLayout() {
           <div className="topbar-brand">
             <Logo width={86} />
             <div>
-              <strong>Broker OS</strong>
+              <strong>{profile?.brokerageName || 'Broker OS'}</strong>
               <span>Insurance Operating System</span>
             </div>
           </div>
