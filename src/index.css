@@ -1481,3 +1481,100 @@ a { color: inherit; }
     padding: 17px;
   }
 }
+
+
+.client-360-panel {
+  margin-top: 14px;
+}
+
+.client-360-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.client-360-card {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background:
+    linear-gradient(145deg, rgba(47, 128, 237, 0.06), rgba(255, 255, 255, 0.018)),
+    rgba(255, 255, 255, 0.015);
+}
+
+.client-360-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.client-360-head > div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.client-360-head strong {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.client-360-head span:not(.client-360-tag) {
+  color: var(--text-muted);
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+
+.client-360-tag {
+  flex: 0 0 auto;
+  color: var(--primary-blue-2);
+  border: 1px solid rgba(47, 128, 237, 0.24);
+  background: rgba(47, 128, 237, 0.08);
+  border-radius: 999px;
+  padding: 5px 7px;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.client-360-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.client-360-stats span {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.client-360-stats small {
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+.client-360-stats b {
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 900px) {
+  .client-360-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .client-360-grid {
+    grid-template-columns: 1fr;
+  }
+}
