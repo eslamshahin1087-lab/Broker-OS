@@ -23,8 +23,8 @@ export function daysUntil(value, today = new Date()) {
   return Math.round((target.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
 }
 
-function action(id, priority, title, description, link, entity = '') {
-  return { id, priority, title, description, link, entity }
+function action(id, priority, title, description, link, entity = '', entityId = '') {
+  return { id, priority, title, description, link, entity, entityId }
 }
 
 export function getNextBestActions({
@@ -45,7 +45,8 @@ export function getNextBestActions({
         'أكمل ربط الـLead بعميل',
         lead.name || 'يوجد Lead مؤهل بدون عميل مرتبط.',
         '/leads',
-        'lead'
+        'lead',
+        lead.id
       ))
     }
   })
@@ -58,7 +59,8 @@ export function getNextBestActions({
         'أكمل بيانات الفرصة',
         opportunity.name || opportunity.clientName || 'الفرصة تحتاج ربطًا بعميل.',
         '/opportunities',
-        'opportunity'
+        'opportunity',
+        opportunity.id
       ))
       return
     }
@@ -83,7 +85,8 @@ export function getNextBestActions({
         'أكمل ربط عرض السعر',
         'عرض السعر غير مرتبط بعميل.',
         '/quotes',
-        'quote'
+        'quote',
+        quote.id
       ))
       return
     }
@@ -108,7 +111,8 @@ export function getNextBestActions({
         'أكمل ربط البوليصة',
         policy.policyNumber ? `بوليصة #${policy.policyNumber} بدون عميل مرتبط.` : 'بوليصة بدون عميل مرتبط.',
         '/policies',
-        'policy'
+        'policy',
+        policy.id
       ))
       return
     }
@@ -121,7 +125,8 @@ export function getNextBestActions({
         'تجديد متأخر',
         `${policy.clientName || 'عميل'} · البوليصة تجاوزت تاريخ التجديد.`,
         '/renewals',
-        'policy'
+        'policy',
+        policy.id
       ))
     } else if (daysLeft !== null && daysLeft <= 30) {
       actions.push(action(
@@ -143,7 +148,8 @@ export function getNextBestActions({
         'اربط المطالبة بالبوليصة',
         claim.clientName || 'المطالبة لا تحتوي على مرجع للبوليصة.',
         '/claims',
-        'claim'
+        'claim',
+        claim.id
       ))
       return
     }
@@ -168,7 +174,8 @@ export function getNextBestActions({
         'اربط المدفوعات بالبوليصة',
         payment.clientName || 'دفعة غير مرتبطة ببوليصة.',
         '/payments',
-        'payment'
+        'payment',
+        payment.id
       ))
       return
     }
