@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import MainLayout from './layouts/MainLayout'
 import RequireAuth from './components/RequireAuth'
+import RequirePlatformAdmin from './components/RequirePlatformAdmin'
 import Clients from './pages/Clients.jsx'
 import LeadsBoard from './pages/Leads/LeadsBoard'
 import Home from './pages/Home'
@@ -16,6 +17,7 @@ import Claims from './pages/Claims'
 import Payments from './pages/Payments'
 import AuditLogs from './pages/AuditLogs'
 import Documents from './pages/Documents'
+import PlatformAdmin from './pages/PlatformAdmin'
 import Login from './pages/Login'
 
 function App() {
@@ -24,6 +26,9 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route element={<RequireAuth />}>
+          <Route path="/platform-admin" element={<RequirePlatformAdmin />}>
+            <Route index element={<PlatformAdmin />} />
+          </Route>
           <Route element={<MainLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/clients" element={<Clients />} />
