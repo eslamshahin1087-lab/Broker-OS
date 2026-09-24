@@ -8,6 +8,9 @@ import Finance from './pages/Finance'
 import Opportunities from './pages/Opportunities'
 import Policies from './pages/Policies'
 import Team from './pages/Team'
+import Insurers from './pages/Insurers'
+import Products from './pages/Products'
+import Quotes from './pages/Quotes'
 import Login from './pages/Login'
 
 function App() {
@@ -24,6 +27,9 @@ function App() {
             <Route path="/policies" element={<Policies />} />
             <Route path="/finance" element={<Finance />} />
             <Route path="/team" element={<Team />} />
+            <Route path="/insurers" element={<Insurers />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/quotes" element={<Quotes />} />
           </Route>
         </Route>
       </Routes>
