@@ -1,3 +1,5 @@
+import AppIcon from '../components/AppIcon'
+import PageHeader from '../components/PageHeader'
 import { useEffect, useMemo, useState } from 'react'
 import {
   Bar,
@@ -83,8 +85,13 @@ export default function Finance() {
   }
 
   return (
-    <div>
-      <h2>المالية</h2>
+    <div className="page-shell">
+      <PageHeader
+        icon="finance"
+        eyebrow="Financial Intelligence"
+        title="المالية"
+        description="صورة مالية للمحفظة والعمولات والأقساط وتوزيع النشاط."
+      />
 
       <div className="stat-grid" style={{ marginBottom: 20 }}>
         <div className="stat-card">
