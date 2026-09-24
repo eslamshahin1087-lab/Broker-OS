@@ -191,9 +191,11 @@ export default function Home() {
             <section className="dashboard-grid insight-grid">
             <div className="card smart-panel">
               <div className="section-head">
-                <div>
-                  <span className="eyebrow">Next Best Action</span>
-                  <h2>ماذا يجب أن أفعل الآن؟</h2>
+                <div className="section-head-title">
+                  <span className="section-head-icon"><AppIcon name="spark" size={16} /></span>
+                  <div>
+                    <span className="eyebrow">Next Best Action</span>
+                    <h2>ماذا يجب أن أفعل الآن؟</h2>
                   </div>
                 </div>
                 <span className="mini-kpi">{intelligence.actions.length} خطوة</span>
