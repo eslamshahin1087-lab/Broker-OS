@@ -85,6 +85,33 @@ npm run build
 
 A GitHub Actions workflow is included at `.github/workflows/ci.yml` to run dependency installation and the production build on pushes to the main/foundation branches and pull requests.
 
+## Platform Admin
+
+Platform administration is separate from the per-organization `admin` role.
+
+- `/platform-admin` is available only to users listed in `platformAdmins/{uid}`.
+- Platform Admin can review all users, suspend/activate accounts, change roles, inspect organization summaries, manage global feature flags, update platform settings, and review platform audit logs.
+- Feature flags control both the navigation and route access for wired application modules.
+- Adding a feature flag does not create new application code automatically; a new module must first be wired to that flag.
+
+### Bootstrap the first Platform Admin
+
+The `platformAdmins` collection is intentionally **not writable from the application**.
+
+After deploying the new Firestore Rules, open:
+
+`Firebase Console → Firestore Database → Data → platformAdmins`
+
+Create a document whose ID is the Firebase Auth **UID** of the account that should own the platform.
+
+The document can contain a simple field such as:
+
+```
+enabled: true
+```
+
+Then sign out and sign in again in Broker OS. The **إدارة المنصة** button and `/platform-admin` route will become available.
+
 ## Firebase deploy
 
 The repository now pins Firebase project `broker-os-7df4b` through `.firebaserc`.
