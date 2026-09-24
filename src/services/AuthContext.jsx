@@ -41,6 +41,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [platformAdmin, setPlatformAdmin] = useState(false)
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -48,6 +49,7 @@ export function AuthProvider({ children }) {
 
       if (!firebaseUser) {
         setProfile(null)
+        setPlatformAdmin(false)
         setLoading(false)
         return
       }
@@ -55,9 +57,12 @@ export function AuthProvider({ children }) {
       try {
         const profileData = await ensureProfile(firebaseUser)
         setProfile(profileData)
+        const platformAdminSnap = await getDoc(doc(db, 'platformAdmins', firebaseUser.uid))
+        setPlatformAdmin(platformAdminSnap.exists())
       } catch (err) {
         console.error('تعذر تحميل/إنشاء ملف تعريف المستخدم', err)
         setProfile(null)
+        setPlatformAdmin(false)
       } finally {
         setLoading(false)
       }
@@ -77,6 +82,7 @@ export function AuthProvider({ children }) {
         profile,
         organizationId: profile?.organizationId ?? null,
         role: profile?.role ?? null,
+        platformAdmin,
         loading,
         login,
         register,
