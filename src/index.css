@@ -3138,3 +3138,101 @@ body {
     flex-basis: 32px;
   }
 }
+
+
+/* Navigation identity refinement */
+.mobile-nav {
+  direction: rtl;
+  align-items: stretch;
+  grid-auto-flow: row;
+}
+
+.mobile-nav-link {
+  position: relative;
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 4px 5px;
+  border: 1px solid transparent;
+}
+
+.mobile-nav-link .mobile-nav-icon {
+  width: 34px;
+  height: 30px;
+  flex: 0 0 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: currentColor;
+  background: transparent;
+  transition: background .18s ease, color .18s ease, transform .18s ease;
+}
+
+.mobile-nav-link small {
+  display: block;
+  width: 100%;
+  text-align: center;
+  line-height: 1;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.mobile-nav-link.active {
+  color: #f8fbff;
+  background: rgba(59,130,246,.08);
+  border-color: rgba(96,165,250,.10);
+}
+
+.mobile-nav-link.active .mobile-nav-icon {
+  color: var(--primary-blue-2);
+  background: linear-gradient(145deg, rgba(59,130,246,.19), rgba(34,211,238,.05));
+  box-shadow: inset 0 0 0 1px rgba(96,165,250,.08);
+}
+
+.mobile-nav-link:not(.active):hover .mobile-nav-icon {
+  color: #dbeafe;
+  background: rgba(255,255,255,.035);
+}
+
+.mobile-nav-link.active::after {
+  content: "";
+  position: absolute;
+  right: 50%;
+  bottom: 2px;
+  width: 16px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary-blue-2), var(--brand-cyan, #22d3ee));
+  transform: translateX(50%);
+  box-shadow: 0 0 12px rgba(59,130,246,.35);
+}
+
+.mobile-nav-link:active .mobile-nav-icon {
+  transform: scale(.95);
+}
+
+@media (max-width: 560px) {
+  .mobile-nav {
+    gap: 2px;
+    padding: 6px;
+    border-radius: 20px;
+  }
+
+  .mobile-nav-link {
+    min-height: 54px;
+    padding-inline: 2px;
+  }
+
+  .mobile-nav-link .mobile-nav-icon {
+    width: 32px;
+    height: 29px;
+  }
+
+  .mobile-nav-link small {
+    font-size: 8px;
+  }
+}
