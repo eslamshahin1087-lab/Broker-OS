@@ -5,6 +5,7 @@ import {
   doc,
   getDoc,
   onSnapshot,
+  runTransaction,
   query,
   serverTimestamp,
   updateDoc,
@@ -88,14 +89,64 @@ export async function updateQuote(quoteId, data) {
   })
 }
 
-export function updateQuoteStatus(quoteId, status) {
+export async function updateQuoteStatus(organizationId, quoteId, status) {
   if (!QUOTE_STATUSES.some((item) => item.value === status)) {
     throw new Error('Invalid quote status')
   }
 
-  return updateDoc(doc(db, 'quotes', quoteId), {
-    status,
-    updatedAt: serverTimestamp(),
+  const quoteRef = doc(db, 'quotes', quoteId)
+
+  return runTransaction(db, async (transaction) => {
+    const quoteSnap = await transaction.get(quoteRef)
+
+    if (!quoteSnap.exists()) throw new Error('Quote not found')
+
+    const quote = quoteSnap.data()
+
+    if (quote.organizationId !== organizationId) {
+      throw new Error('Organization mismatch')
+    }
+
+    if (status === 'accepted' && !quote.policyId) {
+      const policyRef = doc(collection(db, 'policies'))
+      const premium = normalizeMoney(quote.premiumAmount)
+      const rate = normalizeMoney(quote.commissionRate)
+
+      transaction.set(policyRef, {
+        clientId: quote.clientId || '',
+        clientName: quote.clientName || '',
+        type: quote.type || 'other',
+        premiumAmount: premium,
+        commissionRate: rate,
+        commissionAmount: Math.round((premium * rate) / 100),
+        policyNumber: '',
+        renewalDate: '',
+        organizationId,
+        sourceQuoteId: quoteId,
+        opportunityId: quote.opportunityId || '',
+        insurerId: quote.insurerId || '',
+        insurerName: quote.insurerName || '',
+        productId: quote.productId || '',
+        productName: quote.productName || '',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      })
+
+      transaction.update(quoteRef, {
+        status: 'accepted',
+        policyId: policyRef.id,
+        updatedAt: serverTimestamp(),
+      })
+
+      return policyRef.id
+    }
+
+    transaction.update(quoteRef, {
+      status,
+      updatedAt: serverTimestamp(),
+    })
+
+    return quote.policyId || null
   })
 }
 
