@@ -17,7 +17,8 @@ const NAV_ITEMS = [
   { to: '/claims', label: 'المطالبات' },
   { to: '/payments', label: 'المدفوعات' },
   { to: '/team', label: 'الفريق' },
-  { to: '/audit', label: 'التدقيق' },\n  { to: '/documents', label: 'المستندات' },
+  { to: '/audit', label: 'التدقيق' },
+  { to: '/documents', label: 'المستندات' },
 ]
 
 export default function MainLayout() {
