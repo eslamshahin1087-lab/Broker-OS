@@ -18,6 +18,7 @@ import Claims from './pages/Claims'
 import Payments from './pages/Payments'
 import AuditLogs from './pages/AuditLogs'
 import Documents from './pages/Documents'
+import Activities from './pages/Activities'
 import PlatformAdmin from './pages/PlatformAdmin'
 import Organizations from './pages/Organizations'
 import Login from './pages/Login'
@@ -52,6 +53,7 @@ function App() {
             <Route path="/payments" element={<FeatureGate feature="payments"><Payments /></FeatureGate>} />
             <Route path="/audit" element={<FeatureGate feature="audit"><AuditLogs /></FeatureGate>} />
             <Route path="/documents" element={<FeatureGate feature="documents"><Documents /></FeatureGate>} />
+            <Route path="/activities" element={<FeatureGate feature="activities"><Activities /></FeatureGate>} />
             </Route>
           </Route>
         </Route>
