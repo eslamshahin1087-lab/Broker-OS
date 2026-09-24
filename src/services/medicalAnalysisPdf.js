@@ -237,12 +237,16 @@ export async function downloadMedicalAnalysisPdf(report) {
           '<div class="row"><span class="muted">معلق / تحت المراجعة</span><strong>' + report.pendingCount + '</strong></div>' +
           '<div class="row"><span class="muted">مرفوض</span><strong>' + report.rejectedCount + '</strong></div>' +
           '<div class="row"><span class="muted">حد التكلفة المرتفعة</span><strong>' + money(report.highCostThreshold) + '</strong></div>' +
+          '<div class="row"><span class="muted">جودة البيانات</span><strong>' + report.completenessRate + '%</strong></div>' +
+          '<div class="row"><span class="muted">تركيز أعلى 10%</span><strong>' + report.topMemberCostShare + '%</strong></div>' +
         '</div></div>' +
       '</div>' +
       '<div class="section" style="margin-top:14px;"><div class="section-title"><span class="dot"></span>أعلى الفئات</div><div class="card"><div class="list">' +
         listRows(report.topCategories) + '</div></div></div>' +
       '<div class="section"><div class="section-title"><span class="dot"></span>أعلى مقدمي الخدمة</div><div class="card"><div class="list">' +
-        listRows(report.topProviders) + '</div></div></div>',
+        listRows(report.topProviders) + '</div></div></div>' +
+      '<div class="section"><div class="section-title"><span class="dot"></span>اتجاه الإنفاق الشهري</div><div class="card"><div class="list">' +
+        listRows(report.monthlyTrend.slice(-6), (item) => item.month + ' - ' + item.events + ' حركة') + '</div></div></div>',
       logoDataUrl,
       1,
       pageCount
