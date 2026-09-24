@@ -38,6 +38,7 @@ const PATHS = {
   more: 'M5 12h.01M12 12h.01M19 12h.01',
   shield: 'M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z',
   spark: 'M12 3l1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6z',
+  medical: 'M4 12h4l2-6 4 12 2-6h4',
 }
 
 export default function AppIcon({ name, size = 18, stroke = 1.8, className = '' }) {
