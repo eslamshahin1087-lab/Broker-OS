@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { to: '/renewals', label: 'التجديدات', feature: 'renewals', icon: '↻', group: 'operations' },
   { to: '/claims', label: 'المطالبات', feature: 'claims', icon: '△', group: 'operations' },
   { to: '/documents', label: 'المستندات', feature: 'documents', icon: '□', group: 'operations' },
+  { to: '/activities', label: 'المهام والمتابعات', feature: 'activities', icon: '✓', group: 'operations' },
   { to: '/payments', label: 'المدفوعات', feature: 'payments', icon: '₤', group: 'finance' },
   { to: '/finance', label: 'المالية', feature: 'finance', icon: '◫', group: 'finance' },
   { to: '/team', label: 'الفريق', feature: 'team', icon: '♙', group: 'management' },
