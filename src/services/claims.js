@@ -1,14 +1,10 @@
 import {
-  addDoc,
   collection,
-  deleteDoc,
   doc,
-  getDoc,
   onSnapshot,
   query,
   runTransaction,
   serverTimestamp,
-  updateDoc,
   where,
 } from 'firebase/firestore'
 import { db } from './firebase'
@@ -38,8 +34,14 @@ export function listenToClaims(organizationId, onData, onError) {
   )
 }
 
+function validStatus(status) {
+  return CLAIM_STATUSES.some((item) => item.value === status)
+}
+
 export async function addClaim(organizationId, actorId, data) {
   const claimRef = doc(claimsRef)
+  const amountClaimed = Math.max(0, Number(data.amountClaimed) || 0)
+  const amountApproved = Math.max(0, Number(data.amountApproved) || 0)
 
   return runTransaction(db, async (transaction) => {
     transaction.set(claimRef, {
@@ -49,8 +51,8 @@ export async function addClaim(organizationId, actorId, data) {
       clientName: data.clientName || '',
       type: data.type || 'other',
       incidentDate: data.incidentDate || '',
-      amountClaimed: Math.max(0, Number(data.amountClaimed) || 0),
-      amountApproved: Math.max(0, Number(data.amountApproved) || 0),
+      amountClaimed,
+      amountApproved,
       status: data.status || 'reported',
       insurerId: data.insurerId || '',
       insurerName: data.insurerName || '',
@@ -65,7 +67,7 @@ export async function addClaim(organizationId, actorId, data) {
     createAuditEntry(transaction, organizationId, actorId, 'claim.created', 'claim', claimRef.id, {
       clientId: data.clientId || '',
       policyId: data.policyId || '',
-      amountClaimed: Math.max(0, Number(data.amountClaimed) || 0),
+      amountClaimed,
     })
 
     return claimRef.id
@@ -73,6 +75,10 @@ export async function addClaim(organizationId, actorId, data) {
 }
 
 export async function updateClaim(organizationId, actorId, claimId, data) {
+  if (data.status !== undefined && !validStatus(data.status)) {
+    throw new Error('Invalid claim status')
+  }
+
   const claimRef = doc(db, 'claims', claimId)
 
   return runTransaction(db, async (transaction) => {
@@ -80,10 +86,12 @@ export async function updateClaim(organizationId, actorId, claimId, data) {
     if (!snap.exists()) throw new Error('Claim not found')
     if (snap.data().organizationId !== organizationId) throw new Error('Organization mismatch')
 
-    transaction.update(claimRef, {
-      ...data,
-      updatedAt: serverTimestamp(),
-    })
+    const patch = { ...data, updatedAt: serverTimestamp() }
+    if (data.amountApproved !== undefined) {
+      patch.amountApproved = Math.max(0, Number(data.amountApproved) || 0)
+    }
+
+    transaction.update(claimRef, patch)
 
     createAuditEntry(transaction, organizationId, actorId, 'claim.updated', 'claim', claimId, {
       status: data.status || '',
@@ -91,6 +99,18 @@ export async function updateClaim(organizationId, actorId, claimId, data) {
   })
 }
 
-export function deleteClaim(claimId) {
-  return deleteDoc(doc(db, 'claims', claimId))
+export async function deleteClaim(organizationId, actorId, claimId) {
+  const claimRef = doc(db, 'claims', claimId)
+
+  return runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(claimRef)
+    if (!snap.exists()) throw new Error('Claim not found')
+    if (snap.data().organizationId !== organizationId) throw new Error('Organization mismatch')
+
+    transaction.delete(claimRef)
+    createAuditEntry(transaction, organizationId, actorId, 'claim.deleted', 'claim', claimId, {
+      clientId: snap.data().clientId || '',
+      policyId: snap.data().policyId || '',
+    })
+  })
 }
