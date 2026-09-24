@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { to: '/opportunities', label: 'الفرص' },
   { to: '/policies', label: 'البوالص' },
   { to: '/finance', label: 'المالية' },
+  { to: '/team', label: 'الفريق' },
 ]
 
 export default function MainLayout() {
