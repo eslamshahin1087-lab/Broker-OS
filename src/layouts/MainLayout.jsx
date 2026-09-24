@@ -1,9 +1,8 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { useEffect, useState } from 'react'
 import Logo from '../components/Logo'
 import { useAuth } from '../services/AuthContext'
 import { canManageFinance, canManageOperations, canManageTeam } from '../constants/roles'
-import { listenToPlatformFeatures } from '../services/platformAdmin'
+import { usePlatformFeatures } from '../services/PlatformFeaturesContext'
 
 const NAV_ITEMS = [
   { to: '/', label: 'الرئيسية', end: true, feature: 'dashboard' },
@@ -25,16 +24,7 @@ const NAV_ITEMS = [
 
 export default function MainLayout() {
   const { profile, role, platformAdmin, logout } = useAuth()
-  const [features, setFeatures] = useState({})
-
-  useEffect(() => {
-    const unsub = listenToPlatformFeatures((rows) => {
-      const next = {}
-      rows.forEach((item) => { next[item.key] = item.enabled !== false })
-      setFeatures(next)
-    }, (err) => console.error(err))
-    return unsub
-  }, [])
+  const { features } = usePlatformFeatures()
 
   const navStyle = ({ isActive }) => ({
     color: isActive ? 'var(--primary-blue-2)' : 'var(--text-muted)',
