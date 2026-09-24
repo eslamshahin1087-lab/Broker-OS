@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import FeatureGate from '../components/FeatureGate'
+import AppIcon from '../components/AppIcon'
 import { listenToClients } from '../services/clients'
 import { listenToLeads } from '../services/leadService'
 import { getUpcomingRenewals, listenToPolicies } from '../services/policies'
@@ -164,10 +165,10 @@ export default function Home() {
       ) : (
         <>
           <section className="stat-grid">
-            <MetricCard label="العملاء" value={metrics.clients} hint="إجمالي العملاء" icon="👥" />
-            <MetricCard label="البوالص النشطة" value={metrics.activePolicies} hint="Portfolio" icon="🛡️" />
-            <MetricCard label="إجمالي الأقساط" value={money(metrics.premium)} hint="Gross premium" icon="💰" />
-            <MetricCard label="العمولات" value={money(metrics.commission)} hint="Calculated commission" icon="📈" />
+            <MetricCard label="العملاء" value={metrics.clients} hint="إجمالي العملاء" icon="clients" />
+            <MetricCard label="البوالص النشطة" value={metrics.activePolicies} hint="Portfolio" icon="policies" />
+            <MetricCard label="إجمالي الأقساط" value={money(metrics.premium)} hint="Gross premium" icon="finance" />
+            <MetricCard label="العمولات" value={money(metrics.commission)} hint="Calculated commission" icon="payments" />
           </section>
 
           <FeatureGate feature="workflowIntelligence">
@@ -349,7 +350,7 @@ export default function Home() {
 function MetricCard({ label, value, hint, icon }) {
   return (
     <div className="stat-card">
-      <div className="stat-icon">{icon}</div>
+      <div className="stat-icon"><AppIcon name={icon} size={19} /></div>
       <div className="stat-label">{label}</div>
       <div className="stat-value">{value}</div>
       <div className="stat-hint">{hint}</div>
