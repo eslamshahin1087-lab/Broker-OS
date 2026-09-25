@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Broker OS — واجهة المستخدم</title>
+<title>Broker OS — منصة الوسيط (CRM)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -11,15 +11,13 @@
   --navy:#0B1F3A; --navy2:#12315C; --gold:#C9A227; --gold2:#E4C660;
   --bg:#F3F5F9; --card:#FFFFFF; --text:#1B2430; --muted:#69758A; --line:#E6E9EF;
   --ok:#1F9D55; --warn:#D97706; --bad:#DC2626; --info:#2563EB;
-  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100%}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
 a{text-decoration:none;color:inherit}
 ::-webkit-scrollbar{height:8px;width:8px}::-webkit-scrollbar-thumb{background:#c9cfda;border-radius:8px}
 
-/* Sidebar */
 .side{width:250px;flex:0 0 250px;background:linear-gradient(180deg,var(--navy),var(--navy2));color:#fff;
   padding:22px 16px;position:sticky;top:0;height:100vh;overflow-y:auto}
 .brand{display:flex;align-items:center;gap:10px;padding:0 6px 22px;border-bottom:1px solid rgba(255,255,255,.12);margin-bottom:18px}
@@ -28,15 +26,15 @@ a{text-decoration:none;color:inherit}
 .brand b{font-size:17px;letter-spacing:.3px}
 .brand span{display:block;font-size:11px;color:#b9c3d6}
 .nav-group{font-size:11px;color:#8fa0bd;margin:16px 6px 6px;letter-spacing:.5px}
-.nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:#dde4f0;font-size:14.5px;margin-bottom:2px}
+.nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:#dde4f0;font-size:14.5px;margin-bottom:2px;cursor:pointer}
 .nav a:hover{background:rgba(255,255,255,.08)}
 .nav a.active{background:var(--gold);color:var(--navy);font-weight:700}
 .nav a .ic{width:20px;text-align:center;opacity:.9}
+.nav a .notif-dot{margin-inline-start:auto;width:8px;height:8px;border-radius:50%;background:var(--gold)}
 .admin-link{margin-top:20px;padding:12px;border-radius:12px;background:rgba(255,255,255,.06);border:1px dashed rgba(255,255,255,.25)}
 .admin-link p{margin:0 0 8px;font-size:12.5px;color:#c6cfe0}
 .admin-link a{display:block;text-align:center;background:var(--gold);color:var(--navy);font-weight:700;padding:8px;border-radius:8px;font-size:13.5px}
 
-/* Main */
 .main{flex:1;min-width:0;padding:22px 26px 60px}
 .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:10px}
 .topbar h1{font-size:20px;margin:0}
@@ -53,13 +51,26 @@ a{text-decoration:none;color:inherit}
 .card h2{font-size:15.5px;margin:0 0 14px;display:flex;align-items:center;justify-content:space-between}
 .card h2 span.tag{font-size:11px;background:#EEF2FF;color:var(--info);padding:3px 9px;border-radius:20px;font-weight:700}
 
-/* funnel */
-.funnel{display:flex;gap:8px;flex-wrap:wrap}
-.fstep{flex:1;min-width:120px;background:linear-gradient(180deg,#fff,#F7F9FC);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
-.fstep b{display:block;font-size:20px;color:var(--navy)}
-.fstep span{font-size:12px;color:var(--muted)}
-.fstep .arrow{display:none}
-@media(min-width:760px){.funnel{align-items:center}}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:start;color:var(--muted);font-weight:600;font-size:12px;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:10px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:none}
+.badge{padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:700;display:inline-block}
+.b-new{background:#EEF2FF;color:var(--info)}
+.b-review{background:#FEF3C7;color:var(--warn)}
+.b-approved{background:#DCFCE7;color:var(--ok)}
+.b-rejected{background:#FEE2E2;color:var(--bad)}
+.b-pending{background:#FEF3C7;color:var(--warn)}
+.b-active{background:#DCFCE7;color:var(--ok)}
+.empty{color:var(--muted);font-size:13px;text-align:center;padding:20px}
+
+.btn{background:var(--navy);color:#fff;border:none;padding:9px 14px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit}
+.btn:hover{background:var(--navy2)}
+.btn-sm{padding:5px 10px;font-size:11.5px}
+.btn-gold{background:var(--gold);color:var(--navy)}
+.btn-gold:hover{background:var(--gold2)}
+.btn-ok{background:#DCFCE7;color:var(--ok);border:1px solid #a7e8bf}
+.btn-bad{background:#FEE2E2;color:var(--bad);border:1px solid #f5a7a7}
 
 form.lead{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 form.lead .full{grid-column:1/-1}
@@ -68,18 +79,36 @@ input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);
 input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-offset:1px}
 button.submit{grid-column:1/-1;background:var(--navy);color:#fff;border:none;padding:12px;border-radius:10px;font-weight:700;font-size:14.5px;cursor:pointer;font-family:inherit}
 button.submit:hover{background:var(--navy2)}
-
-table{width:100%;border-collapse:collapse;font-size:13.5px}
-th{text-align:start;color:var(--muted);font-weight:600;font-size:12px;padding:8px 10px;border-bottom:1px solid var(--line)}
-td{padding:10px;border-bottom:1px solid var(--line)}
-tr:last-child td{border-bottom:none}
-.badge{padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:700}
-.b-new{background:#EEF2FF;color:var(--info)}
-.b-review{background:#FEF3C7;color:var(--warn)}
-.b-approved{background:#DCFCE7;color:var(--ok)}
-.b-rejected{background:#FEE2E2;color:var(--bad)}
-.empty{color:var(--muted);font-size:13px;text-align:center;padding:20px}
 .hint{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.7}
+
+.view{display:none}
+.view.active{display:block}
+
+.filters{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.filters input,.filters select{max-width:230px}
+
+/* Funnel */
+.funnel{display:flex;gap:8px;flex-wrap:wrap}
+.fstep{flex:1;min-width:120px;background:linear-gradient(180deg,#fff,#F7F9FC);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+.fstep b{display:block;font-size:20px;color:var(--navy)}
+.fstep span{font-size:12px;color:var(--muted)}
+
+/* Notifications */
+.notif-item{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;background:#F9FAFC}
+.notif-item .info b{display:block;font-size:14px;margin-bottom:4px;color:var(--navy)}
+.notif-item .info p{margin:0 0 4px;color:var(--muted);font-size:12.5px}
+.notif-item .info small{color:#8a94a6;font-size:11px}
+.notif-item[data-type="success"]{border-inline-start:4px solid var(--ok)}
+.notif-item[data-type="warning"]{border-inline-start:4px solid var(--warn)}
+.notif-item[data-type="danger"]{border-inline-start:4px solid var(--bad)}
+.notif-item[data-type="info"]{border-inline-start:4px solid var(--info)}
+
+@media(max-width:760px){
+  body{flex-direction:column}
+  .side{width:100%;flex:none;height:auto;position:relative;padding:14px}
+  .main{padding:16px}
+  form.lead{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -87,18 +116,21 @@ tr:last-child td{border-bottom:none}
 <aside class="side">
   <div class="brand">
     <div class="mark">BO</div>
-    <div><b>Broker OS</b><span>واجهة الوسيط</span></div>
+    <div><b>Broker OS</b><span>منصة الوسيط</span></div>
   </div>
   <div class="nav-group">القائمة الرئيسية</div>
   <nav class="nav" id="navMain">
-    <a href="#" class="active" data-flag="dashboard"><span class="ic">▣</span> لوحة القيادة</a>
-    <a href="#" data-flag="clients"><span class="ic">◧</span> العملاء</a>
-    <a href="#" data-flag="opportunities"><span class="ic">◈</span> الفرص</a>
-    <a href="#" data-flag="quotes"><span class="ic">◫</span> عروض الأسعار</a>
-    <a href="#" data-flag="policies"><span class="ic">◉</span> الوثائق (بوليصات)</a>
-    <a href="#" data-flag="claims"><span class="ic">✦</span> المطالبات</a>
-    <a href="#" data-flag="payments"><span class="ic">◍</span> المدفوعات</a>
-    <a href="#" data-flag="reports"><span class="ic">▤</span> التقارير</a>
+    <a data-route="dashboard"     data-flag="dashboard"     class="active"><span class="ic">▣</span> لوحة القيادة</a>
+    <a data-route="clients"       data-flag="clients"><span class="ic">◧</span> العملاء</a>
+    <a data-route="leads"         data-flag="leads"><span class="ic">◈</span> العملاء المحتملون</a>
+    <a data-route="opportunities" data-flag="opportunities"><span class="ic">◫</span> الفرص</a>
+    <a data-route="quotes"        data-flag="quotes"><span class="ic">◉</span> عروض الأسعار</a>
+    <a data-route="policies"      data-flag="policies"><span class="ic">✦</span> الوثائق (بوليصات)</a>
+    <a data-route="claims"        data-flag="claims"><span class="ic">◍</span> المطالبات</a>
+    <a data-route="payments"      data-flag="payments"><span class="ic">▤</span> المدفوعات</a>
+    <a data-route="documents"     data-flag="documents"><span class="ic">▥</span> المستندات</a>
+    <a data-route="reports"       data-flag="reports"><span class="ic">◬</span> التقارير</a>
+    <a data-route="notifications" data-flag="notifications"><span class="ic">◆</span> الإشعارات <span class="notif-dot" id="notifDot" style="display:none"></span></a>
   </nav>
   <div class="admin-link">
     <p>صلاحيات المدير فقط</p>
@@ -108,109 +140,461 @@ tr:last-child td{border-bottom:none}
 
 <main class="main">
   <div class="topbar">
-    <h1>لوحة القيادة</h1>
+    <h1 id="pageTitle">لوحة القيادة</h1>
     <div class="who"><div class="avatar">إش</div> إسلام شاهين · وسيط تأمين</div>
   </div>
 
-  <div class="kpis">
-    <div class="kpi"><div class="v" id="kpiClients">—</div><div class="l">عملاء نشطون</div></div>
-    <div class="kpi"><div class="v" id="kpiOpen">—</div><div class="l">فرص مفتوحة</div></div>
-    <div class="kpi"><div class="v" id="kpiPending">—</div><div class="l">طلبات قيد المراجعة</div></div>
-    <div class="kpi"><div class="v" id="kpiApproved">—</div><div class="l">طلبات مقبولة هذا الأسبوع</div></div>
-  </div>
-
-  <div class="card">
-    <h2>مسار العمل التجاري <span class="tag">Lead → Policy</span></h2>
-    <div class="funnel">
-      <div class="fstep"><b id="fLead">0</b><span>عميل محتمل</span></div>
-      <div class="fstep"><b id="fOpp">0</b><span>فرصة</span></div>
-      <div class="fstep"><b id="fClient">0</b><span>عميل</span></div>
-      <div class="fstep"><b id="fQuote">0</b><span>عرض سعر</span></div>
-      <div class="fstep"><b id="fPolicy">0</b><span>بوليصة نشطة</span></div>
+  <!-- ═══════════ لوحة القيادة ═══════════ -->
+  <section class="view active" id="view-dashboard">
+    <div class="kpis">
+      <div class="kpi"><div class="v" id="kpiClients">—</div><div class="l">عملاء نشطون</div></div>
+      <div class="kpi"><div class="v" id="kpiOpen">—</div><div class="l">فرص مفتوحة</div></div>
+      <div class="kpi"><div class="v" id="kpiPending">—</div><div class="l">طلبات قيد المراجعة</div></div>
+      <div class="kpi"><div class="v" id="kpiApproved">—</div><div class="l">طلبات مقبولة</div></div>
     </div>
-  </div>
 
-  <div class="card">
-    <h2>إضافة عميل محتمل جديد</h2>
-    <form class="lead" id="leadForm">
-      <div><label>اسم العميل</label><input required id="lName" placeholder="مثال: أحمد فتحي"></div>
-      <div><label>رقم الهاتف</label><input required id="lPhone" placeholder="01000000000"></div>
-      <div><label>نوع التأمين</label>
-        <select id="lType">
-          <option>تأمين سيارات</option><option>تأمين صحي</option><option>تأمين حياة</option><option>تأمين ممتلكات</option>
-        </select>
+    <div class="card">
+      <h2>مسار العمل التجاري <span class="tag">Lead → Policy</span></h2>
+      <div class="funnel">
+        <div class="fstep"><b id="fLead">0</b><span>عميل محتمل</span></div>
+        <div class="fstep"><b id="fOpp">0</b><span>فرصة</span></div>
+        <div class="fstep"><b id="fClient">0</b><span>عميل</span></div>
+        <div class="fstep"><b id="fQuote">0</b><span>عرض سعر</span></div>
+        <div class="fstep"><b id="fPolicy">0</b><span>بوليصة نشطة</span></div>
       </div>
-      <div><label>المصدر</label>
-        <select id="lSource"><option>اتصال مباشر</option><option>الموقع الإلكتروني</option><option>إحالة عميل</option><option>سوشيال ميديا</option></select>
-      </div>
-      <div class="full"><label>ملاحظات</label><textarea id="lNotes" rows="2" placeholder="تفاصيل إضافية..."></textarea></div>
-      <button class="submit" type="submit">إرسال إلى قائمة المراجعة</button>
-    </form>
-    <p class="hint">يتم إرسال الطلب مباشرة إلى لوحة الإدارة لمراجعته واعتماده، وفق نفس تسلسل العمل الموضح في مستودع المشروع (Lead → Opportunity → Client → Quote → Policy).</p>
-  </div>
+    </div>
 
-  <div class="card">
-    <h2>طلباتي الأخيرة <span class="tag" id="countTag">0</span></h2>
-    <table id="leadsTable">
-      <thead><tr><th>الاسم</th><th>النوع</th><th>الحالة</th><th>التاريخ</th></tr></thead>
-      <tbody></tbody>
-    </table>
-    <div class="empty" id="emptyMsg" style="display:none">لا توجد طلبات بعد — أضف طلبك الأول أعلاه.</div>
-  </div>
+    <div class="card">
+      <h2>أحدث العملاء المحتملين <span class="tag" id="dashLeadsCount">0</span></h2>
+      <table id="dashLeadsTable">
+        <thead><tr><th>الاسم</th><th>النوع</th><th>الحالة</th><th>التاريخ</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="empty" id="dashLeadsEmpty" style="display:none">لا توجد طلبات بعد.</div>
+    </div>
+  </section>
+
+  <!-- ═══════════ العملاء ═══════════ -->
+  <section class="view" id="view-clients">
+    <div class="card">
+      <h2>إضافة عميل جديد</h2>
+      <form id="clientForm" class="lead">
+        <div><label>اسم العميل</label><input required id="cName" placeholder="مثال: أحمد فتحي"></div>
+        <div><label>رقم الهاتف</label><input required id="cPhone" placeholder="01000000000"></div>
+        <div><label>البريد الإلكتروني</label><input id="cEmail" type="email" placeholder="client@email.com"></div>
+        <div><label>نوع التأمين</label>
+          <select id="cType">
+            <option>تأمين سيارات</option><option>تأمين صحي</option><option>تأمين حياة</option><option>تأمين ممتلكات</option>
+          </select>
+        </div>
+        <div class="full"><label>ملاحظات</label><textarea id="cNotes" rows="2"></textarea></div>
+        <button class="submit" type="submit">حفظ العميل</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>قائمة العملاء <span class="tag" id="clientsCount">0</span></h2>
+      <div class="filters">
+        <input type="text" id="clientSearch" placeholder="بحث بالاسم أو الهاتف...">
+      </div>
+      <table id="clientsTable">
+        <thead><tr><th>الاسم</th><th>الهاتف</th><th>النوع</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="empty" id="clientsEmpty" style="display:none">لا يوجد عملاء بعد.</div>
+    </div>
+  </section>
+
+  <!-- ═══════════ العملاء المحتملون ═══════════ -->
+  <section class="view" id="view-leads">
+    <div class="card">
+      <h2>إضافة عميل محتمل</h2>
+      <form id="leadForm" class="lead">
+        <div><label>اسم العميل</label><input required id="lName" placeholder="مثال: أحمد فتحي"></div>
+        <div><label>رقم الهاتف</label><input required id="lPhone" placeholder="01000000000"></div>
+        <div><label>نوع التأمين</label>
+          <select id="lType">
+            <option>تأمين سيارات</option><option>تأمين صحي</option><option>تأمين حياة</option><option>تأمين ممتلكات</option>
+          </select>
+        </div>
+        <div><label>المصدر</label>
+          <select id="lSource"><option>اتصال مباشر</option><option>الموقع الإلكتروني</option><option>إحالة عميل</option><option>سوشيال ميديا</option></select>
+        </div>
+        <div class="full"><label>ملاحظات</label><textarea id="lNotes" rows="2"></textarea></div>
+        <button class="submit" type="submit">إرسال إلى قائمة المراجعة</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>قائمة العملاء المحتملين <span class="tag" id="leadsCount">0</span></h2>
+      <table id="leadsTable">
+        <thead><tr><th>الاسم</th><th>الهاتف</th><th>النوع</th><th>المصدر</th><th>الحالة</th><th>التاريخ</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="empty" id="leadsEmpty" style="display:none">لا توجد طلبات بعد.</div>
+    </div>
+  </section>
+
+  <!-- ═══════════ الفرص ═══════════ -->
+  <section class="view" id="view-opportunities">
+    <div class="card">
+      <h2>إضافة فرصة</h2>
+      <form id="oppForm" class="lead">
+        <div><label>عنوان الفرصة</label><input required id="oTitle" placeholder="مثال: تجديد بوليصة سيارة"></div>
+        <div><label>العميل</label><input required id="oClient" placeholder="اسم العميل"></div>
+        <div><label>القيمة المتوقعة (ج.م)</label><input required id="oValue" type="number" placeholder="15000"></div>
+        <div><label>المرحلة</label>
+          <select id="oStage"><option>مبدئية</option><option>تفاوض</option><option>شبه مؤكدة</option><option>مؤكدة</option></select>
+        </div>
+        <button class="submit" type="submit">حفظ الفرصة</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2>الفرص الحالية <span class="tag" id="oppsCount">0</span></h2>
+      <table id="oppsTable">
+        <thead><tr><th>العنوان</th><th>العميل</th><th>القيمة</th><th>المرحلة</th><th>إجراءات</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="empty" id="oppsEmpty" style="display:none">لا توجد فرص بعد.</div>
+    </div>
+  </section>
+
+  <!-- ═══════════ عروض الأسعار ═══════════ -->
+  <section class="view" id="view-quotes">
+    <div class="card">
+      <h2>إنشاء عرض سعر</h2>
+      <form id="quoteForm" class="lead">
+        <div><label>رقم العرض</label><input required id="qNo" placeholder="Q-2025-001"></div>
+        <div><label>العميل</label><input required id="qClient" placeholder="اسم العميل"></div>
+        <div><label>المبلغ (ج.م)</label><input required id="qAmount" type="number" placeholder="12000"></div>
+        <div><label>الحالة</label>
+          <select id="qStatus"><option>مسودة</option><option>مُرسل</option><option>مقبول</option><option>مرفوض</option></select>
+        </div>
+        <button class="submit" type="submit">حفظ العرض</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2>قائمة العروض <span class="tag" id="quotesCount">0</span></h2>
+      <table id="quotesTable">
+        <thead><tr><th>رقم العرض</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="empty" id="quotesEmpty" style="display:none">لا توجد عروض بعد.</div>
+    </div>
+  </section>
+
+  <!-- ═══════════ الوثائق / البوليصات ═══════════ -->
+  <section class="view" id="view-policies">
+    <div class="card">
+      <h2>إضافة بوليصة</h2>
+      <form id="policyForm" class="lead">
+        <div><label>رقم البوليصة</label><input required id="pNo" placeholder="P-2025-001"></div>
+        <div><label>العميل</label><input required id="pClient" placeholder="اسم العميل"></div>
+        <div><label>نوع التأمين</label>
+          <select id="pType"><option>سيارات</option><option>صحي</option><option>حياة</option><option>ممتلكات</option></select>
+        </div>
+        <div><label>تاريخ الانتهاء</label><input required id="pExpiry" type="date"></div>
+        <div><label>القسط السنوي (ج.م)</label><input required id="pPremium" type="number" placeholder="15000"></div>
+        <div><label>الحالة</label>
+          <select id="pStatus"><option>نشطة</option><option>منتهية</option><option>ملغاة</option></select>
+        </div>
+        <button class="submit" type="submit">حفظ البوليصة</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2>البوليصات <span class="tag" id="policiesCount">0</span></h2>
+      <table id="policiesTable">
+        <thead><tr><th>رقم البوليصة</th><th>العميل</th><th>النوع</th><th>القسط</th><th>الانتهاء</th><th>الحالة</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="empty" id="policiesEmpty" style="display:none">لا توجد بوليصات بعد.</div>
+    </div>
+  </section>
+
+  <!-- ═══════════ المطالبات ═══════════ -->
+  <section class="view" id="view-claims">
+    <div class="card">
+      <h2>تسجيل مطالبة</h2>
+      <form id="claimForm" class="lead">
+        <div><label>رقم المطالبة</label><input required id="clNo" placeholder="C-2025-001"></div>
+        <div><label>العميل</label><input required id="clClient" placeholder="اسم العميل"></div>
+        <div><label>رقم البوليصة</label><input required id="clPolicy" placeholder="P-2025-001"></div>
+        <div><label>المبلغ المطلوب (ج.م)</label><input required id="clAmount" type="number" placeholder="5000"></div>
+        <div><label>الحالة</label>
+          <select id="clStatus"><option>قيد المراجعة</option><option>مقبولة</option><option>مرفوضة</option><option>مدفوعة</option></select>
+        </div>
+        <button class="submit" type="submit">حفظ المطالبة</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2>المطالبات <span class="tag" id="claimsCount">0</span></h2>
+      <table id="claimsTable">
+        <thead><tr><th>رقم المطالبة</th><th>العميل</th><th>البوليصة</th><th>المبلغ</th><th>الحالة</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="empty" id="claimsEmpty" style="display:none">لا توجد مطالبات بعد.</div>
+    </div>
+  </section>
+
+  <!-- ═══════════ المدفوعات ═══════════ -->
+  <section class="view" id="view-payments">
+    <div class="card">
+      <h2>تسجيل دفعة</h2>
+      <form id="paymentForm" class="lead">
+        <div><label>رقم الدفعة</label><input required id="payNo" placeholder="PAY-2025-001"></div>
+        <div><label>العميل</label><input required id="payClient" placeholder="اسم العميل"></div>
+        <div><label>المبلغ (ج.م)</label><input required id="payAmount" type="number" placeholder="5000"></div>
+        <div><label>طريقة الدفع</label>
+          <select id="payMethod"><option>نقدي</option><option>تحويل بنكي</option><option>بطاقة ائتمان</option><option>محفظة إلكترونية</option></select>
+        </div>
+        <div><label>الحالة</label>
+          <select id="payStatus"><option>مدفوعة</option><option>معلقة</option><option>متأخرة</option></select>
+        </div>
+        <button class="submit" type="submit">حفظ الدفعة</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2>المدفوعات <span class="tag" id="paymentsCount">0</span></h2>
+      <table id="paymentsTable">
+        <thead><tr><th>رقم الدفعة</th><th>العميل</th><th>المبلغ</th><th>الطريقة</th><th>الحالة</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="empty" id="paymentsEmpty" style="display:none">لا توجد مدفوعات بعد.</div>
+    </div>
+  </section>
+
+  <!-- ═══════════ المستندات ═══════════ -->
+  <section class="view" id="view-documents">
+    <div class="card">
+      <h2>رفع مستند جديد</h2>
+      <form id="docForm" class="lead">
+        <div><label>اسم المستند</label><input required id="dName" placeholder="مثال: هوية_العميل"></div>
+        <div><label>صاحب المستند</label><input required id="dOwner" placeholder="اسم العميل"></div>
+        <div><label>النوع</label>
+          <select id="dType"><option>هوية</option><option>رخصة</option><option>عقد</option><option>فاتورة</option><option>أخرى</option></select>
+        </div>
+        <div><label>الملف</label><input type="file" id="dFile"></div>
+        <button class="submit" type="submit">إرسال للمراجعة</button>
+      </form>
+      <p class="hint">يتم إرسال الملف إلى لوحة إدارة المنصة للموافقة عليه قبل أن يصبح متاحًا في السجلات.</p>
+    </div>
+    <div class="card">
+      <h2>مستنداتي <span class="tag" id="docsCount">0</span></h2>
+      <table id="docsTable">
+        <thead><tr><th>الاسم</th><th>صاحب المستند</th><th>النوع</th><th>الحالة</th><th>التاريخ</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="empty" id="docsEmpty" style="display:none">لا توجد مستندات بعد.</div>
+    </div>
+  </section>
+
+  <!-- ═══════════ التقارير ═══════════ -->
+  <section class="view" id="view-reports">
+    <div class="card">
+      <h2>تقرير الأداء العام</h2>
+      <div class="kpis">
+        <div class="kpi"><div class="v" id="rClients">0</div><div class="l">إجمالي العملاء</div></div>
+        <div class="kpi"><div class="v" id="rPolicies">0</div><div class="l">إجمالي البوليصات</div></div>
+        <div class="kpi"><div class="v" id="rPremium">0</div><div class="l">إجمالي الأقساط (ج.م)</div></div>
+        <div class="kpi"><div class="v" id="rClaims">0</div><div class="l">إجمالي المطالبات</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>توزيع البوليصات حسب النوع</h2>
+      <table id="reportPoliciesTable">
+        <thead><tr><th>النوع</th><th>العدد</th><th>إجمالي الأقساط</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══════════ الإشعارات ═══════════ -->
+  <section class="view" id="view-notifications">
+    <div class="card">
+      <h2>إشعارات المنصة <span class="tag" id="userNotifCount">0</span></h2>
+      <div id="userNotifList"></div>
+      <div class="empty" id="userNotifEmpty" style="display:none">لا توجد إشعارات.</div>
+    </div>
+  </section>
 </main>
 
 <script>
-const LEADS_KEY='brokeros_leads';
-const FLAGS_KEY='brokeros_feature_flags';
-const DEFAULT_FLAGS={clients:true,opportunities:true,quotes:true,policies:true,claims:true,payments:true,reports:true};
+/* ═══════════════════════════════════════════════════════════
+   Broker CRM — Broker OS
+   ═══════════════════════════════════════════════════════════ */
 
-function readLeads(){try{return JSON.parse(localStorage.getItem(LEADS_KEY))||[]}catch(e){return []}}
-function writeLeads(l){localStorage.setItem(LEADS_KEY,JSON.stringify(l))}
-function readFlags(){try{return {...DEFAULT_FLAGS,...(JSON.parse(localStorage.getItem(FLAGS_KEY))||{})}}catch(e){return DEFAULT_FLAGS}}
+const KEYS = {
+  LEADS: 'brokeros_leads',
+  CLIENTS: 'brokeros_clients',
+  OPPORTUNITIES: 'brokeros_opportunities',
+  QUOTES: 'brokeros_quotes',
+  POLICIES: 'brokeros_policies',
+  CLAIMS: 'brokeros_claims',
+  PAYMENTS: 'brokeros_payments',
+  DOCUMENTS: 'brokeros_documents',
+  UPLOADS: 'brokeros_uploads',
+  FLAGS: 'brokeros_feature_flags',
+  NOTIFICATIONS: 'brokeros_notifications',
+};
+
+const DEFAULT_FLAGS = {
+  clients:true, opportunities:true, quotes:true, policies:true,
+  claims:true, payments:true, reports:true, notifications:true, documents:true, leads:true
+};
+
+function read(key, fallback){ try{ return JSON.parse(localStorage.getItem(key)) ?? fallback }catch(e){ return fallback } }
+function write(key, val){ localStorage.setItem(key, JSON.stringify(val)) }
+
+function readLeads(){ return read(KEYS.LEADS, []) }
+function writeLeads(v){ write(KEYS.LEADS, v) }
+function readClients(){ return read(KEYS.CLIENTS, []) }
+function writeClients(v){ write(KEYS.CLIENTS, v) }
+function readOpps(){ return read(KEYS.OPPORTUNITIES, []) }
+function writeOpps(v){ write(KEYS.OPPORTUNITIES, v) }
+function readQuotes(){ return read(KEYS.QUOTES, []) }
+function writeQuotes(v){ write(KEYS.QUOTES, v) }
+function readPolicies(){ return read(KEYS.POLICIES, []) }
+function writePolicies(v){ write(KEYS.POLICIES, v) }
+function readClaims(){ return read(KEYS.CLAIMS, []) }
+function writeClaims(v){ write(KEYS.CLAIMS, v) }
+function readPayments(){ return read(KEYS.PAYMENTS, []) }
+function writePayments(v){ write(KEYS.PAYMENTS, v) }
+function readDocs(){ return read(KEYS.DOCUMENTS, []) }
+function writeDocs(v){ write(KEYS.DOCUMENTS, v) }
+function readUploads(){ return read(KEYS.UPLOADS, []) }
+function writeUploads(v){ write(KEYS.UPLOADS, v) }
+function readNotifications(){ return read(KEYS.NOTIFICATIONS, []) }
+function readFlags(){ return {...DEFAULT_FLAGS, ...read(KEYS.FLAGS, {})} }
 
 function statusBadge(s){
-  const map={'جديد':'b-new','قيد المراجعة':'b-review','مقبول':'b-approved','مرفوض':'b-rejected'};
+  const map = {
+    'جديد':'b-new', 'قيد المراجعة':'b-review', 'مقبول':'b-approved', 'مرفوض':'b-rejected',
+    'بانتظار الموافقة':'b-pending', 'مقبولة':'b-approved', 'مرفوضة':'b-rejected',
+    'نشطة':'b-active', 'منتهية':'b-rejected', 'ملغاة':'b-rejected',
+    'مدفوعة':'b-approved', 'معلقة':'b-pending', 'متأخرة':'b-rejected',
+    'مسودة':'b-new', 'مُرسل':'b-review',
+  };
   return `<span class="badge ${map[s]||'b-new'}">${s}</span>`;
 }
 
-function render(){
-  const leads=readLeads();
-  const flags=readFlags();
-  document.querySelectorAll('#navMain a[data-flag]').forEach(a=>{
-    const f=a.getAttribute('data-flag');
-    if(f!=='dashboard') a.style.display = flags[f]===false ? 'none' : 'flex';
-  });
+/* ── التنقل ── */
+function showView(route){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const el = document.getElementById('view-'+route);
+  if(el) el.classList.add('active');
+  document.querySelectorAll('#navMain a').forEach(a=>a.classList.toggle('active', a.dataset.route===route));
+  const titles = {
+    dashboard:'لوحة القيادة', clients:'العملاء', leads:'العملاء المحتملون',
+    opportunities:'الفرص', quotes:'عروض الأسعار', policies:'الوثائق',
+    claims:'المطالبات', payments:'المدفوعات', documents:'المستندات',
+    reports:'التقارير', notifications:'الإشعارات'
+  };
+  document.getElementById('pageTitle').textContent = titles[route] || 'لوحة القيادة';
+  location.hash = '#/'+route;
+}
 
-  const tbody=document.querySelector('#leadsTable tbody');
-  tbody.innerHTML='';
-  const mine=[...leads].reverse();
-  mine.forEach(l=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${l.name}</td><td>${l.type}</td><td>${statusBadge(l.status)}</td><td>${l.date}</td>`;
-    tbody.appendChild(tr);
+function initNav(){
+  document.querySelectorAll('#navMain a').forEach(a=>{
+    a.addEventListener('click', ()=> showView(a.dataset.route));
   });
-  document.getElementById('emptyMsg').style.display = mine.length? 'none':'block';
-  document.getElementById('countTag').textContent=mine.length;
+  const initial = location.hash.replace('#/','') || 'dashboard';
+  showView(initial);
+}
 
-  const total=leads.length;
-  const pending=leads.filter(l=>l.status==='جديد'||l.status==='قيد المراجعة').length;
-  const approved=leads.filter(l=>l.status==='مقبول').length;
-  document.getElementById('kpiClients').textContent = 128 + approved;
-  document.getElementById('kpiOpen').textContent = 34 + Math.min(total,9);
+/* ── لوحة القيادة ── */
+function renderDashboard(){
+  const leads = readLeads();
+  const clients = readClients();
+  const opps = readOpps();
+  const quotes = readQuotes();
+  const policies = readPolicies();
+
+  const pending = leads.filter(l=>l.status==='جديد'||l.status==='قيد المراجعة').length;
+  const approved = leads.filter(l=>l.status==='مقبول').length;
+
+  document.getElementById('kpiClients').textContent = clients.length;
+  document.getElementById('kpiOpen').textContent = opps.length;
   document.getElementById('kpiPending').textContent = pending;
   document.getElementById('kpiApproved').textContent = approved;
 
-  document.getElementById('fLead').textContent = leads.filter(l=>l.status==='جديد').length;
-  document.getElementById('fOpp').textContent = leads.filter(l=>l.status==='قيد المراجعة').length;
-  document.getElementById('fClient').textContent = approved;
-  document.getElementById('fQuote').textContent = Math.round(approved*0.7);
-  document.getElementById('fPolicy').textContent = Math.round(approved*0.4);
+  document.getElementById('fLead').textContent = leads.length;
+  document.getElementById('fOpp').textContent = opps.length;
+  document.getElementById('fClient').textContent = clients.length;
+  document.getElementById('fQuote').textContent = quotes.length;
+  document.getElementById('fPolicy').textContent = policies.length;
+
+  const tbody = document.querySelector('#dashLeadsTable tbody');
+  tbody.innerHTML = '';
+  const recent = [...leads].reverse().slice(0,5);
+  recent.forEach(l=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${l.name}</td><td>${l.type}</td><td>${statusBadge(l.status)}</td><td>${l.date}</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('dashLeadsEmpty').style.display = recent.length?'none':'block';
+  document.getElementById('dashLeadsCount').textContent = recent.length;
 }
 
-document.getElementById('leadForm').addEventListener('submit',e=>{
+/* ── العملاء ── */
+function renderClients(){
+  const all = readClients();
+  const q = (document.getElementById('clientSearch').value||'').trim().toLowerCase();
+  const list = all.filter(c=>!q || c.name.toLowerCase().includes(q) || (c.phone||'').includes(q));
+  const tbody = document.querySelector('#clientsTable tbody');
+  tbody.innerHTML = '';
+  list.forEach(c=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${c.name}</td><td>${c.phone||'—'}</td><td>${c.type}</td><td>${c.date}</td>
+      <td><button class="btn btn-bad btn-sm" data-id="${c.id}">حذف</button></td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('clientsEmpty').style.display = list.length?'none':'block';
+  document.getElementById('clientsCount').textContent = list.length;
+  tbody.querySelectorAll('button[data-id]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      if(!confirm('تأكيد حذف العميل؟')) return;
+      writeClients(readClients().filter(x=>x.id!==b.dataset.id));
+      renderAll();
+    });
+  });
+}
+
+document.getElementById('clientForm').addEventListener('submit', e=>{
   e.preventDefault();
-  const leads=readLeads();
-  leads.push({
+  const list = readClients();
+  list.push({
+    id:'C'+Date.now(),
+    name:document.getElementById('cName').value.trim(),
+    phone:document.getElementById('cPhone').value.trim(),
+    email:document.getElementById('cEmail').value.trim(),
+    type:document.getElementById('cType').value,
+    notes:document.getElementById('cNotes').value.trim(),
+    date:new Date().toLocaleDateString('ar-EG')
+  });
+  writeClients(list);
+  e.target.reset();
+  renderAll();
+});
+
+/* ── العملاء المحتملون ── */
+function renderLeads(){
+  const all = readLeads();
+  const tbody = document.querySelector('#leadsTable tbody');
+  tbody.innerHTML = '';
+  [...all].reverse().forEach(l=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${l.name}</td><td>${l.phone||'—'}</td><td>${l.type}</td><td>${l.source||'—'}</td><td>${statusBadge(l.status)}</td><td>${l.date}</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('leadsEmpty').style.display = all.length?'none':'block';
+  document.getElementById('leadsCount').textContent = all.length;
+}
+
+document.getElementById('leadForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const list = readLeads();
+  list.push({
     id:'L'+Date.now(),
     name:document.getElementById('lName').value.trim(),
     phone:document.getElementById('lPhone').value.trim(),
@@ -220,14 +604,278 @@ document.getElementById('leadForm').addEventListener('submit',e=>{
     status:'جديد',
     date:new Date().toLocaleDateString('ar-EG')
   });
-  writeLeads(leads);
+  writeLeads(list);
   e.target.reset();
-  render();
+  renderAll();
 });
 
-window.addEventListener('storage',render);
-setInterval(render,2500);
-render();
+/* ── الفرص ── */
+function renderOpps(){
+  const all = readOpps();
+  const tbody = document.querySelector('#oppsTable tbody');
+  tbody.innerHTML = '';
+  all.forEach(o=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${o.title}</td><td>${o.client}</td><td>${Number(o.value).toLocaleString('ar-EG')} ج.م</td><td>${o.stage}</td>
+      <td><button class="btn btn-bad btn-sm" data-id="${o.id}">حذف</button></td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('oppsEmpty').style.display = all.length?'none':'block';
+  document.getElementById('oppsCount').textContent = all.length;
+  tbody.querySelectorAll('button[data-id]').forEach(b=>{
+    b.addEventListener('click', ()=>{ writeOpps(readOpps().filter(x=>x.id!==b.dataset.id)); renderAll(); });
+  });
+}
+document.getElementById('oppForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const list = readOpps();
+  list.push({
+    id:'O'+Date.now(),
+    title:document.getElementById('oTitle').value.trim(),
+    client:document.getElementById('oClient').value.trim(),
+    value:document.getElementById('oValue').value,
+    stage:document.getElementById('oStage').value,
+  });
+  writeOpps(list); e.target.reset(); renderAll();
+});
+
+/* ── العروض ── */
+function renderQuotes(){
+  const all = readQuotes();
+  const tbody = document.querySelector('#quotesTable tbody');
+  tbody.innerHTML = '';
+  all.forEach(q=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${q.no}</td><td>${q.client}</td><td>${Number(q.amount).toLocaleString('ar-EG')} ج.م</td><td>${statusBadge(q.status)}</td>
+      <td><button class="btn btn-bad btn-sm" data-id="${q.id}">حذف</button></td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('quotesEmpty').style.display = all.length?'none':'block';
+  document.getElementById('quotesCount').textContent = all.length;
+  tbody.querySelectorAll('button[data-id]').forEach(b=>{
+    b.addEventListener('click', ()=>{ writeQuotes(readQuotes().filter(x=>x.id!==b.dataset.id)); renderAll(); });
+  });
+}
+document.getElementById('quoteForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const list = readQuotes();
+  list.push({
+    id:'Q'+Date.now(),
+    no:document.getElementById('qNo').value.trim(),
+    client:document.getElementById('qClient').value.trim(),
+    amount:document.getElementById('qAmount').value,
+    status:document.getElementById('qStatus').value,
+  });
+  writeQuotes(list); e.target.reset(); renderAll();
+});
+
+/* ── البوليصات ── */
+function renderPolicies(){
+  const all = readPolicies();
+  const tbody = document.querySelector('#policiesTable tbody');
+  tbody.innerHTML = '';
+  all.forEach(p=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${p.no}</td><td>${p.client}</td><td>${p.type}</td><td>${Number(p.premium).toLocaleString('ar-EG')} ج.م</td><td>${p.expiry}</td><td>${statusBadge(p.status)}</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('policiesEmpty').style.display = all.length?'none':'block';
+  document.getElementById('policiesCount').textContent = all.length;
+}
+document.getElementById('policyForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const list = readPolicies();
+  list.push({
+    id:'P'+Date.now(),
+    no:document.getElementById('pNo').value.trim(),
+    client:document.getElementById('pClient').value.trim(),
+    type:document.getElementById('pType').value,
+    expiry:document.getElementById('pExpiry').value,
+    premium:document.getElementById('pPremium').value,
+    status:document.getElementById('pStatus').value,
+  });
+  writePolicies(list); e.target.reset(); renderAll();
+});
+
+/* ── المطالبات ── */
+function renderClaims(){
+  const all = readClaims();
+  const tbody = document.querySelector('#claimsTable tbody');
+  tbody.innerHTML = '';
+  all.forEach(c=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${c.no}</td><td>${c.client}</td><td>${c.policy}</td><td>${Number(c.amount).toLocaleString('ar-EG')} ج.م</td><td>${statusBadge(c.status)}</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('claimsEmpty').style.display = all.length?'none':'block';
+  document.getElementById('claimsCount').textContent = all.length;
+}
+document.getElementById('claimForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const list = readClaims();
+  list.push({
+    id:'CL'+Date.now(),
+    no:document.getElementById('clNo').value.trim(),
+    client:document.getElementById('clClient').value.trim(),
+    policy:document.getElementById('clPolicy').value.trim(),
+    amount:document.getElementById('clAmount').value,
+    status:document.getElementById('clStatus').value,
+  });
+  writeClaims(list); e.target.reset(); renderAll();
+});
+
+/* ── المدفوعات ── */
+function renderPayments(){
+  const all = readPayments();
+  const tbody = document.querySelector('#paymentsTable tbody');
+  tbody.innerHTML = '';
+  all.forEach(p=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${p.no}</td><td>${p.client}</td><td>${Number(p.amount).toLocaleString('ar-EG')} ج.م</td><td>${p.method}</td><td>${statusBadge(p.status)}</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('paymentsEmpty').style.display = all.length?'none':'block';
+  document.getElementById('paymentsCount').textContent = all.length;
+}
+document.getElementById('paymentForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const list = readPayments();
+  list.push({
+    id:'PAY'+Date.now(),
+    no:document.getElementById('payNo').value.trim(),
+    client:document.getElementById('payClient').value.trim(),
+    amount:document.getElementById('payAmount').value,
+    method:document.getElementById('payMethod').value,
+    status:document.getElementById('payStatus').value,
+  });
+  writePayments(list); e.target.reset(); renderAll();
+});
+
+/* ── المستندات ── */
+function renderDocs(){
+  const all = readDocs();
+  const tbody = document.querySelector('#docsTable tbody');
+  tbody.innerHTML = '';
+  all.forEach(d=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${d.name}</td><td>${d.owner}</td><td>${d.type}</td><td>${statusBadge(d.status)}</td><td>${d.date}</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('docsEmpty').style.display = all.length?'none':'block';
+  document.getElementById('docsCount').textContent = all.length;
+}
+document.getElementById('docForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const name = document.getElementById('dName').value.trim();
+  const owner = document.getElementById('dOwner').value.trim();
+  const type = document.getElementById('dType').value;
+  const file = document.getElementById('dFile').files[0];
+  const size = file ? Math.round(file.size/1024)+'KB' : '—';
+
+  const docs = readDocs();
+  docs.push({ id:'D'+Date.now(), name, owner, type, status:'بانتظار الموافقة', date:new Date().toLocaleDateString('ar-EG') });
+  writeDocs(docs);
+
+  const uploads = readUploads();
+  uploads.push({
+    id:'up'+Date.now(),
+    fileName:name + (file? ' — '+file.name : ''),
+    owner, type, size,
+    status:'pending',
+    date:new Date().toLocaleDateString('ar-EG')
+  });
+  writeUploads(uploads);
+
+  e.target.reset();
+  renderAll();
+});
+
+/* ── التقارير ── */
+function renderReports(){
+  const clients = readClients();
+  const policies = readPolicies();
+  const claims = readClaims();
+
+  document.getElementById('rClients').textContent = clients.length;
+  document.getElementById('rPolicies').textContent = policies.length;
+  document.getElementById('rPremium').textContent = policies.reduce((a,p)=>a+Number(p.premium||0),0).toLocaleString('ar-EG');
+  document.getElementById('rClaims').textContent = claims.length;
+
+  const byType = {};
+  policies.forEach(p=>{
+    byType[p.type] = byType[p.type] || {count:0, sum:0};
+    byType[p.type].count++;
+    byType[p.type].sum += Number(p.premium||0);
+  });
+
+  const tbody = document.querySelector('#reportPoliciesTable tbody');
+  tbody.innerHTML = '';
+  Object.entries(byType).forEach(([type, v])=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${type}</td><td>${v.count}</td><td>${v.sum.toLocaleString('ar-EG')} ج.م</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ── الإشعارات ── */
+function renderUserNotifications(){
+  const list = [...readNotifications()].reverse();
+  const wrap = document.getElementById('userNotifList');
+  wrap.innerHTML = '';
+  list.forEach(n=>{
+    const div = document.createElement('div');
+    div.className = 'notif-item';
+    div.dataset.type = n.type || 'info';
+    div.innerHTML = `
+      <div class="info">
+        <b>${n.title}</b>
+        <p>${n.body}</p>
+        <small>${n.date}</small>
+      </div>`;
+    wrap.appendChild(div);
+  });
+  document.getElementById('userNotifEmpty').style.display = list.length?'none':'block';
+  document.getElementById('userNotifCount').textContent = list.length;
+  document.getElementById('notifDot').style.display = list.length ? 'inline-block' : 'none';
+}
+
+/* ── تطبيق أعلام الميزات على القائمة ── */
+function applyFeatureFlags(){
+  const flags = readFlags();
+  document.querySelectorAll('#navMain a[data-flag]').forEach(a=>{
+    const f = a.getAttribute('data-flag');
+    if(f==='dashboard'){ a.style.display='flex'; return; }
+    a.style.display = flags[f]===false ? 'none' : 'flex';
+  });
+}
+
+/* ── تشغيل الكل ── */
+function renderAll(){
+  applyFeatureFlags();
+  renderDashboard();
+  renderClients();
+  renderLeads();
+  renderOpps();
+  renderQuotes();
+  renderPolicies();
+  renderClaims();
+  renderPayments();
+  renderDocs();
+  renderReports();
+  renderUserNotifications();
+}
+
+document.getElementById('clientSearch').addEventListener('input', renderClients);
+
+initNav();
+renderAll();
+
+window.addEventListener('storage', renderAll);
+setInterval(renderAll, 3000);
+window.addEventListener('hashchange', ()=>{
+  const route = location.hash.replace('#/','') || 'dashboard';
+  if(document.getElementById('view-'+route)) showView(route);
+});
 </script>
 </body>
 </html>
