@@ -11,14 +11,13 @@
   --navy:#0B1F3A; --navy2:#12315C; --gold:#C9A227; --gold2:#E4C660;
   --bg:#0F1620; --panel:#141D2B; --card:#1A2434; --text:#E9EDF4; --muted:#8C99B0; --line:#26324A;
   --ok:#22C55E; --warn:#F59E0B; --bad:#EF4444; --info:#60A5FA;
-  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
 a{text-decoration:none;color:inherit}
 ::-webkit-scrollbar{height:8px;width:8px}::-webkit-scrollbar-thumb{background:#2c3a52;border-radius:8px}
 
-.side{width:250px;flex:0 0 250px;background:var(--panel);border-inline-end:1px solid var(--line);
+.side{width:260px;flex:0 0 260px;background:var(--panel);border-inline-end:1px solid var(--line);
   padding:22px 16px;position:sticky;top:0;height:100vh;overflow-y:auto}
 .brand{display:flex;align-items:center;gap:10px;padding:0 6px 22px;border-bottom:1px solid var(--line);margin-bottom:18px}
 .brand .mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--gold2));
@@ -29,9 +28,7 @@ a{text-decoration:none;color:inherit}
 .nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:#cfd8e8;font-size:14.5px;margin-bottom:2px;cursor:pointer}
 .nav a:hover{background:#1f2b40}
 .nav a.active{background:var(--gold);color:var(--navy);font-weight:700}
-.user-link{margin-top:20px;padding:12px;border-radius:12px;background:#1f2b40;border:1px dashed var(--line)}
-.user-link p{margin:0 0 8px;font-size:12.5px;color:var(--muted)}
-.user-link a{display:block;text-align:center;background:transparent;border:1px solid var(--gold);color:var(--gold);font-weight:700;padding:8px;border-radius:8px;font-size:13.5px}
+.nav a .badge-count{margin-inline-start:auto;background:var(--bad);color:#fff;font-size:10.5px;padding:2px 8px;border-radius:20px;font-weight:700}
 
 .main{flex:1;min-width:0;padding:22px 26px 60px}
 .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:10px}
@@ -45,9 +42,6 @@ a{text-decoration:none;color:inherit}
 .kpi .v{font-size:26px;font-weight:800;color:#fff}
 .kpi .l{font-size:12.5px;color:var(--muted);margin-top:2px}
 
-.grid2{display:grid;grid-template-columns:2fr 1fr;gap:20px}
-@media(max-width:900px){.grid2{grid-template-columns:1fr}}
-
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:20px}
 .card h2{font-size:15.5px;margin:0 0 14px;display:flex;align-items:center;justify-content:space-between}
 .card h2 span.tag{font-size:11px;background:#152036;color:var(--info);padding:3px 9px;border-radius:20px;font-weight:700}
@@ -56,15 +50,27 @@ table{width:100%;border-collapse:collapse;font-size:13.5px}
 th{text-align:start;color:var(--muted);font-weight:600;font-size:12px;padding:8px 10px;border-bottom:1px solid var(--line)}
 td{padding:10px;border-bottom:1px solid var(--line)}
 tr:last-child td{border-bottom:none}
-select.statusSel{background:#0F1826;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:12.5px}
-.badge{padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:700}
+.badge{padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:700;display:inline-block}
 .b-new{background:#152036;color:var(--info)}
 .b-review{background:#3a2c0f;color:var(--warn)}
 .b-approved{background:#123420;color:var(--ok)}
 .b-rejected{background:#3a1414;color:var(--bad)}
+.b-pending{background:#3a2c0f;color:var(--warn)}
+.b-active{background:#123420;color:var(--ok)}
+.b-suspended{background:#3a1414;color:var(--bad)}
 .empty{color:var(--muted);font-size:13px;text-align:center;padding:20px}
 
-.flag-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.btn{background:var(--gold);color:var(--navy);border:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:12.5px;cursor:pointer;font-family:inherit}
+.btn:hover{background:var(--gold2)}
+.btn-sm{padding:5px 10px;font-size:11.5px}
+.btn-outline{background:transparent;border:1px solid var(--line);color:var(--text)}
+.btn-outline:hover{background:#1f2b40}
+.btn-ok{background:#123420;color:var(--ok);border:1px solid #1e5c33}
+.btn-ok:hover{background:#1a4a2b}
+.btn-bad{background:#3a1414;color:var(--bad);border:1px solid #6b2020}
+.btn-bad:hover{background:#4a1a1a}
+
+.flag-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
 .flag-row:last-child{border-bottom:none}
 .flag-row .name{font-size:13.5px}
 .flag-row .desc{font-size:11.5px;color:var(--muted)}
@@ -79,6 +85,47 @@ input:checked + .slider{background:var(--gold)}
 .log-item{font-size:12.5px;padding:8px 0;border-bottom:1px solid var(--line);color:var(--muted)}
 .log-item:last-child{border-bottom:none}
 .log-item b{color:var(--text)}
+
+.view{display:none}
+.view.active{display:block}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-row.full{grid-template-columns:1fr}
+label{font-size:12.5px;color:var(--muted);display:block;margin-bottom:5px}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:14px;background:#0F1826;color:var(--text)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-offset:1px}
+
+.filters{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.filters input,.filters select{max-width:220px}
+
+.upload-item{display:flex;justify-content:space-between;align-items:center;padding:12px;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;background:#152036;gap:12px;flex-wrap:wrap}
+.upload-item .info{font-size:13px;flex:1;min-width:200px}
+.upload-item .info b{display:block;font-size:14px;color:#fff;margin-bottom:4px}
+.upload-item .info span{color:var(--muted);font-size:12px}
+.upload-item .actions{display:flex;gap:8px}
+
+.notification-item{display:flex;justify-content:space-between;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;background:#152036;gap:12px}
+.notification-item .info{font-size:13px;flex:1}
+.notification-item .info b{display:block;font-size:14px;color:#fff;margin-bottom:4px}
+.notification-item .info p{margin:0 0 4px;color:var(--muted);font-size:12px}
+.notification-item .info small{color:#5c6b85;font-size:11px}
+
+.portal-preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.portal-preview-card{background:#152036;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center}
+.portal-preview-card h3{margin:0 0 6px;font-size:14px;color:#fff}
+.portal-preview-card p{margin:0 0 12px;font-size:12px;color:var(--muted);min-height:36px}
+.portal-preview-card a{display:inline-block;background:var(--gold);color:var(--navy);padding:7px 14px;border-radius:8px;font-weight:700;font-size:12.5px}
+
+.user-link{margin-top:20px;padding:12px;border-radius:12px;background:#1f2b40;border:1px dashed var(--line)}
+.user-link p{margin:0 0 8px;font-size:12.5px;color:var(--muted)}
+.user-link a{display:block;text-align:center;background:transparent;border:1px solid var(--gold);color:var(--gold);font-weight:700;padding:8px;border-radius:8px;font-size:13.5px}
+
+@media(max-width:760px){
+  body{flex-direction:column}
+  .side{width:100%;flex:none;height:auto;position:relative;padding:14px}
+  .main{padding:16px}
+  .form-row{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -88,13 +135,18 @@ input:checked + .slider{background:var(--gold)}
     <div class="mark">BO</div>
     <div><b>Broker OS</b><span>إدارة المنصة</span></div>
   </div>
+
   <div class="nav-group">Platform Admin</div>
   <nav class="nav">
-    <a class="active"><span>▣</span> نظرة عامة</a>
-    <a href="#queue"><span>◧</span> طلبات العملاء (Queue)</a>
-    <a href="#flags"><span>◈</span> أعلام الميزات</a>
-    <a href="#audit"><span>✦</span> سجل التدقيق</a>
+    <a data-route="dashboard" class="active"><span>▣</span> نظرة عامة</a>
+    <a data-route="users"><span>◧</span> إدارة المستخدمين <span class="badge-count" id="badgeUsers">0</span></a>
+    <a data-route="uploads"><span>◈</span> موافقة الملفات <span class="badge-count" id="badgeUploads">0</span></a>
+    <a data-route="flags"><span>◉</span> أعلام الميزات</a>
+    <a data-route="notifications"><span>✦</span> الإشعارات</a>
+    <a data-route="portal"><span>▤</span> معاينة واجهة الوسيط</a>
+    <a data-route="audit"><span>✎</span> سجل التدقيق</a>
   </nav>
+
   <div class="user-link">
     <p>عرض تجربة الوسيط</p>
     <a href="user-portal.html">فتح واجهة المستخدم ←</a>
@@ -103,145 +155,537 @@ input:checked + .slider{background:var(--gold)}
 
 <main class="main">
   <div class="topbar">
-    <h1>لوحة إدارة المنصة</h1>
+    <h1 id="pageTitle">نظرة عامة</h1>
     <div class="pill">متصل كـ <b>Platform Admin</b> — platformAdmins/{uid}</div>
   </div>
 
-  <div class="kpis">
-    <div class="kpi"><div class="v" id="kNew">0</div><div class="l">طلبات جديدة</div></div>
-    <div class="kpi"><div class="v" id="kReview">0</div><div class="l">قيد المراجعة</div></div>
-    <div class="kpi"><div class="v" id="kApproved">0</div><div class="l">مقبولة</div></div>
-    <div class="kpi"><div class="v" id="kRejected">0</div><div class="l">مرفوضة</div></div>
-  </div>
-
-  <div class="grid2">
-    <div>
-      <div class="card" id="queue">
-        <h2>طلبات العملاء الواردة من واجهة المستخدم <span class="tag" id="qTag">0</span></h2>
-        <table id="leadsTable">
-          <thead><tr><th>الاسم</th><th>الهاتف</th><th>النوع</th><th>المصدر</th><th>الحالة</th></tr></thead>
-          <tbody></tbody>
-        </table>
-        <div class="empty" id="emptyMsg" style="display:none">لا توجد طلبات واردة حاليًا.</div>
-      </div>
-
-      <div class="card" id="audit">
-        <h2>سجل التدقيق <span class="tag">للقراءة فقط — غير قابل للتعديل</span></h2>
-        <div id="auditList"></div>
-      </div>
+  <!-- ═══════════ نظرة عامة ═══════════ -->
+  <section class="view active" id="view-dashboard">
+    <div class="kpis">
+      <div class="kpi"><div class="v" id="kUsers">0</div><div class="l">إجمالي المستخدمين</div></div>
+      <div class="kpi"><div class="v" id="kActiveUsers">0</div><div class="l">مستخدمون نشطون</div></div>
+      <div class="kpi"><div class="v" id="kPendingUploads">0</div><div class="l">ملفات بانتظار الموافقة</div></div>
+      <div class="kpi"><div class="v" id="kFlagsOn">0</div><div class="l">ميزات مفعّلة</div></div>
     </div>
 
-    <div>
-      <div class="card" id="flags">
-        <h2>أعلام الميزات <span class="tag">Feature Flags</span></h2>
-        <div id="flagsList"></div>
+    <div class="card">
+      <h2>أحدث النشاطات <span class="tag">Live</span></h2>
+      <div id="recentAudit"></div>
+    </div>
+
+    <div class="card">
+      <h2>ملخص عام للتطبيق</h2>
+      <div class="kpis">
+        <div class="kpi"><div class="v" id="kLeads">0</div><div class="l">عملاء محتملون</div></div>
+        <div class="kpi"><div class="v" id="kClients">0</div><div class="l">عملاء</div></div>
+        <div class="kpi"><div class="v" id="kPolicies">0</div><div class="l">بوليصات</div></div>
+        <div class="kpi"><div class="v" id="kClaims">0</div><div class="l">مطالبات</div></div>
       </div>
     </div>
-  </div>
+  </section>
+
+  <!-- ═══════════ إدارة المستخدمين ═══════════ -->
+  <section class="view" id="view-users">
+    <div class="card">
+      <h2>إدارة المستخدمين <span class="tag" id="usersCount">0</span></h2>
+      <div class="filters">
+        <input type="text" id="userSearch" placeholder="بحث بالاسم أو البريد...">
+        <select id="userStatusFilter">
+          <option value="">كل الحالات</option>
+          <option value="active">نشط</option>
+          <option value="pending">بانتظار الموافقة</option>
+          <option value="suspended">موقوف</option>
+        </select>
+      </div>
+      <table id="usersTable">
+        <thead>
+          <tr><th>الاسم</th><th>البريد</th><th>الدور</th><th>الحالة</th><th>التاريخ</th><th>إجراءات</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="empty" id="usersEmpty" style="display:none">لا يوجد مستخدمون مطابقون.</div>
+    </div>
+  </section>
+
+  <!-- ═══════════ موافقة الملفات ═══════════ -->
+  <section class="view" id="view-uploads">
+    <div class="card">
+      <h2>الملفات بانتظار الموافقة <span class="tag" id="uploadsCount">0</span></h2>
+      <div class="filters">
+        <select id="uploadStatusFilter">
+          <option value="pending">بانتظار الموافقة</option>
+          <option value="approved">مقبولة</option>
+          <option value="rejected">مرفوضة</option>
+          <option value="">الكل</option>
+        </select>
+      </div>
+      <div id="uploadsList"></div>
+      <div class="empty" id="uploadsEmpty" style="display:none">لا توجد ملفات لعرضها.</div>
+    </div>
+  </section>
+
+  <!-- ═══════════ أعلام الميزات ═══════════ -->
+  <section class="view" id="view-flags">
+    <div class="card">
+      <h2>أعلام الميزات <span class="tag">Feature Flags</span></h2>
+      <p style="color:var(--muted);font-size:12.5px;margin:0 0 14px">
+        تفعيل/تعطيل الميزات هنا يتحكم فورًا في ظهور صفحات واجهة الوسيط (CRM).
+      </p>
+      <div id="flagsList"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════ الإشعارات ═══════════ -->
+  <section class="view" id="view-notifications">
+    <div class="card">
+      <h2>إنشاء إشعار جديد</h2>
+      <form id="notifForm">
+        <div class="form-row">
+          <div><label>العنوان</label><input id="nTitle" required placeholder="مثال: تحديث جديد في وحدة المطالبات"></div>
+          <div><label>النوع</label>
+            <select id="nType">
+              <option value="info">معلومة</option>
+              <option value="success">نجاح</option>
+              <option value="warning">تحذير</option>
+              <option value="danger">تنبيه هام</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row full">
+          <div><label>النص</label><textarea id="nBody" rows="3" required placeholder="اكتب نص الإشعار الذي سيظهر للوسيط..."></textarea></div>
+        </div>
+        <button class="btn" type="submit">إرسال الإشعار</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>الإشعارات المُرسلة <span class="tag" id="notifCount">0</span></h2>
+      <div id="notifList"></div>
+      <div class="empty" id="notifEmpty" style="display:none">لا توجد إشعارات بعد.</div>
+    </div>
+  </section>
+
+  <!-- ═══════════ معاينة واجهة الوسيط ═══════════ -->
+  <section class="view" id="view-portal">
+    <div class="card">
+      <h2>معاينة صفحات واجهة الوسيط <span class="tag">CRM Preview</span></h2>
+      <p style="color:var(--muted);font-size:12.5px;margin:0 0 14px">
+        يمكنك فتح أي صفحة من واجهة الوسيط مباشرة من هنا لمعاينتها كما يراها المستخدم.
+      </p>
+      <div class="portal-preview-grid" id="portalGrid"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════ سجل التدقيق ═══════════ -->
+  <section class="view" id="view-audit">
+    <div class="card">
+      <h2>سجل التدقيق <span class="tag">للقراءة فقط</span></h2>
+      <div id="auditList"></div>
+      <div class="empty" id="auditEmpty" style="display:none">لا توجد أحداث مسجلة بعد.</div>
+    </div>
+  </section>
 </main>
 
 <script>
-const LEADS_KEY='brokeros_leads';
-const FLAGS_KEY='brokeros_feature_flags';
-const AUDIT_KEY='brokeros_audit_log';
-const FLAG_DEFS=[
-  {key:'clients',name:'العملاء',desc:'وحدة إدارة العملاء و Client 360'},
-  {key:'opportunities',name:'الفرص',desc:'مسار الفرص التجارية'},
-  {key:'quotes',name:'عروض الأسعار',desc:'تحويل العروض إلى بوليصات'},
-  {key:'policies',name:'الوثائق / البوليصات',desc:'إدارة البوليصات والتجديدات'},
-  {key:'claims',name:'المطالبات',desc:'متابعة مطالبات العملاء'},
-  {key:'payments',name:'المدفوعات',desc:'التحصيل والمدفوعات'},
-  {key:'reports',name:'التقارير',desc:'تحليلات أداء الوسيط'},
+/* ═══════════════════════════════════════════════════════════
+   Platform Admin — Broker OS
+   ═══════════════════════════════════════════════════════════ */
+
+const KEYS = {
+  USERS: 'brokeros_users',
+  LEADS: 'brokeros_leads',
+  CLIENTS: 'brokeros_clients',
+  POLICIES: 'brokeros_policies',
+  CLAIMS: 'brokeros_claims',
+  UPLOADS: 'brokeros_uploads',
+  FLAGS: 'brokeros_feature_flags',
+  AUDIT: 'brokeros_audit_log',
+  NOTIFICATIONS: 'brokeros_notifications',
+};
+
+const FLAG_DEFS = [
+  {key:'clients',       name:'العملاء',              desc:'وحدة إدارة العملاء و Client 360'},
+  {key:'opportunities', name:'الفرص',                desc:'مسار الفرص التجارية'},
+  {key:'quotes',        name:'عروض الأسعار',         desc:'تحويل العروض إلى بوليصات'},
+  {key:'policies',      name:'الوثائق / البوليصات',  desc:'إدارة البوليصات والتجديدات'},
+  {key:'claims',        name:'المطالبات',            desc:'متابعة مطالبات العملاء'},
+  {key:'payments',      name:'المدفوعات',            desc:'التحصيل والمدفوعات'},
+  {key:'reports',       name:'التقارير',             desc:'تحليلات أداء الوسيط'},
+  {key:'notifications', name:'الإشعارات',            desc:'استقبال إشعارات المنصة'},
 ];
 
-function readLeads(){try{return JSON.parse(localStorage.getItem(LEADS_KEY))||[]}catch(e){return []}}
-function writeLeads(l){localStorage.setItem(LEADS_KEY,JSON.stringify(l))}
-function readFlags(){const d={};FLAG_DEFS.forEach(f=>d[f.key]=true);try{return {...d,...(JSON.parse(localStorage.getItem(FLAGS_KEY))||{})}}catch(e){return d}}
-function writeFlags(f){localStorage.setItem(FLAGS_KEY,JSON.stringify(f))}
-function readAudit(){try{return JSON.parse(localStorage.getItem(AUDIT_KEY))||[]}catch(e){return []}}
-function pushAudit(text){const log=readAudit();log.push({text,time:new Date().toLocaleString('ar-EG')});localStorage.setItem(AUDIT_KEY,JSON.stringify(log.slice(-30)))}
+const PORTAL_PAGES = [
+  {id:'dashboard',    name:'لوحة القيادة',       desc:'نظرة عامة على أداء الوسيط'},
+  {id:'clients',      name:'العملاء',             desc:'إدارة قاعدة العملاء'},
+  {id:'leads',        name:'العملاء المحتملون',  desc:'متابعة الطلبات الجديدة'},
+  {id:'opportunities',name:'الفرص',               desc:'مسار الفرص التجارية'},
+  {id:'quotes',       name:'عروض الأسعار',        desc:'إنشاء ومتابعة العروض'},
+  {id:'policies',     name:'الوثائق',             desc:'البوليصات والتجديدات'},
+  {id:'claims',       name:'المطالبات',           desc:'متابعة المطالبات'},
+  {id:'payments',     name:'المدفوعات',           desc:'التحصيل والمدفوعات'},
+  {id:'documents',    name:'المستندات',           desc:'رفع وإدارة الملفات'},
+  {id:'reports',      name:'التقارير',            desc:'تحليلات الأداء'},
+  {id:'notifications',name:'الإشعارات',           desc:'إشعارات المنصة'},
+];
 
-function statusBadge(s){
-  const map={'جديد':'b-new','قيد المراجعة':'b-review','مقبول':'b-approved','مرفوض':'b-rejected'};
-  return `<span class="badge ${map[s]||'b-new'}">${s}</span>`;
+/* ── أدوات البيانات ── */
+function read(key, fallback){ try{ return JSON.parse(localStorage.getItem(key)) ?? fallback }catch(e){ return fallback } }
+function write(key, val){ localStorage.setItem(key, JSON.stringify(val)) }
+
+function readLeads(){ return read(KEYS.LEADS, []) }
+function writeLeads(v){ write(KEYS.LEADS, v) }
+function readUsers(){ return read(KEYS.USERS, []) }
+function writeUsers(v){ write(KEYS.USERS, v) }
+function readUploads(){ return read(KEYS.UPLOADS, []) }
+function writeUploads(v){ write(KEYS.UPLOADS, v) }
+function readFlags(){ const d={}; FLAG_DEFS.forEach(f=>d[f.key]=true); return {...d, ...read(KEYS.FLAGS, {})} }
+function writeFlags(v){ write(KEYS.FLAGS, v) }
+function readAudit(){ return read(KEYS.AUDIT, []) }
+function readNotifications(){ return read(KEYS.NOTIFICATIONS, []) }
+function writeNotifications(v){ write(KEYS.NOTIFICATIONS, v) }
+function readClients(){ return read(KEYS.CLIENTS, []) }
+function readPolicies(){ return read(KEYS.POLICIES, []) }
+function readClaims(){ return read(KEYS.CLAIMS, []) }
+
+function pushAudit(text){
+  const log = readAudit();
+  log.push({text, time:new Date().toLocaleString('ar-EG')});
+  write(KEYS.AUDIT, log.slice(-200));
 }
 
-function renderLeads(){
-  const leads=readLeads();
-  document.getElementById('kNew').textContent=leads.filter(l=>l.status==='جديد').length;
-  document.getElementById('kReview').textContent=leads.filter(l=>l.status==='قيد المراجعة').length;
-  document.getElementById('kApproved').textContent=leads.filter(l=>l.status==='مقبول').length;
-  document.getElementById('kRejected').textContent=leads.filter(l=>l.status==='مرفوض').length;
-  document.getElementById('qTag').textContent=leads.length;
-
-  const tbody=document.querySelector('#leadsTable tbody');
-  tbody.innerHTML='';
-  [...leads].reverse().forEach(l=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${l.name}</td><td>${l.phone||'—'}</td><td>${l.type}</td><td>${l.source||'—'}</td>
-      <td>
-        <select class="statusSel" data-id="${l.id}">
-          ${['جديد','قيد المراجعة','مقبول','مرفوض'].map(s=>`<option ${s===l.status?'selected':''}>${s}</option>`).join('')}
-        </select>
-      </td>`;
-    tbody.appendChild(tr);
-  });
-  document.getElementById('emptyMsg').style.display = leads.length? 'none':'block';
-
-  document.querySelectorAll('.statusSel').forEach(sel=>{
-    sel.addEventListener('change',e=>{
-      const id=e.target.getAttribute('data-id');
-      const all=readLeads();
-      const idx=all.findIndex(x=>x.id===id);
-      if(idx>-1){
-        const prev=all[idx].status;
-        all[idx].status=e.target.value;
-        writeLeads(all);
-        pushAudit(`تغيير حالة طلب «${all[idx].name}» من "${prev}" إلى "${e.target.value}"`);
-        renderLeads(); renderAudit();
-      }
-    });
-  });
+/* ── بذر بيانات تجريبية عند أول تشغيل ── */
+function seedDemoData(){
+  if(!localStorage.getItem(KEYS.USERS)){
+    writeUsers([
+      {uid:'u1', name:'إسلام شاهين', email:'eslam@broker.os', role:'broker', status:'active', created:'2025-01-12'},
+      {uid:'u2', name:'سارة محمود',  email:'sara@broker.os',  role:'broker', status:'active', created:'2025-02-03'},
+      {uid:'u3', name:'أحمد فتحي',   email:'ahmed@broker.os', role:'broker', status:'pending', created:'2025-03-21'},
+      {uid:'u4', name:'منى عبدالله', email:'mona@broker.os',  role:'broker', status:'active', created:'2025-04-08'},
+      {uid:'u5', name:'خالد يوسف',   email:'khaled@broker.os',role:'broker', status:'suspended', created:'2025-05-15'},
+    ]);
+  }
+  if(!localStorage.getItem(KEYS.UPLOADS)){
+    writeUploads([
+      {id:'up1', fileName:'هوية_أحمد_فتحي.pdf',    owner:'أحمد فتحي',   type:'هوية',       size:'820KB', status:'pending',  date:'2025-06-01'},
+      {id:'up2', fileName:'رخصة_سيارة_سارة.pdf',   owner:'سارة محمود',  type:'رخصة',       size:'1.2MB', status:'pending',  date:'2025-06-02'},
+      {id:'up3', fileName:'عقد_تأمين_صحي.pdf',      owner:'منى عبدالله', type:'عقد',        size:'2.1MB', status:'pending',  date:'2025-06-03'},
+      {id:'up4', fileName:'فاتورة_مطالبة_01.pdf',   owner:'خالد يوسف',   type:'فاتورة',     size:'340KB', status:'approved', date:'2025-05-28'},
+    ]);
+  }
+  if(!localStorage.getItem(KEYS.NOTIFICATIONS)){
+    writeNotifications([
+      {id:'n1', title:'مرحبًا بك في Broker OS', body:'تم تفعيل حسابك بنجاح، يمكنك البدء بإضافة عملائك.', type:'success', date:'2025-06-01 10:20'},
+    ]);
+  }
+  if(!localStorage.getItem(KEYS.LEADS)) writeLeads([]);
+  if(!localStorage.getItem(KEYS.CLIENTS)) write([]);
+  if(!localStorage.getItem(KEYS.POLICIES)) write([]);
+  if(!localStorage.getItem(KEYS.CLAIMS)) write([]);
 }
 
-function renderFlags(){
-  const flags=readFlags();
-  const wrap=document.getElementById('flagsList');
-  wrap.innerHTML='';
-  FLAG_DEFS.forEach(f=>{
-    const row=document.createElement('div');
-    row.className='flag-row';
-    row.innerHTML=`<div><div class="name">${f.name}</div><div class="desc">${f.desc}</div></div>
-      <label class="switch"><input type="checkbox" data-key="${f.key}" ${flags[f.key]!==false?'checked':''}><span class="slider"></span></label>`;
-    wrap.appendChild(row);
-  });
-  wrap.querySelectorAll('input[type=checkbox]').forEach(cb=>{
-    cb.addEventListener('change',e=>{
-      const flags=readFlags();
-      flags[e.target.getAttribute('data-key')]=e.target.checked;
-      writeFlags(flags);
-      pushAudit(`تم ${e.target.checked?'تفعيل':'تعطيل'} علم الميزة "${e.target.getAttribute('data-key')}"`);
-      renderAudit();
-    });
-  });
+/* ── التنقل بين الصفحات ── */
+function showView(route){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const el = document.getElementById('view-'+route);
+  if(el) el.classList.add('active');
+
+  document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('active', a.dataset.route===route));
+  const titles = {
+    dashboard:'نظرة عامة', users:'إدارة المستخدمين', uploads:'موافقة الملفات',
+    flags:'أعلام الميزات', notifications:'الإشعارات', portal:'معاينة واجهة الوسيط', audit:'سجل التدقيق'
+  };
+  document.getElementById('pageTitle').textContent = titles[route] || 'نظرة عامة';
+  location.hash = '#/'+route;
 }
 
-function renderAudit(){
-  const log=[...readAudit()].reverse();
-  const wrap=document.getElementById('auditList');
-  wrap.innerHTML = log.length ? '' : '<div class="empty">لا توجد أحداث مسجلة بعد.</div>';
+function initNav(){
+  document.querySelectorAll('.nav a').forEach(a=>{
+    a.addEventListener('click', ()=> showView(a.dataset.route));
+  });
+  const initial = (location.hash.replace('#/','') || 'dashboard');
+  showView(initial);
+}
+
+/* ── KPI العدادات ── */
+function updateBadges(){
+  const users = readUsers();
+  const uploads = readUploads();
+  document.getElementById('badgeUsers').textContent = users.filter(u=>u.status==='pending').length;
+  document.getElementById('badgeUploads').textContent = uploads.filter(u=>u.status==='pending').length;
+}
+
+function renderDashboard(){
+  const users = readUsers();
+  const uploads = readUploads();
+  const flags = readFlags();
+
+  document.getElementById('kUsers').textContent = users.length;
+  document.getElementById('kActiveUsers').textContent = users.filter(u=>u.status==='active').length;
+  document.getElementById('kPendingUploads').textContent = uploads.filter(u=>u.status==='pending').length;
+  document.getElementById('kFlagsOn').textContent = Object.values(flags).filter(v=>v!==false).length;
+
+  document.getElementById('kLeads').textContent = readLeads().length;
+  document.getElementById('kClients').textContent = readClients().length;
+  document.getElementById('kPolicies').textContent = readPolicies().length;
+  document.getElementById('kClaims').textContent = readClaims().length;
+
+  const log = [...readAudit()].reverse().slice(0, 8);
+  const wrap = document.getElementById('recentAudit');
+  wrap.innerHTML = log.length ? '' : '<div class="empty">لا توجد نشاطات بعد.</div>';
   log.forEach(l=>{
-    const div=document.createElement('div');
-    div.className='log-item';
-    div.innerHTML=`<b>${l.time}</b> — ${l.text}`;
+    const div = document.createElement('div');
+    div.className = 'log-item';
+    div.innerHTML = `<b>${l.time}</b> — ${l.text}`;
     wrap.appendChild(div);
   });
 }
 
-function renderAll(){renderLeads();renderFlags();renderAudit();}
-window.addEventListener('storage',renderAll);
-setInterval(renderAll,2500);
+/* ── إدارة المستخدمين ── */
+function renderUsers(){
+  const all = readUsers();
+  const q = document.getElementById('userSearch').value.trim().toLowerCase();
+  const st = document.getElementById('userStatusFilter').value;
+
+  const list = all.filter(u=>{
+    const okQ = !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+    const okS = !st || u.status===st;
+    return okQ && okS;
+  });
+
+  const tbody = document.querySelector('#usersTable tbody');
+  tbody.innerHTML = '';
+  const statusLabel = {active:'نشط', pending:'بانتظار الموافقة', suspended:'موقوف'};
+  const statusClass = {active:'b-active', pending:'b-pending', suspended:'b-suspended'};
+
+  list.forEach(u=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${u.name}</td>
+      <td>${u.email}</td>
+      <td>${u.role}</td>
+      <td><span class="badge ${statusClass[u.status]||'b-pending'}">${statusLabel[u.status]||u.status}</span></td>
+      <td>${u.created||'—'}</td>
+      <td>
+        ${u.status==='pending' ? `<button class="btn btn-ok btn-sm" data-act="approve" data-uid="${u.uid}">موافقة</button>` : ''}
+        ${u.status==='active' ? `<button class="btn btn-bad btn-sm" data-act="suspend" data-uid="${u.uid}">إيقاف</button>` : ''}
+        ${u.status==='suspended' ? `<button class="btn btn-ok btn-sm" data-act="activate" data-uid="${u.uid}">تنشيط</button>` : ''}
+      </td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('usersEmpty').style.display = list.length ? 'none' : 'block';
+  document.getElementById('usersCount').textContent = list.length;
+
+  tbody.querySelectorAll('button[data-act]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const uid = btn.dataset.uid;
+      const act = btn.dataset.act;
+      const users = readUsers();
+      const i = users.findIndex(x=>x.uid===uid);
+      if(i<0) return;
+      if(act==='approve'){ users[i].status='active'; pushAudit(`تمت الموافقة على المستخدم «${users[i].name}»`); }
+      if(act==='suspend'){ users[i].status='suspended'; pushAudit(`تم إيقاف المستخدم «${users[i].name}»`); }
+      if(act==='activate'){ users[i].status='active'; pushAudit(`تم تنشيط المستخدم «${users[i].name}»`); }
+      writeUsers(users);
+      renderAll();
+    });
+  });
+}
+
+/* ── موافقة الملفات ── */
+function renderUploads(){
+  const all = readUploads();
+  const st = document.getElementById('uploadStatusFilter').value;
+  const list = all.filter(u => !st || u.status===st);
+
+  const wrap = document.getElementById('uploadsList');
+  wrap.innerHTML = '';
+  const statusLabel = {pending:'بانتظار الموافقة', approved:'مقبولة', rejected:'مرفوضة'};
+  const statusClass = {pending:'b-pending', approved:'b-approved', rejected:'b-rejected'};
+
+  list.forEach(f=>{
+    const div = document.createElement('div');
+    div.className = 'upload-item';
+    div.innerHTML = `
+      <div class="info">
+        <b>${f.fileName}</b>
+        <span>صاحب الملف: ${f.owner} · النوع: ${f.type} · الحجم: ${f.size} · التاريخ: ${f.date}</span>
+        <div style="margin-top:6px"><span class="badge ${statusClass[f.status]}">${statusLabel[f.status]}</span></div>
+      </div>
+      <div class="actions">
+        ${f.status==='pending' ? `
+          <button class="btn btn-ok btn-sm" data-act="approve" data-id="${f.id}">موافقة</button>
+          <button class="btn btn-bad btn-sm" data-act="reject" data-id="${f.id}">رفض</button>
+        ` : ''}
+      </div>`;
+    wrap.appendChild(div);
+  });
+
+  document.getElementById('uploadsEmpty').style.display = list.length ? 'none' : 'block';
+  document.getElementById('uploadsCount').textContent = list.length;
+
+  wrap.querySelectorAll('button[data-act]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.id;
+      const act = btn.dataset.act;
+      const all = readUploads();
+      const i = all.findIndex(x=>x.id===id);
+      if(i<0) return;
+      if(act==='approve'){ all[i].status='approved'; pushAudit(`تمت الموافقة على ملف «${all[i].fileName}»`); }
+      if(act==='reject'){ all[i].status='rejected'; pushAudit(`تم رفض ملف «${all[i].fileName}»`); }
+      writeUploads(all);
+      renderAll();
+    });
+  });
+}
+
+/* ── أعلام الميزات ── */
+function renderFlags(){
+  const flags = readFlags();
+  const wrap = document.getElementById('flagsList');
+  wrap.innerHTML = '';
+  FLAG_DEFS.forEach(f=>{
+    const row = document.createElement('div');
+    row.className = 'flag-row';
+    row.innerHTML = `
+      <div>
+        <div class="name">${f.name}</div>
+        <div class="desc">${f.desc}</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" data-key="${f.key}" ${flags[f.key]!==false?'checked':''}>
+        <span class="slider"></span>
+      </label>`;
+    wrap.appendChild(row);
+  });
+
+  wrap.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change', e=>{
+      const flags = readFlags();
+      const key = e.target.getAttribute('data-key');
+      flags[key] = e.target.checked;
+      writeFlags(flags);
+      const label = FLAG_DEFS.find(f=>f.key===key)?.name || key;
+      pushAudit(`تم ${e.target.checked?'تفعيل':'تعطيل'} ميزة «${label}»`);
+      renderAll();
+    });
+  });
+}
+
+/* ── الإشعارات ── */
+function renderNotifications(){
+  const list = [...readNotifications()].reverse();
+  const wrap = document.getElementById('notifList');
+  wrap.innerHTML = '';
+  const typeLabel = {info:'معلومة', success:'نجاح', warning:'تحذير', danger:'هام'};
+  const typeColor = {info:'var(--info)', success:'var(--ok)', warning:'var(--warn)', danger:'var(--bad)'};
+
+  list.forEach(n=>{
+    const div = document.createElement('div');
+    div.className = 'notification-item';
+    div.innerHTML = `
+      <div class="info">
+        <b>${n.title}</b>
+        <p>${n.body}</p>
+        <small>${n.date} · <span style="color:${typeColor[n.type]||'var(--info)'}">${typeLabel[n.type]||n.type}</span></small>
+      </div>
+      <button class="btn btn-bad btn-sm" data-id="${n.id}">حذف</button>`;
+    wrap.appendChild(div);
+  });
+
+  document.getElementById('notifEmpty').style.display = list.length ? 'none' : 'block';
+  document.getElementById('notifCount').textContent = list.length;
+
+  wrap.querySelectorAll('button[data-id]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.id;
+      const all = readNotifications().filter(n=>n.id!==id);
+      writeNotifications(all);
+      pushAudit(`تم حذف إشعار`);
+      renderAll();
+    });
+  });
+}
+
+document.getElementById('notifForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const list = readNotifications();
+  list.push({
+    id:'n'+Date.now(),
+    title: document.getElementById('nTitle').value.trim(),
+    body: document.getElementById('nBody').value.trim(),
+    type: document.getElementById('nType').value,
+    date: new Date().toLocaleString('ar-EG')
+  });
+  writeNotifications(list);
+  pushAudit(`تم إرسال إشعار بعنوان «${document.getElementById('nTitle').value.trim()}»`);
+  e.target.reset();
+  renderAll();
+});
+
+/* ── معاينة واجهة الوسيط ── */
+function renderPortalPreview(){
+  const wrap = document.getElementById('portalGrid');
+  wrap.innerHTML = '';
+  PORTAL_PAGES.forEach(p=>{
+    const card = document.createElement('div');
+    card.className = 'portal-preview-card';
+    card.innerHTML = `
+      <h3>${p.name}</h3>
+      <p>${p.desc}</p>
+      <a href="user-portal.html#/${p.id}" target="_blank">فتح الصفحة ←</a>`;
+    wrap.appendChild(card);
+  });
+}
+
+/* ── سجل التدقيق ── */
+function renderAudit(){
+  const log = [...readAudit()].reverse();
+  const wrap = document.getElementById('auditList');
+  wrap.innerHTML = '';
+  if(!log.length){
+    document.getElementById('auditEmpty').style.display = 'block';
+    return;
+  }
+  document.getElementById('auditEmpty').style.display = 'none';
+  log.forEach(l=>{
+    const div = document.createElement('div');
+    div.className = 'log-item';
+    div.innerHTML = `<b>${l.time}</b> — ${l.text}`;
+    wrap.appendChild(div);
+  });
+}
+
+/* ── تشغيل كل شيء ── */
+function renderAll(){
+  updateBadges();
+  renderDashboard();
+  renderUsers();
+  renderUploads();
+  renderFlags();
+  renderNotifications();
+  renderPortalPreview();
+  renderAudit();
+}
+
+function initFilters(){
+  document.getElementById('userSearch').addEventListener('input', renderUsers);
+  document.getElementById('userStatusFilter').addEventListener('change', renderUsers);
+  document.getElementById('uploadStatusFilter').addEventListener('change', renderUploads);
+}
+
+/* ── بدء التشغيل ── */
+seedDemoData();
+initNav();
+initFilters();
 renderAll();
+
+window.addEventListener('storage', renderAll);
+setInterval(renderAll, 3000);
+window.addEventListener('hashchange', ()=>{
+  const route = location.hash.replace('#/','') || 'dashboard';
+  if(document.getElementById('view-'+route)) showView(route);
+});
 </script>
 </body>
 </html>
