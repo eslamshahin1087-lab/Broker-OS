@@ -63,8 +63,6 @@ tr:last-child td{border-bottom:none}
 .btn{background:var(--gold);color:var(--navy);border:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:12.5px;cursor:pointer;font-family:inherit}
 .btn:hover{background:var(--gold2)}
 .btn-sm{padding:5px 10px;font-size:11.5px}
-.btn-outline{background:transparent;border:1px solid var(--line);color:var(--text)}
-.btn-outline:hover{background:#1f2b40}
 .btn-ok{background:#123420;color:var(--ok);border:1px solid #1e5c33}
 .btn-ok:hover{background:#1a4a2b}
 .btn-bad{background:#3a1414;color:var(--bad);border:1px solid #6b2020}
@@ -120,6 +118,14 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
 .user-link p{margin:0 0 8px;font-size:12.5px;color:var(--muted)}
 .user-link a{display:block;text-align:center;background:transparent;border:1px solid var(--gold);color:var(--gold);font-weight:700;padding:8px;border-radius:8px;font-size:13.5px}
 
+.screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center}
+.screen .box{max-width:420px}
+.screen .mark{width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,var(--gold),var(--gold2));
+  display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--navy);font-size:24px;margin:0 auto 16px}
+.screen h2{margin:0 0 8px;font-size:20px;color:#fff}
+.screen p{margin:0 0 16px;color:var(--muted);font-size:13.5px;line-height:1.7}
+.screen .err{background:#3a1414;border:1px solid #6b2020;color:#ffb4b4;padding:10px 14px;border-radius:10px;font-size:12px;margin-top:12px;word-break:break-all}
+
 @media(max-width:760px){
   body{flex-direction:column}
   .side{width:100%;flex:none;height:auto;position:relative;padding:14px}
@@ -129,6 +135,29 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
 </style>
 </head>
 <body>
+
+<!-- ═══════════ شاشة التحميل ═══════════ -->
+<div class="screen" id="loadingScreen">
+  <div class="box">
+    <div class="mark">BO</div>
+    <h2>جار التحقق من الصلاحيات...</h2>
+    <p>يتم التأكد من أن حسابك لديه صلاحيات مدير المنصة.</p>
+  </div>
+</div>
+
+<!-- ═══════════ شاشة الخطأ ═══════════ -->
+<div class="screen" id="errorScreen" style="display:none">
+  <div class="box">
+    <div class="mark" style="background:linear-gradient(135deg,#EF4444,#DC2626);color:#fff">!</div>
+    <h2 id="errorTitle">حدث خطأ</h2>
+    <p id="errorMessage"></p>
+    <div class="err" id="errorDetails" style="display:none"></div>
+    <button class="btn" onclick="location.reload()" style="margin-top:16px">إعادة المحاولة</button>
+  </div>
+</div>
+
+<!-- ═══════════ الواجهة الرئيسية ═══════════ -->
+<div id="appRoot" style="display:none;width:100%;display:none">
 
 <aside class="side">
   <div class="brand">
@@ -156,10 +185,10 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
 <main class="main">
   <div class="topbar">
     <h1 id="pageTitle">نظرة عامة</h1>
-    <div class="pill">متصل كـ <b>Platform Admin</b> — platformAdmins/{uid}</div>
+    <div class="pill" id="adminPill">متصل كـ <b>Platform Admin</b></div>
   </div>
 
-  <!-- ═══════════ نظرة عامة ═══════════ -->
+  <!-- ═══ نظرة عامة ═══ -->
   <section class="view active" id="view-dashboard">
     <div class="kpis">
       <div class="kpi"><div class="v" id="kUsers">0</div><div class="l">إجمالي المستخدمين</div></div>
@@ -171,6 +200,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
     <div class="card">
       <h2>أحدث النشاطات <span class="tag">Live</span></h2>
       <div id="recentAudit"></div>
+      <div class="empty" id="recentAuditEmpty" style="display:none">لا توجد نشاطات بعد.</div>
     </div>
 
     <div class="card">
@@ -184,7 +214,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
     </div>
   </section>
 
-  <!-- ═══════════ إدارة المستخدمين ═══════════ -->
+  <!-- ═══ إدارة المستخدمين ═══ -->
   <section class="view" id="view-users">
     <div class="card">
       <h2>إدارة المستخدمين <span class="tag" id="usersCount">0</span></h2>
@@ -198,16 +228,14 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
         </select>
       </div>
       <table id="usersTable">
-        <thead>
-          <tr><th>الاسم</th><th>البريد</th><th>الدور</th><th>الحالة</th><th>التاريخ</th><th>إجراءات</th></tr>
-        </thead>
+        <thead><tr><th>الاسم</th><th>البريد</th><th>الدور</th><th>الحالة</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
         <tbody></tbody>
       </table>
       <div class="empty" id="usersEmpty" style="display:none">لا يوجد مستخدمون مطابقون.</div>
     </div>
   </section>
 
-  <!-- ═══════════ موافقة الملفات ═══════════ -->
+  <!-- ═══ موافقة الملفات ═══ -->
   <section class="view" id="view-uploads">
     <div class="card">
       <h2>الملفات بانتظار الموافقة <span class="tag" id="uploadsCount">0</span></h2>
@@ -224,7 +252,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
     </div>
   </section>
 
-  <!-- ═══════════ أعلام الميزات ═══════════ -->
+  <!-- ═══ أعلام الميزات ═══ -->
   <section class="view" id="view-flags">
     <div class="card">
       <h2>أعلام الميزات <span class="tag">Feature Flags</span></h2>
@@ -235,13 +263,13 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
     </div>
   </section>
 
-  <!-- ═══════════ الإشعارات ═══════════ -->
+  <!-- ═══ الإشعارات ═══ -->
   <section class="view" id="view-notifications">
     <div class="card">
       <h2>إنشاء إشعار جديد</h2>
       <form id="notifForm">
         <div class="form-row">
-          <div><label>العنوان</label><input id="nTitle" required placeholder="مثال: تحديث جديد في وحدة المطالبات"></div>
+          <div><label>العنوان</label><input id="nTitle" required placeholder="مثال: تحديث جديد"></div>
           <div><label>النوع</label>
             <select id="nType">
               <option value="info">معلومة</option>
@@ -252,7 +280,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
           </div>
         </div>
         <div class="form-row full">
-          <div><label>النص</label><textarea id="nBody" rows="3" required placeholder="اكتب نص الإشعار الذي سيظهر للوسيط..."></textarea></div>
+          <div><label>النص</label><textarea id="nBody" rows="3" required placeholder="اكتب نص الإشعار..."></textarea></div>
         </div>
         <button class="btn" type="submit">إرسال الإشعار</button>
       </form>
@@ -265,18 +293,18 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
     </div>
   </section>
 
-  <!-- ═══════════ معاينة واجهة الوسيط ═══════════ -->
+  <!-- ═══ معاينة واجهة الوسيط ═══ -->
   <section class="view" id="view-portal">
     <div class="card">
       <h2>معاينة صفحات واجهة الوسيط <span class="tag">CRM Preview</span></h2>
       <p style="color:var(--muted);font-size:12.5px;margin:0 0 14px">
-        يمكنك فتح أي صفحة من واجهة الوسيط مباشرة من هنا لمعاينتها كما يراها المستخدم.
+        افتح أي صفحة من واجهة الوسيط لمعاينتها كما يراها المستخدم.
       </p>
       <div class="portal-preview-grid" id="portalGrid"></div>
     </div>
   </section>
 
-  <!-- ═══════════ سجل التدقيق ═══════════ -->
+  <!-- ═══ سجل التدقيق ═══ -->
   <section class="view" id="view-audit">
     <div class="card">
       <h2>سجل التدقيق <span class="tag">للقراءة فقط</span></h2>
@@ -285,6 +313,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
     </div>
   </section>
 </main>
+</div>
 
 <!-- ═══════════ Firebase SDK ═══════════ -->
 <script type="module">
@@ -295,200 +324,388 @@ import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, dele
          query, where, orderBy, onSnapshot, serverTimestamp, addDoc }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-/* ═══════════ إعداد Firebase ═══════════ */
+/* ═══════════════════════════════════════════════════════
+   1) إعداد Firebase — استبدل القيم ببيانات مشروعك
+   ═══════════════════════════════════════════════════════ */
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
+  apiKey:            "YOUR_API_KEY",
+  authDomain:        "YOUR_PROJECT.firebaseapp.com",
+  projectId:         "YOUR_PROJECT_ID",
+  storageBucket:     "YOUR_PROJECT.appspot.com",
   messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  appId:             "YOUR_APP_ID"
 };
 
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-/* ═══════════ حالة المصادقة ═══════════ */
-let currentAdmin = null;
+/* ═══════════════════════════════════════════════════════
+   2) أدوات الشاشات
+   ═══════════════════════════════════════════════════════ */
+const screens = {
+  loading: document.getElementById('loadingScreen'),
+  error:   document.getElementById('errorScreen'),
+  app:     document.getElementById('appRoot'),
+};
 
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    document.body.innerHTML = `
-      <div style="margin:auto;text-align:center;padding:40px">
-        <h2>يجب تسجيل الدخول كمدير منصة</h2>
-        <p style="color:var(--muted)">يرجى تسجيل الدخول للمتابعة.</p>
-        <button onclick="location.reload()" style="margin-top:12px;padding:10px 20px;background:var(--gold);border:none;border-radius:8px;font-family:inherit;font-weight:700;cursor:pointer">تحديث الصفحة</button>
-      </div>`;
-    return;
+function showScreen(name, opts = {}){
+  Object.values(screens).forEach(s => s.style.display = 'none');
+  if(screens[name]) screens[name].style.display = name === 'app' ? 'block' : 'flex';
+
+  if(name === 'error'){
+    document.getElementById('errorTitle').textContent = opts.title || 'حدث خطأ';
+    document.getElementById('errorMessage').textContent = opts.message || '';
+    const det = document.getElementById('errorDetails');
+    if(opts.details){ det.style.display = 'block'; det.textContent = opts.details; }
+    else det.style.display = 'none';
   }
-
-  // التحقق من أن المستخدم مدير منصة
-  const adminDoc = await getDoc(doc(db, "platformAdmins", user.uid));
-  if (!adminDoc.exists()) {
-    document.body.innerHTML = `
-      <div style="margin:auto;text-align:center;padding:40px">
-        <h2>ليس لديك صلاحية الوصول</h2>
-        <p style="color:var(--muted)">هذا الحساب ليس مدير منصة.</p>
-      </div>`;
-    return;
-  }
-
-  currentAdmin = { uid: user.uid, email: user.email, ...adminDoc.data() };
-  document.querySelector('.pill').innerHTML =
-    `متصل كـ <b>${currentAdmin.name || 'Platform Admin'}</b> — platformAdmins/${user.uid}`;
-
-  initNav();
-  initFilters();
-  subscribeToData();
-});
-
-/* ═══════════ الاشتراكات الحية (onSnapshot) ═══════════ */
-let unsubscribeUsers, unsubscribeUploads, unsubscribeFlags, unsubscribeNotifs, unsubscribeAudit;
-
-function subscribeToData(){
-  // المستخدمون
-  unsubscribeUsers = onSnapshot(collection(db, "users"), (snap) => {
-    const users = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
-    renderUsers(users);
-    updateUserBadges(users);
-    renderDashboardCounts();
-  });
-
-  // الملفات المرفوعة
-  unsubscribeUploads = onSnapshot(collection(db, "uploads"), (snap) => {
-    const uploads = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderUploads(uploads);
-    updateUploadBadges(uploads);
-    renderDashboardCounts();
-  });
-
-  // أعلام الميزات
-  unsubscribeFlags = onSnapshot(doc(db, "settings", "featureFlags"), (docSnap) => {
-    const flags = docSnap.exists() ? docSnap.data() : {};
-    renderFlags(flags);
-    renderDashboardCounts();
-  });
-
-  // الإشعارات
-  unsubscribeNotifs = onSnapshot(
-    query(collection(db, "notifications"), orderBy("createdAt", "desc")),
-    (snap) => {
-      const notifs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderNotifications(notifs);
-    }
-  );
-
-  // سجل التدقيق
-  unsubscribeAudit = onSnapshot(
-    query(collection(db, "auditLog"), orderBy("createdAt", "desc")),
-    (snap) => {
-      const logs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderAudit(logs);
-    }
-  );
 }
 
-/* ═══════════ التنقل ═══════════ */
+/* ═══════════════════════════════════════════════════════
+   3) حالة التطبيق
+   ═══════════════════════════════════════════════════════ */
+let currentAdmin = null;
+let unsubscribers = [];
+
+const state = {
+  users: [],
+  uploads: [],
+  flags: {},
+  notifications: [],
+  auditLog: [],
+  leads: [],
+  clients: [],
+  policies: [],
+  claims: [],
+};
+
+/* ═══════════════════════════════════════════════════════
+   4) التحقق من صلاحيات الأدمن — حسب مجموعة "admin"
+   ═══════════════════════════════════════════════════════ */
+async function checkAdmin(user){
+  const email = (user.email || '').toLowerCase().trim();
+
+  // (أ) محاولة البحث بالبريد الإلكتروني (حقل email)
+  try {
+    const byEmail = await getDocs(
+      query(collection(db, "admin"), where("email", "==", email))
+    );
+    if(!byEmail.empty){
+      return { uid: user.uid, email: user.email, ...byEmail.docs[0].data() };
+    }
+  } catch(e){ console.warn("Query by email failed:", e.message); }
+
+  // (ب) محاولة البحث بالبريد بحالة مختلفة (capital)
+  try {
+    const byEmailOriginal = await getDocs(
+      query(collection(db, "admin"), where("email", "==", user.email))
+    );
+    if(!byEmailOriginal.empty){
+      return { uid: user.uid, email: user.email, ...byEmailOriginal.docs[0].data() };
+    }
+  } catch(e){ /* ignore */ }
+
+  // (ج) محاولة البحث بـ uid
+  try {
+    const byUid = await getDocs(
+      query(collection(db, "admin"), where("uid", "==", user.uid))
+    );
+    if(!byUid.empty){
+      return { uid: user.uid, email: user.email, ...byUid.docs[0].data() };
+    }
+  } catch(e){ /* ignore */ }
+
+  // (د) محاولة قراءة مستند بنفس البريد كـ ID
+  try {
+    const byDocId = await getDoc(doc(db, "admin", email));
+    if(byDocId.exists()){
+      return { uid: user.uid, email: user.email, ...byDocId.data() };
+    }
+  } catch(e){ /* ignore */ }
+
+  return null;
+}
+
+/* ═══════════════════════════════════════════════════════
+   5) مراقبة حالة المصادقة
+   ═══════════════════════════════════════════════════════ */
+onAuthStateChanged(auth, async (user) => {
+  // تنظيف الاشتراكات السابقة
+  unsubscribers.forEach(fn => { try{ fn(); }catch(e){} });
+  unsubscribers = [];
+
+  if(!user){
+    showScreen('error', {
+      title: 'يجب تسجيل الدخول',
+      message: 'هذه اللوحة مخصصة لمديري المنصة. يرجى تسجيل الدخول بحساب له صلاحيات إدارية.',
+      details: 'يمكنك تسجيل الدخول من صفحة تسجيل الدخول ثم إعادة المحاولة.'
+    });
+    return;
+  }
+
+  try {
+    const admin = await checkAdmin(user);
+    if(!admin){
+      showScreen('error', {
+        title: 'ليس لديك صلاحية الوصول',
+        message: `الحساب (${user.email}) غير موجود في مجموعة "admin" على Firestore.`,
+        details: 'تأكد من إضافة مستند في مجموعة "admin" يحتوي على حقل email بنفس البريد الإلكتروني.'
+      });
+      return;
+    }
+
+    currentAdmin = admin;
+    document.getElementById('adminPill').innerHTML =
+      `متصل كـ <b>${admin.name || admin.email || 'Platform Admin'}</b>`;
+
+    // إظهار التطبيق
+    showScreen('app');
+
+    // تهيئة الواجهة
+    initNav();
+    initFilters();
+    renderPortalPreview();
+    startSubscriptions();
+
+  } catch(err){
+    console.error("Admin check error:", err);
+    showScreen('error', {
+      title: 'خطأ في الاتصال بـ Firestore',
+      message: 'تعذّر التحقق من صلاحياتك. تأكد من قواعد الأمان (Security Rules) وإعدادات Firebase.',
+      details: err.message
+    });
+  }
+});
+
+/* ═══════════════════════════════════════════════════════
+   6) الاشتراكات الحية (onSnapshot) — لكل المجموعات
+   ═══════════════════════════════════════════════════════ */
+function startSubscriptions(){
+  const handleErr = (name) => (err) => {
+    console.error(`Snapshot error [${name}]:`, err);
+  };
+
+  // المستخدمون
+  unsubscribers.push(onSnapshot(
+    collection(db, "users"),
+    snap => {
+      state.users = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+      renderUsers();
+      updateUserBadges();
+      renderDashboard();
+    },
+    handleErr('users')
+  ));
+
+  // الملفات المرفوعة
+  unsubscribers.push(onSnapshot(
+    collection(db, "uploads"),
+    snap => {
+      state.uploads = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderUploads();
+      updateUploadBadges();
+      renderDashboard();
+    },
+    handleErr('uploads')
+  ));
+
+  // أعلام الميزات
+  unsubscribers.push(onSnapshot(
+    doc(db, "settings", "featureFlags"),
+    docSnap => {
+      state.flags = docSnap.exists() ? docSnap.data() : {};
+      renderFlags();
+      renderDashboard();
+    },
+    handleErr('featureFlags')
+  ));
+
+  // الإشعارات
+  unsubscribers.push(onSnapshot(
+    query(collection(db, "notifications"), orderBy("createdAt", "desc")),
+    snap => {
+      state.notifications = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderNotifications();
+    },
+    handleErr('notifications')
+  ));
+
+  // سجل التدقيق
+  unsubscribers.push(onSnapshot(
+    query(collection(db, "auditLog"), orderBy("createdAt", "desc")),
+    snap => {
+      state.auditLog = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderAudit();
+      renderRecentAudit();
+    },
+    handleErr('auditLog')
+  ));
+
+  // العملاء المحتملون
+  unsubscribers.push(onSnapshot(
+    collection(db, "leads"),
+    snap => {
+      state.leads = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderDashboard();
+    },
+    handleErr('leads')
+  ));
+
+  // العملاء
+  unsubscribers.push(onSnapshot(
+    collection(db, "clients"),
+    snap => {
+      state.clients = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderDashboard();
+    },
+    handleErr('clients')
+  ));
+
+  // البوليصات
+  unsubscribers.push(onSnapshot(
+    collection(db, "policies"),
+    snap => {
+      state.policies = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderDashboard();
+    },
+    handleErr('policies')
+  ));
+
+  // المطالبات
+  unsubscribers.push(onSnapshot(
+    collection(db, "claims"),
+    snap => {
+      state.claims = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderDashboard();
+    },
+    handleErr('claims')
+  ));
+}
+
+/* ═══════════════════════════════════════════════════════
+   7) التنقل
+   ═══════════════════════════════════════════════════════ */
 function showView(route){
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  const el = document.getElementById('view-'+route);
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById('view-' + route);
   if(el) el.classList.add('active');
-  document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('active', a.dataset.route===route));
+  document.querySelectorAll('.nav a').forEach(a =>
+    a.classList.toggle('active', a.dataset.route === route)
+  );
   const titles = {
-    dashboard:'نظرة عامة', users:'إدارة المستخدمين', uploads:'موافقة الملفات',
-    flags:'أعلام الميزات', notifications:'الإشعارات', portal:'معاينة واجهة الوسيط', audit:'سجل التدقيق'
+    dashboard:'نظرة عامة',
+    users:'إدارة المستخدمين',
+    uploads:'موافقة الملفات',
+    flags:'أعلام الميزات',
+    notifications:'الإشعارات',
+    portal:'معاينة واجهة الوسيط',
+    audit:'سجل التدقيق'
   };
   document.getElementById('pageTitle').textContent = titles[route] || 'نظرة عامة';
-  location.hash = '#/'+route;
+  if(location.hash !== '#/' + route) location.hash = '#/' + route;
 }
 
 function initNav(){
-  document.querySelectorAll('.nav a').forEach(a=>{
-    a.addEventListener('click', ()=> showView(a.dataset.route));
+  document.querySelectorAll('.nav a').forEach(a => {
+    a.addEventListener('click', () => showView(a.dataset.route));
   });
-  const initial = (location.hash.replace('#/','') || 'dashboard');
+  const initial = (location.hash.replace('#/', '') || 'dashboard');
   showView(initial);
 }
 
-/* ═══════════ سجل التدقيق (كتابة) ═══════════ */
+window.addEventListener('hashchange', () => {
+  const route = location.hash.replace('#/', '') || 'dashboard';
+  if(document.getElementById('view-' + route)) showView(route);
+});
+
+/* ═══════════════════════════════════════════════════════
+   8) كتابة سجل التدقيق
+   ═══════════════════════════════════════════════════════ */
 async function pushAudit(text){
-  await addDoc(collection(db, "auditLog"), {
-    text,
-    adminUid: currentAdmin?.uid || null,
-    adminName: currentAdmin?.name || null,
-    createdAt: serverTimestamp()
+  try {
+    await addDoc(collection(db, "auditLog"), {
+      text,
+      adminUid: currentAdmin?.uid || null,
+      adminName: currentAdmin?.name || currentAdmin?.email || null,
+      createdAt: serverTimestamp()
+    });
+  } catch(e){
+    console.warn("Failed to write audit log:", e.message);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   9) الشارات والـ KPIs
+   ═══════════════════════════════════════════════════════ */
+function updateUserBadges(){
+  const pending = state.users.filter(u => u.status === 'pending').length;
+  document.getElementById('badgeUsers').textContent = pending;
+  document.getElementById('badgeUsers').style.display = pending ? 'inline-block' : 'none';
+}
+
+function updateUploadBadges(){
+  const pending = state.uploads.filter(u => u.status === 'pending').length;
+  document.getElementById('badgeUploads').textContent = pending;
+  document.getElementById('badgeUploads').style.display = pending ? 'inline-block' : 'none';
+}
+
+function renderDashboard(){
+  document.getElementById('kUsers').textContent        = state.users.length;
+  document.getElementById('kActiveUsers').textContent  = state.users.filter(u => u.status === 'active').length;
+  document.getElementById('kPendingUploads').textContent = state.uploads.filter(u => u.status === 'pending').length;
+  document.getElementById('kFlagsOn').textContent      = Object.values(state.flags).filter(v => v !== false).length;
+
+  document.getElementById('kLeads').textContent    = state.leads.length;
+  document.getElementById('kClients').textContent  = state.clients.length;
+  document.getElementById('kPolicies').textContent = state.policies.length;
+  document.getElementById('kClaims').textContent   = state.claims.length;
+}
+
+function renderRecentAudit(){
+  const wrap = document.getElementById('recentAudit');
+  const log = state.auditLog.slice(0, 8);
+  wrap.innerHTML = '';
+  log.forEach(l => {
+    const div = document.createElement('div');
+    div.className = 'log-item';
+    div.innerHTML = `<b>${formatTime(l.createdAt)}</b> — ${l.text}`;
+    wrap.appendChild(div);
   });
+  document.getElementById('recentAuditEmpty').style.display = log.length ? 'none' : 'block';
 }
 
-/* ═══════════ KPI العدادات ═══════════ */
-function updateUserBadges(users){
-  document.getElementById('badgeUsers').textContent = users.filter(u=>u.status==='pending').length;
-}
-function updateUploadBadges(uploads){
-  document.getElementById('badgeUploads').textContent = uploads.filter(u=>u.status==='pending').length;
-}
-
-async function renderDashboardCounts(){
-  // مستخدمو التطبيق
-  const usersSnap = await getDocs(collection(db, "users"));
-  const users = usersSnap.docs.map(d=>d.data());
-  document.getElementById('kUsers').textContent = users.length;
-  document.getElementById('kActiveUsers').textContent = users.filter(u=>u.status==='active').length;
-
-  // الملفات المعلقة
-  const uploadsSnap = await getDocs(collection(db, "uploads"));
-  const uploads = uploadsSnap.docs.map(d=>d.data());
-  document.getElementById('kPendingUploads').textContent = uploads.filter(u=>u.status==='pending').length;
-
-  // أعلام الميزات
-  const flagsDoc = await getDoc(doc(db, "settings", "featureFlags"));
-  const flags = flagsDoc.exists() ? flagsDoc.data() : {};
-  document.getElementById('kFlagsOn').textContent = Object.values(flags).filter(v=>v!==false).length;
-
-  // إحصاءات CRM
-  const [leads, clients, policies, claims] = await Promise.all([
-    getDocs(collection(db, "leads")),
-    getDocs(collection(db, "clients")),
-    getDocs(collection(db, "policies")),
-    getDocs(collection(db, "claims"))
-  ]);
-  document.getElementById('kLeads').textContent = leads.size;
-  document.getElementById('kClients').textContent = clients.size;
-  document.getElementById('kPolicies').textContent = policies.size;
-  document.getElementById('kClaims').textContent = claims.size;
-}
-
-/* ═══════════ إدارة المستخدمين ═══════════ */
-let allUsers = [];
-function renderUsers(users){
-  allUsers = users;
-  const q = document.getElementById('userSearch').value.trim().toLowerCase();
+/* ═══════════════════════════════════════════════════════
+   10) إدارة المستخدمين
+   ═══════════════════════════════════════════════════════ */
+function renderUsers(){
+  const q  = (document.getElementById('userSearch').value || '').trim().toLowerCase();
   const st = document.getElementById('userStatusFilter').value;
 
-  const list = users.filter(u=>{
+  const list = state.users.filter(u => {
     const okQ = !q || (u.name||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q);
-    const okS = !st || u.status===st;
+    const okS = !st || u.status === st;
     return okQ && okS;
   });
 
   const tbody = document.querySelector('#usersTable tbody');
   tbody.innerHTML = '';
+
   const statusLabel = {active:'نشط', pending:'بانتظار الموافقة', suspended:'موقوف'};
   const statusClass = {active:'b-active', pending:'b-pending', suspended:'b-suspended'};
 
-  list.forEach(u=>{
+  list.forEach(u => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${u.name||'—'}</td>
-      <td>${u.email||'—'}</td>
-      <td>${u.role||'broker'}</td>
-      <td><span class="badge ${statusClass[u.status]||'b-pending'}">${statusLabel[u.status]||u.status||'—'}</span></td>
-      <td>${u.createdAt?.toDate?.().toLocaleDateString('ar-EG') || u.created || '—'}</td>
+      <td>${u.name || '—'}</td>
+      <td>${u.email || '—'}</td>
+      <td>${u.role || 'broker'}</td>
+      <td><span class="badge ${statusClass[u.status] || 'b-pending'}">${statusLabel[u.status] || u.status || '—'}</span></td>
+      <td>${formatDate(u.createdAt)}</td>
       <td>
-        ${u.status==='pending' ? `<button class="btn btn-ok btn-sm" data-act="approve" data-uid="${u.uid}">موافقة</button>` : ''}
-        ${u.status==='active' ? `<button class="btn btn-bad btn-sm" data-act="suspend" data-uid="${u.uid}">إيقاف</button>` : ''}
-        ${u.status==='suspended' ? `<button class="btn btn-ok btn-sm" data-act="activate" data-uid="${u.uid}">تنشيط</button>` : ''}
+        ${u.status === 'pending'   ? `<button class="btn btn-ok btn-sm"  data-act="approve"  data-uid="${u.uid}">موافقة</button>` : ''}
+        ${u.status === 'active'    ? `<button class="btn btn-bad btn-sm" data-act="suspend"  data-uid="${u.uid}">إيقاف</button>` : ''}
+        ${u.status === 'suspended' ? `<button class="btn btn-ok btn-sm"  data-act="activate" data-uid="${u.uid}">تنشيط</button>` : ''}
       </td>`;
     tbody.appendChild(tr);
   });
@@ -496,43 +713,64 @@ function renderUsers(users){
   document.getElementById('usersEmpty').style.display = list.length ? 'none' : 'block';
   document.getElementById('usersCount').textContent = list.length;
 
-  tbody.querySelectorAll('button[data-act]').forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
+  tbody.querySelectorAll('button[data-act]').forEach(btn => {
+    btn.addEventListener('click', async () => {
       const uid = btn.dataset.uid;
       const act = btn.dataset.act;
-      const userRef = doc(db, "users", uid);
-      if(act==='approve'){ await updateDoc(userRef, {status:'active'}); await pushAudit(`تمت الموافقة على المستخدم «${uid}»`); }
-      if(act==='suspend'){ await updateDoc(userRef, {status:'suspended'}); await pushAudit(`تم إيقاف المستخدم «${uid}»`); }
-      if(act==='activate'){ await updateDoc(userRef, {status:'active'}); await pushAudit(`تم تنشيط المستخدم «${uid}»`); }
+      const target = state.users.find(x => x.uid === uid);
+      if(!target) return;
+
+      try {
+        const ref = doc(db, "users", uid);
+        if(act === 'approve'){
+          await updateDoc(ref, { status:'active' });
+          await pushAudit(`تمت الموافقة على المستخدم «${target.name || target.email}»`);
+        }
+        if(act === 'suspend'){
+          await updateDoc(ref, { status:'suspended' });
+          await pushAudit(`تم إيقاف المستخدم «${target.name || target.email}»`);
+        }
+        if(act === 'activate'){
+          await updateDoc(ref, { status:'active' });
+          await pushAudit(`تم تنشيط المستخدم «${target.name || target.email}»`);
+        }
+      } catch(err){
+        alert('فشل تحديث حالة المستخدم: ' + err.message);
+      }
     });
   });
 }
 
-/* ═══════════ موافقة الملفات ═══════════ */
-let allUploads = [];
-function renderUploads(uploads){
-  allUploads = uploads;
+/* ═══════════════════════════════════════════════════════
+   11) موافقة الملفات
+   ═══════════════════════════════════════════════════════ */
+function renderUploads(){
   const st = document.getElementById('uploadStatusFilter').value;
-  const list = uploads.filter(u => !st || u.status===st);
+  const list = state.uploads
+    .filter(u => !st || u.status === st)
+    .sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
   const wrap = document.getElementById('uploadsList');
   wrap.innerHTML = '';
+
   const statusLabel = {pending:'بانتظار الموافقة', approved:'مقبولة', rejected:'مرفوضة'};
   const statusClass = {pending:'b-pending', approved:'b-approved', rejected:'b-rejected'};
 
-  list.forEach(f=>{
+  list.forEach(f => {
     const div = document.createElement('div');
     div.className = 'upload-item';
     div.innerHTML = `
       <div class="info">
-        <b>${f.fileName||'—'}</b>
-        <span>صاحب الملف: ${f.owner||'—'} · النوع: ${f.type||'—'} · الحجم: ${f.size||'—'}</span>
-        <div style="margin-top:6px"><span class="badge ${statusClass[f.status]}">${statusLabel[f.status]}</span></div>
+        <b>${f.fileName || '—'}</b>
+        <span>صاحب الملف: ${f.owner || '—'} · النوع: ${f.type || '—'} · الحجم: ${f.size || '—'}</span>
+        <div style="margin-top:6px">
+          <span class="badge ${statusClass[f.status] || 'b-pending'}">${statusLabel[f.status] || f.status}</span>
+        </div>
       </div>
       <div class="actions">
-        ${f.status==='pending' ? `
-          <button class="btn btn-ok btn-sm" data-act="approve" data-id="${f.id}">موافقة</button>
-          <button class="btn btn-bad btn-sm" data-act="reject" data-id="${f.id}">رفض</button>
+        ${f.status === 'pending' ? `
+          <button class="btn btn-ok btn-sm"  data-act="approve" data-id="${f.id}">موافقة</button>
+          <button class="btn btn-bad btn-sm" data-act="reject"  data-id="${f.id}">رفض</button>
         ` : ''}
       </div>`;
     wrap.appendChild(div);
@@ -541,33 +779,52 @@ function renderUploads(uploads){
   document.getElementById('uploadsEmpty').style.display = list.length ? 'none' : 'block';
   document.getElementById('uploadsCount').textContent = list.length;
 
-  wrap.querySelectorAll('button[data-act]').forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
-      const id = btn.dataset.id;
+  wrap.querySelectorAll('button[data-act]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id  = btn.dataset.id;
       const act = btn.dataset.act;
-      const ref = doc(db, "uploads", id);
-      if(act==='approve'){ await updateDoc(ref, {status:'approved'}); await pushAudit(`تمت الموافقة على ملف «${id}»`); }
-      if(act==='reject'){ await updateDoc(ref, {status:'rejected'}); await pushAudit(`تم رفض ملف «${id}»`); }
+      const target = state.uploads.find(x => x.id === id);
+      if(!target) return;
+
+      try {
+        const ref = doc(db, "uploads", id);
+        if(act === 'approve'){
+          await updateDoc(ref, { status:'approved' });
+          await pushAudit(`تمت الموافقة على ملف «${target.fileName}»`);
+        }
+        if(act === 'reject'){
+          await updateDoc(ref, { status:'rejected' });
+          await pushAudit(`تم رفض ملف «${target.fileName}»`);
+        }
+      } catch(err){
+        alert('فشل تحديث الملف: ' + err.message);
+      }
     });
   });
 }
 
-/* ═══════════ أعلام الميزات ═══════════ */
+/* ═══════════════════════════════════════════════════════
+   12) أعلام الميزات
+   ═══════════════════════════════════════════════════════ */
 const FLAG_DEFS = [
   {key:'clients',       name:'العملاء',              desc:'وحدة إدارة العملاء و Client 360'},
+  {key:'leads',         name:'العملاء المحتملون',    desc:'متابعة الطلبات الجديدة'},
   {key:'opportunities', name:'الفرص',                desc:'مسار الفرص التجارية'},
   {key:'quotes',        name:'عروض الأسعار',         desc:'تحويل العروض إلى بوليصات'},
   {key:'policies',      name:'الوثائق / البوليصات',  desc:'إدارة البوليصات والتجديدات'},
   {key:'claims',        name:'المطالبات',            desc:'متابعة مطالبات العملاء'},
   {key:'payments',      name:'المدفوعات',            desc:'التحصيل والمدفوعات'},
+  {key:'documents',     name:'المستندات',            desc:'رفع وإدارة الملفات'},
   {key:'reports',       name:'التقارير',             desc:'تحليلات أداء الوسيط'},
   {key:'notifications', name:'الإشعارات',            desc:'استقبال إشعارات المنصة'},
 ];
 
-function renderFlags(flags){
+function renderFlags(){
   const wrap = document.getElementById('flagsList');
   wrap.innerHTML = '';
-  FLAG_DEFS.forEach(f=>{
+
+  FLAG_DEFS.forEach(f => {
+    const isOn = state.flags[f.key] !== false;
     const row = document.createElement('div');
     row.className = 'flag-row';
     row.innerHTML = `
@@ -576,69 +833,90 @@ function renderFlags(flags){
         <div class="desc">${f.desc}</div>
       </div>
       <label class="switch">
-        <input type="checkbox" data-key="${f.key}" ${flags[f.key]!==false?'checked':''}>
+        <input type="checkbox" data-key="${f.key}" ${isOn ? 'checked' : ''}>
         <span class="slider"></span>
       </label>`;
     wrap.appendChild(row);
   });
 
-  wrap.querySelectorAll('input[type=checkbox]').forEach(cb=>{
-    cb.addEventListener('change', async e=>{
-      const key = e.target.getAttribute('data-key');
-      await setDoc(doc(db, "settings", "featureFlags"), {
-        [key]: e.target.checked
-      }, { merge: true });
-      const label = FLAG_DEFS.find(f=>f.key===key)?.name || key;
-      await pushAudit(`تم ${e.target.checked?'تفعيل':'تعطيل'} ميزة «${label}»`);
+  wrap.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', async e => {
+      const key   = e.target.getAttribute('data-key');
+      const label = FLAG_DEFS.find(f => f.key === key)?.name || key;
+      try {
+        await setDoc(doc(db, "settings", "featureFlags"),
+          { [key]: e.target.checked }, { merge:true });
+        await pushAudit(`تم ${e.target.checked ? 'تفعيل' : 'تعطيل'} ميزة «${label}»`);
+      } catch(err){
+        alert('فشل تحديث الميزة: ' + err.message);
+        e.target.checked = !e.target.checked;
+      }
     });
   });
 }
 
-/* ═══════════ الإشعارات ═══════════ */
-function renderNotifications(notifs){
+/* ═══════════════════════════════════════════════════════
+   13) الإشعارات
+   ═══════════════════════════════════════════════════════ */
+function renderNotifications(){
   const wrap = document.getElementById('notifList');
   wrap.innerHTML = '';
+
   const typeLabel = {info:'معلومة', success:'نجاح', warning:'تحذير', danger:'هام'};
   const typeColor = {info:'var(--info)', success:'var(--ok)', warning:'var(--warn)', danger:'var(--bad)'};
 
-  notifs.forEach(n=>{
+  state.notifications.forEach(n => {
     const div = document.createElement('div');
     div.className = 'notification-item';
     div.innerHTML = `
       <div class="info">
-        <b>${n.title}</b>
-        <p>${n.body}</p>
-        <small>${n.createdAt?.toDate?.().toLocaleString('ar-EG') || ''} · <span style="color:${typeColor[n.type]||'var(--info)'}">${typeLabel[n.type]||n.type}</span></small>
+        <b>${n.title || ''}</b>
+        <p>${n.body || ''}</p>
+        <small>${formatTime(n.createdAt)} ·
+          <span style="color:${typeColor[n.type] || 'var(--info)'}">${typeLabel[n.type] || n.type}</span>
+        </small>
       </div>
       <button class="btn btn-bad btn-sm" data-id="${n.id}">حذف</button>`;
     wrap.appendChild(div);
   });
 
-  document.getElementById('notifEmpty').style.display = notifs.length ? 'none' : 'block';
-  document.getElementById('notifCount').textContent = notifs.length;
+  document.getElementById('notifEmpty').style.display = state.notifications.length ? 'none' : 'block';
+  document.getElementById('notifCount').textContent = state.notifications.length;
 
-  wrap.querySelectorAll('button[data-id]').forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
-      await deleteDoc(doc(db, "notifications", btn.dataset.id));
-      await pushAudit(`تم حذف إشعار`);
+  wrap.querySelectorAll('button[data-id]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if(!confirm('تأكيد حذف الإشعار؟')) return;
+      try {
+        await deleteDoc(doc(db, "notifications", btn.dataset.id));
+        await pushAudit(`تم حذف إشعار`);
+      } catch(err){
+        alert('فشل الحذف: ' + err.message);
+      }
     });
   });
 }
 
-document.getElementById('notifForm').addEventListener('submit', async e=>{
+document.getElementById('notifForm').addEventListener('submit', async e => {
   e.preventDefault();
   const title = document.getElementById('nTitle').value.trim();
   const body  = document.getElementById('nBody').value.trim();
   const type  = document.getElementById('nType').value;
-  await addDoc(collection(db, "notifications"), {
-    title, body, type,
-    createdAt: serverTimestamp()
-  });
-  await pushAudit(`تم إرسال إشعار بعنوان «${title}»`);
-  e.target.reset();
+
+  try {
+    await addDoc(collection(db, "notifications"), {
+      title, body, type,
+      createdAt: serverTimestamp()
+    });
+    await pushAudit(`تم إرسال إشعار بعنوان «${title}»`);
+    e.target.reset();
+  } catch(err){
+    alert('فشل إرسال الإشعار: ' + err.message);
+  }
 });
 
-/* ═══════════ معاينة واجهة الوسيط ═══════════ */
+/* ═══════════════════════════════════════════════════════
+   14) معاينة واجهة الوسيط
+   ═══════════════════════════════════════════════════════ */
 const PORTAL_PAGES = [
   {id:'dashboard',    name:'لوحة القيادة',       desc:'نظرة عامة على أداء الوسيط'},
   {id:'clients',      name:'العملاء',             desc:'إدارة قاعدة العملاء'},
@@ -656,7 +934,7 @@ const PORTAL_PAGES = [
 function renderPortalPreview(){
   const wrap = document.getElementById('portalGrid');
   wrap.innerHTML = '';
-  PORTAL_PAGES.forEach(p=>{
+  PORTAL_PAGES.forEach(p => {
     const card = document.createElement('div');
     card.className = 'portal-preview-card';
     card.innerHTML = `
@@ -667,37 +945,57 @@ function renderPortalPreview(){
   });
 }
 
-/* ═══════════ سجل التدقيق ═══════════ */
-function renderAudit(logs){
+/* ═══════════════════════════════════════════════════════
+   15) سجل التدقيق
+   ═══════════════════════════════════════════════════════ */
+function renderAudit(){
   const wrap = document.getElementById('auditList');
   wrap.innerHTML = '';
-  if(!logs.length){
+  const log = state.auditLog;
+
+  if(!log.length){
     document.getElementById('auditEmpty').style.display = 'block';
     return;
   }
   document.getElementById('auditEmpty').style.display = 'none';
-  logs.slice(0,50).forEach(l=>{
+
+  log.slice(0, 100).forEach(l => {
     const div = document.createElement('div');
     div.className = 'log-item';
-    div.innerHTML = `<b>${l.createdAt?.toDate?.().toLocaleString('ar-EG') || ''}</b> — ${l.text}`;
+    div.innerHTML = `<b>${formatTime(l.createdAt)}</b> — ${l.text}`;
     wrap.appendChild(div);
   });
 }
 
-/* ═══════════ الفلاتر ═══════════ */
-function initFilters(){
-  document.getElementById('userSearch').addEventListener('input', ()=>renderUsers(allUsers));
-  document.getElementById('userStatusFilter').addEventListener('change', ()=>renderUsers(allUsers));
-  document.getElementById('uploadStatusFilter').addEventListener('change', ()=>{
-    // إعادة الفلترة من البيانات المخزنة
-    const st = document.getElementById('uploadStatusFilter').value;
-    const list = allUploads.filter(u => !st || u.status===st);
-    renderUploads(allUploads);
-  });
+/* ═══════════════════════════════════════════════════════
+   16) أدوات مساعدة للتاريخ
+   ═══════════════════════════════════════════════════════ */
+function formatDate(ts){
+  if(!ts) return '—';
+  try { return ts.toDate().toLocaleDateString('ar-EG'); }
+  catch(e){ return '—'; }
+}
+function formatTime(ts){
+  if(!ts) return '';
+  try { return ts.toDate().toLocaleString('ar-EG'); }
+  catch(e){ return ''; }
 }
 
-/* ═══════════ بدء التشغيل ═══════════ */
-renderPortalPreview();
+/* ═══════════════════════════════════════════════════════
+   17) الفلاتر
+   ═══════════════════════════════════════════════════════ */
+function initFilters(){
+  document.getElementById('userSearch').addEventListener('input', renderUsers);
+  document.getElementById('userStatusFilter').addEventListener('change', renderUsers);
+  document.getElementById('uploadStatusFilter').addEventListener('change', renderUploads);
+}
+
+/* ═══════════════════════════════════════════════════════
+   18) تنظيف عند إغلاق الصفحة
+   ═══════════════════════════════════════════════════════ */
+window.addEventListener('beforeunload', () => {
+  unsubscribers.forEach(fn => { try{ fn(); }catch(e){} });
+});
 </script>
 </body>
 </html>
