@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Broker OS — لوحة إدارة المنصة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0B1F3A; --navy2:#12315C; --gold:#C9A227; --gold2:#E4C660;
+  --bg:#0F1620; --panel:#141D2B; --card:#1A2434; --text:#E9EDF4; --muted:#8C99B0; --line:#26324A;
+  --ok:#22C55E; --warn:#F59E0B; --bad:#EF4444; --info:#60A5FA;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+a{text-decoration:none;color:inherit}
+::-webkit-scrollbar{height:8px;width:8px}::-webkit-scrollbar-thumb{background:#2c3a52;border-radius:8px}
+
+.side{width:250px;flex:0 0 250px;background:var(--panel);border-inline-end:1px solid var(--line);
+  padding:22px 16px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:0 6px 22px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.brand .mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--gold2));
+  display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--navy)}
+.brand b{font-size:17px}
+.brand span{display:block;font-size:11px;color:var(--muted)}
+.nav-group{font-size:11px;color:#5c6b85;margin:16px 6px 6px;letter-spacing:.5px}
+.nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:#cfd8e8;font-size:14.5px;margin-bottom:2px;cursor:pointer}
+.nav a:hover{background:#1f2b40}
+.nav a.active{background:var(--gold);color:var(--navy);font-weight:700}
+.user-link{margin-top:20px;padding:12px;border-radius:12px;background:#1f2b40;border:1px dashed var(--line)}
+.user-link p{margin:0 0 8px;font-size:12.5px;color:var(--muted)}
+.user-link a{display:block;text-align:center;background:transparent;border:1px solid var(--gold);color:var(--gold);font-weight:700;padding:8px;border-radius:8px;font-size:13.5px}
+
+.main{flex:1;min-width:0;padding:22px 26px 60px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:10px}
+.topbar h1{font-size:20px;margin:0}
+.pill{background:#152036;border:1px solid var(--line);padding:8px 14px;border-radius:30px;font-size:12.5px;color:var(--muted)}
+.pill b{color:var(--gold)}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:4px;background:var(--gold)}
+.kpi .v{font-size:26px;font-weight:800;color:#fff}
+.kpi .l{font-size:12.5px;color:var(--muted);margin-top:2px}
+
+.grid2{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:20px}
+.card h2{font-size:15.5px;margin:0 0 14px;display:flex;align-items:center;justify-content:space-between}
+.card h2 span.tag{font-size:11px;background:#152036;color:var(--info);padding:3px 9px;border-radius:20px;font-weight:700}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:start;color:var(--muted);font-weight:600;font-size:12px;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:10px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:none}
+select.statusSel{background:#0F1826;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:12.5px}
+.badge{padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:700}
+.b-new{background:#152036;color:var(--info)}
+.b-review{background:#3a2c0f;color:var(--warn)}
+.b-approved{background:#123420;color:var(--ok)}
+.b-rejected{background:#3a1414;color:var(--bad)}
+.empty{color:var(--muted);font-size:13px;text-align:center;padding:20px}
+
+.flag-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.flag-row:last-child{border-bottom:none}
+.flag-row .name{font-size:13.5px}
+.flag-row .desc{font-size:11.5px;color:var(--muted)}
+.switch{position:relative;width:42px;height:24px;flex:0 0 42px}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#2c3a52;border-radius:24px;cursor:pointer;transition:.2s}
+.slider:before{content:"";position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+input:checked + .slider{background:var(--gold)}
+[dir=rtl] input:checked + .slider:before{transform:translateX(-18px)}
+[dir=ltr] input:checked + .slider:before{transform:translateX(18px)}
+
+.log-item{font-size:12.5px;padding:8px 0;border-bottom:1px solid var(--line);color:var(--muted)}
+.log-item:last-child{border-bottom:none}
+.log-item b{color:var(--text)}
+</style>
+</head>
+<body>
+
+<aside class="side">
+  <div class="brand">
+    <div class="mark">BO</div>
+    <div><b>Broker OS</b><span>إدارة المنصة</span></div>
+  </div>
+  <div class="nav-group">Platform Admin</div>
+  <nav class="nav">
+    <a class="active"><span>▣</span> نظرة عامة</a>
+    <a href="#queue"><span>◧</span> طلبات العملاء (Queue)</a>
+    <a href="#flags"><span>◈</span> أعلام الميزات</a>
+    <a href="#audit"><span>✦</span> سجل التدقيق</a>
+  </nav>
+  <div class="user-link">
+    <p>عرض تجربة الوسيط</p>
+    <a href="user-portal.html">فتح واجهة المستخدم ←</a>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <h1>لوحة إدارة المنصة</h1>
+    <div class="pill">متصل كـ <b>Platform Admin</b> — platformAdmins/{uid}</div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="v" id="kNew">0</div><div class="l">طلبات جديدة</div></div>
+    <div class="kpi"><div class="v" id="kReview">0</div><div class="l">قيد المراجعة</div></div>
+    <div class="kpi"><div class="v" id="kApproved">0</div><div class="l">مقبولة</div></div>
+    <div class="kpi"><div class="v" id="kRejected">0</div><div class="l">مرفوضة</div></div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <div class="card" id="queue">
+        <h2>طلبات العملاء الواردة من واجهة المستخدم <span class="tag" id="qTag">0</span></h2>
+        <table id="leadsTable">
+          <thead><tr><th>الاسم</th><th>الهاتف</th><th>النوع</th><th>المصدر</th><th>الحالة</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div class="empty" id="emptyMsg" style="display:none">لا توجد طلبات واردة حاليًا.</div>
+      </div>
+
+      <div class="card" id="audit">
+        <h2>سجل التدقيق <span class="tag">للقراءة فقط — غير قابل للتعديل</span></h2>
+        <div id="auditList"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" id="flags">
+        <h2>أعلام الميزات <span class="tag">Feature Flags</span></h2>
+        <div id="flagsList"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const LEADS_KEY='brokeros_leads';
+const FLAGS_KEY='brokeros_feature_flags';
+const AUDIT_KEY='brokeros_audit_log';
+const FLAG_DEFS=[
+  {key:'clients',name:'العملاء',desc:'وحدة إدارة العملاء و Client 360'},
+  {key:'opportunities',name:'الفرص',desc:'مسار الفرص التجارية'},
+  {key:'quotes',name:'عروض الأسعار',desc:'تحويل العروض إلى بوليصات'},
+  {key:'policies',name:'الوثائق / البوليصات',desc:'إدارة البوليصات والتجديدات'},
+  {key:'claims',name:'المطالبات',desc:'متابعة مطالبات العملاء'},
+  {key:'payments',name:'المدفوعات',desc:'التحصيل والمدفوعات'},
+  {key:'reports',name:'التقارير',desc:'تحليلات أداء الوسيط'},
+];
+
+function readLeads(){try{return JSON.parse(localStorage.getItem(LEADS_KEY))||[]}catch(e){return []}}
+function writeLeads(l){localStorage.setItem(LEADS_KEY,JSON.stringify(l))}
+function readFlags(){const d={};FLAG_DEFS.forEach(f=>d[f.key]=true);try{return {...d,...(JSON.parse(localStorage.getItem(FLAGS_KEY))||{})}}catch(e){return d}}
+function writeFlags(f){localStorage.setItem(FLAGS_KEY,JSON.stringify(f))}
+function readAudit(){try{return JSON.parse(localStorage.getItem(AUDIT_KEY))||[]}catch(e){return []}}
+function pushAudit(text){const log=readAudit();log.push({text,time:new Date().toLocaleString('ar-EG')});localStorage.setItem(AUDIT_KEY,JSON.stringify(log.slice(-30)))}
+
+function statusBadge(s){
+  const map={'جديد':'b-new','قيد المراجعة':'b-review','مقبول':'b-approved','مرفوض':'b-rejected'};
+  return `<span class="badge ${map[s]||'b-new'}">${s}</span>`;
+}
+
+function renderLeads(){
+  const leads=readLeads();
+  document.getElementById('kNew').textContent=leads.filter(l=>l.status==='جديد').length;
+  document.getElementById('kReview').textContent=leads.filter(l=>l.status==='قيد المراجعة').length;
+  document.getElementById('kApproved').textContent=leads.filter(l=>l.status==='مقبول').length;
+  document.getElementById('kRejected').textContent=leads.filter(l=>l.status==='مرفوض').length;
+  document.getElementById('qTag').textContent=leads.length;
+
+  const tbody=document.querySelector('#leadsTable tbody');
+  tbody.innerHTML='';
+  [...leads].reverse().forEach(l=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${l.name}</td><td>${l.phone||'—'}</td><td>${l.type}</td><td>${l.source||'—'}</td>
+      <td>
+        <select class="statusSel" data-id="${l.id}">
+          ${['جديد','قيد المراجعة','مقبول','مرفوض'].map(s=>`<option ${s===l.status?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('emptyMsg').style.display = leads.length? 'none':'block';
+
+  document.querySelectorAll('.statusSel').forEach(sel=>{
+    sel.addEventListener('change',e=>{
+      const id=e.target.getAttribute('data-id');
+      const all=readLeads();
+      const idx=all.findIndex(x=>x.id===id);
+      if(idx>-1){
+        const prev=all[idx].status;
+        all[idx].status=e.target.value;
+        writeLeads(all);
+        pushAudit(`تغيير حالة طلب «${all[idx].name}» من "${prev}" إلى "${e.target.value}"`);
+        renderLeads(); renderAudit();
+      }
+    });
+  });
+}
+
+function renderFlags(){
+  const flags=readFlags();
+  const wrap=document.getElementById('flagsList');
+  wrap.innerHTML='';
+  FLAG_DEFS.forEach(f=>{
+    const row=document.createElement('div');
+    row.className='flag-row';
+    row.innerHTML=`<div><div class="name">${f.name}</div><div class="desc">${f.desc}</div></div>
+      <label class="switch"><input type="checkbox" data-key="${f.key}" ${flags[f.key]!==false?'checked':''}><span class="slider"></span></label>`;
+    wrap.appendChild(row);
+  });
+  wrap.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change',e=>{
+      const flags=readFlags();
+      flags[e.target.getAttribute('data-key')]=e.target.checked;
+      writeFlags(flags);
+      pushAudit(`تم ${e.target.checked?'تفعيل':'تعطيل'} علم الميزة "${e.target.getAttribute('data-key')}"`);
+      renderAudit();
+    });
+  });
+}
+
+function renderAudit(){
+  const log=[...readAudit()].reverse();
+  const wrap=document.getElementById('auditList');
+  wrap.innerHTML = log.length ? '' : '<div class="empty">لا توجد أحداث مسجلة بعد.</div>';
+  log.forEach(l=>{
+    const div=document.createElement('div');
+    div.className='log-item';
+    div.innerHTML=`<b>${l.time}</b> — ${l.text}`;
+    wrap.appendChild(div);
+  });
+}
+
+function renderAll(){renderLeads();renderFlags();renderAudit();}
+window.addEventListener('storage',renderAll);
+setInterval(renderAll,2500);
+renderAll();
+</script>
+</body>
+</html>

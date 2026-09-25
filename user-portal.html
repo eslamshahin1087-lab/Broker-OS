@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Broker OS — واجهة المستخدم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0B1F3A; --navy2:#12315C; --gold:#C9A227; --gold2:#E4C660;
+  --bg:#F3F5F9; --card:#FFFFFF; --text:#1B2430; --muted:#69758A; --line:#E6E9EF;
+  --ok:#1F9D55; --warn:#D97706; --bad:#DC2626; --info:#2563EB;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100%}
+a{text-decoration:none;color:inherit}
+::-webkit-scrollbar{height:8px;width:8px}::-webkit-scrollbar-thumb{background:#c9cfda;border-radius:8px}
+
+/* Sidebar */
+.side{width:250px;flex:0 0 250px;background:linear-gradient(180deg,var(--navy),var(--navy2));color:#fff;
+  padding:22px 16px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:0 6px 22px;border-bottom:1px solid rgba(255,255,255,.12);margin-bottom:18px}
+.brand .mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--gold2));
+  display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--navy)}
+.brand b{font-size:17px;letter-spacing:.3px}
+.brand span{display:block;font-size:11px;color:#b9c3d6}
+.nav-group{font-size:11px;color:#8fa0bd;margin:16px 6px 6px;letter-spacing:.5px}
+.nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:#dde4f0;font-size:14.5px;margin-bottom:2px}
+.nav a:hover{background:rgba(255,255,255,.08)}
+.nav a.active{background:var(--gold);color:var(--navy);font-weight:700}
+.nav a .ic{width:20px;text-align:center;opacity:.9}
+.admin-link{margin-top:20px;padding:12px;border-radius:12px;background:rgba(255,255,255,.06);border:1px dashed rgba(255,255,255,.25)}
+.admin-link p{margin:0 0 8px;font-size:12.5px;color:#c6cfe0}
+.admin-link a{display:block;text-align:center;background:var(--gold);color:var(--navy);font-weight:700;padding:8px;border-radius:8px;font-size:13.5px}
+
+/* Main */
+.main{flex:1;min-width:0;padding:22px 26px 60px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:10px}
+.topbar h1{font-size:20px;margin:0}
+.topbar .who{display:flex;align-items:center;gap:10px;background:var(--card);padding:8px 14px;border-radius:30px;border:1px solid var(--line)}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:4px;background:var(--gold)}
+.kpi .v{font-size:26px;font-weight:800;color:var(--navy)}
+.kpi .l{font-size:12.5px;color:var(--muted);margin-top:2px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:20px}
+.card h2{font-size:15.5px;margin:0 0 14px;display:flex;align-items:center;justify-content:space-between}
+.card h2 span.tag{font-size:11px;background:#EEF2FF;color:var(--info);padding:3px 9px;border-radius:20px;font-weight:700}
+
+/* funnel */
+.funnel{display:flex;gap:8px;flex-wrap:wrap}
+.fstep{flex:1;min-width:120px;background:linear-gradient(180deg,#fff,#F7F9FC);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+.fstep b{display:block;font-size:20px;color:var(--navy)}
+.fstep span{font-size:12px;color:var(--muted)}
+.fstep .arrow{display:none}
+@media(min-width:760px){.funnel{align-items:center}}
+
+form.lead{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+form.lead .full{grid-column:1/-1}
+label{font-size:12.5px;color:var(--muted);display:block;margin-bottom:5px}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:14px;background:#fbfcfe}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-offset:1px}
+button.submit{grid-column:1/-1;background:var(--navy);color:#fff;border:none;padding:12px;border-radius:10px;font-weight:700;font-size:14.5px;cursor:pointer;font-family:inherit}
+button.submit:hover{background:var(--navy2)}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:start;color:var(--muted);font-weight:600;font-size:12px;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:10px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:none}
+.badge{padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:700}
+.b-new{background:#EEF2FF;color:var(--info)}
+.b-review{background:#FEF3C7;color:var(--warn)}
+.b-approved{background:#DCFCE7;color:var(--ok)}
+.b-rejected{background:#FEE2E2;color:var(--bad)}
+.empty{color:var(--muted);font-size:13px;text-align:center;padding:20px}
+.hint{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.7}
+</style>
+</head>
+<body>
+
+<aside class="side">
+  <div class="brand">
+    <div class="mark">BO</div>
+    <div><b>Broker OS</b><span>واجهة الوسيط</span></div>
+  </div>
+  <div class="nav-group">القائمة الرئيسية</div>
+  <nav class="nav" id="navMain">
+    <a href="#" class="active" data-flag="dashboard"><span class="ic">▣</span> لوحة القيادة</a>
+    <a href="#" data-flag="clients"><span class="ic">◧</span> العملاء</a>
+    <a href="#" data-flag="opportunities"><span class="ic">◈</span> الفرص</a>
+    <a href="#" data-flag="quotes"><span class="ic">◫</span> عروض الأسعار</a>
+    <a href="#" data-flag="policies"><span class="ic">◉</span> الوثائق (بوليصات)</a>
+    <a href="#" data-flag="claims"><span class="ic">✦</span> المطالبات</a>
+    <a href="#" data-flag="payments"><span class="ic">◍</span> المدفوعات</a>
+    <a href="#" data-flag="reports"><span class="ic">▤</span> التقارير</a>
+  </nav>
+  <div class="admin-link">
+    <p>صلاحيات المدير فقط</p>
+    <a href="admin-panel.html">فتح لوحة الإدارة ←</a>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <h1>لوحة القيادة</h1>
+    <div class="who"><div class="avatar">إش</div> إسلام شاهين · وسيط تأمين</div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="v" id="kpiClients">—</div><div class="l">عملاء نشطون</div></div>
+    <div class="kpi"><div class="v" id="kpiOpen">—</div><div class="l">فرص مفتوحة</div></div>
+    <div class="kpi"><div class="v" id="kpiPending">—</div><div class="l">طلبات قيد المراجعة</div></div>
+    <div class="kpi"><div class="v" id="kpiApproved">—</div><div class="l">طلبات مقبولة هذا الأسبوع</div></div>
+  </div>
+
+  <div class="card">
+    <h2>مسار العمل التجاري <span class="tag">Lead → Policy</span></h2>
+    <div class="funnel">
+      <div class="fstep"><b id="fLead">0</b><span>عميل محتمل</span></div>
+      <div class="fstep"><b id="fOpp">0</b><span>فرصة</span></div>
+      <div class="fstep"><b id="fClient">0</b><span>عميل</span></div>
+      <div class="fstep"><b id="fQuote">0</b><span>عرض سعر</span></div>
+      <div class="fstep"><b id="fPolicy">0</b><span>بوليصة نشطة</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>إضافة عميل محتمل جديد</h2>
+    <form class="lead" id="leadForm">
+      <div><label>اسم العميل</label><input required id="lName" placeholder="مثال: أحمد فتحي"></div>
+      <div><label>رقم الهاتف</label><input required id="lPhone" placeholder="01000000000"></div>
+      <div><label>نوع التأمين</label>
+        <select id="lType">
+          <option>تأمين سيارات</option><option>تأمين صحي</option><option>تأمين حياة</option><option>تأمين ممتلكات</option>
+        </select>
+      </div>
+      <div><label>المصدر</label>
+        <select id="lSource"><option>اتصال مباشر</option><option>الموقع الإلكتروني</option><option>إحالة عميل</option><option>سوشيال ميديا</option></select>
+      </div>
+      <div class="full"><label>ملاحظات</label><textarea id="lNotes" rows="2" placeholder="تفاصيل إضافية..."></textarea></div>
+      <button class="submit" type="submit">إرسال إلى قائمة المراجعة</button>
+    </form>
+    <p class="hint">يتم إرسال الطلب مباشرة إلى لوحة الإدارة لمراجعته واعتماده، وفق نفس تسلسل العمل الموضح في مستودع المشروع (Lead → Opportunity → Client → Quote → Policy).</p>
+  </div>
+
+  <div class="card">
+    <h2>طلباتي الأخيرة <span class="tag" id="countTag">0</span></h2>
+    <table id="leadsTable">
+      <thead><tr><th>الاسم</th><th>النوع</th><th>الحالة</th><th>التاريخ</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="empty" id="emptyMsg" style="display:none">لا توجد طلبات بعد — أضف طلبك الأول أعلاه.</div>
+  </div>
+</main>
+
+<script>
+const LEADS_KEY='brokeros_leads';
+const FLAGS_KEY='brokeros_feature_flags';
+const DEFAULT_FLAGS={clients:true,opportunities:true,quotes:true,policies:true,claims:true,payments:true,reports:true};
+
+function readLeads(){try{return JSON.parse(localStorage.getItem(LEADS_KEY))||[]}catch(e){return []}}
+function writeLeads(l){localStorage.setItem(LEADS_KEY,JSON.stringify(l))}
+function readFlags(){try{return {...DEFAULT_FLAGS,...(JSON.parse(localStorage.getItem(FLAGS_KEY))||{})}}catch(e){return DEFAULT_FLAGS}}
+
+function statusBadge(s){
+  const map={'جديد':'b-new','قيد المراجعة':'b-review','مقبول':'b-approved','مرفوض':'b-rejected'};
+  return `<span class="badge ${map[s]||'b-new'}">${s}</span>`;
+}
+
+function render(){
+  const leads=readLeads();
+  const flags=readFlags();
+  document.querySelectorAll('#navMain a[data-flag]').forEach(a=>{
+    const f=a.getAttribute('data-flag');
+    if(f!=='dashboard') a.style.display = flags[f]===false ? 'none' : 'flex';
+  });
+
+  const tbody=document.querySelector('#leadsTable tbody');
+  tbody.innerHTML='';
+  const mine=[...leads].reverse();
+  mine.forEach(l=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${l.name}</td><td>${l.type}</td><td>${statusBadge(l.status)}</td><td>${l.date}</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('emptyMsg').style.display = mine.length? 'none':'block';
+  document.getElementById('countTag').textContent=mine.length;
+
+  const total=leads.length;
+  const pending=leads.filter(l=>l.status==='جديد'||l.status==='قيد المراجعة').length;
+  const approved=leads.filter(l=>l.status==='مقبول').length;
+  document.getElementById('kpiClients').textContent = 128 + approved;
+  document.getElementById('kpiOpen').textContent = 34 + Math.min(total,9);
+  document.getElementById('kpiPending').textContent = pending;
+  document.getElementById('kpiApproved').textContent = approved;
+
+  document.getElementById('fLead').textContent = leads.filter(l=>l.status==='جديد').length;
+  document.getElementById('fOpp').textContent = leads.filter(l=>l.status==='قيد المراجعة').length;
+  document.getElementById('fClient').textContent = approved;
+  document.getElementById('fQuote').textContent = Math.round(approved*0.7);
+  document.getElementById('fPolicy').textContent = Math.round(approved*0.4);
+}
+
+document.getElementById('leadForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const leads=readLeads();
+  leads.push({
+    id:'L'+Date.now(),
+    name:document.getElementById('lName').value.trim(),
+    phone:document.getElementById('lPhone').value.trim(),
+    type:document.getElementById('lType').value,
+    source:document.getElementById('lSource').value,
+    notes:document.getElementById('lNotes').value.trim(),
+    status:'جديد',
+    date:new Date().toLocaleDateString('ar-EG')
+  });
+  writeLeads(leads);
+  e.target.reset();
+  render();
+});
+
+window.addEventListener('storage',render);
+setInterval(render,2500);
+render();
+</script>
+</body>
+</html>
