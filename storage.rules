@@ -1,0 +1,34 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn() && request.auth.token.admin == true;
+    }
+
+    function myOrgId() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.orgId;
+    }
+
+    // Store files under: organizations/{orgId}/...
+    match /organizations/{orgId}/{allPaths=**} {
+      allow read: if signedIn() && (isAdmin() || myOrgId() == orgId);
+      allow write: if signedIn()
+        && (isAdmin() || myOrgId() == orgId)
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*|application/pdf|text/.*');
+    }
+
+    // Optional user-owned files, e.g. profile photos.
+    match /users/{userId}/{allPaths=**} {
+      allow read: if signedIn() && (isAdmin() || request.auth.uid == userId);
+      allow write: if signedIn()
+        && (isAdmin() || request.auth.uid == userId)
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

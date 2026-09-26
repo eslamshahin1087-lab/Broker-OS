@@ -1,132 +1,31 @@
-# Broker OS
+# Broker OS — UI and Firebase rules patch
 
-Broker OS is a React + Vite + Firebase workspace for insurance brokers. The current architecture keeps the existing top-level Firestore collections while enforcing tenant isolation through `organizationId`.
+## Files
+- `index.html` — updated app HTML (header/icon styling, subscription pending flow).
+- `firestore.rules` — Firestore security rules.
+- `storage.rules` — Firebase Storage rules starter.
+- `firebase.json` — Firebase CLI rules/index configuration.
+- `firestore.indexes.json` — composite index for checking a user's pending subscription request.
 
-## Current architecture
+## Subscription fix
+The subscription request now opens a temporary tab synchronously from the click (reducing popup-blocker failures), saves/deduplicates the request, and **always** synchronizes `users/{uid}.subscriptionStatus = "pending"` even if a pending request already exists. It only navigates to WhatsApp after Firestore writes succeed. The subscription page shows the requested Arabic pending-payment message and a refresh action.
 
-```
-Auth
-  ↓
-users/{uid}
-  ├── organizationId
-  └── role
+## Important setup
+1. Back up your current HTML, then replace the deployed app HTML with `index.html`.
+2. Review the rules against every collection and upload path used by your deployment before publishing. The wildcard Firestore rule is organization-scoped, but your app must write `orgId` on each business document. Creation also expects `createdBy == request.auth.uid`; if a particular app collection does not populate `createdBy`, update the app to do so or make a narrowly scoped rule for that collection.
+3. The admin dashboard must use a trusted Firebase Admin SDK custom claim `admin: true` for administrators. Never let a browser/client write this claim. If the existing Admin UI relies only on a `role` field in a Firestore document, migrate it to custom claims or adapt the rules carefully after verifying the admin provisioning process.
+4. Deploy from the directory containing these files:
+   ```bash
+   firebase deploy --only firestore:rules,firestore:indexes,storage
+   ```
+5. If your actual Storage paths differ from `organizations/{orgId}/...` or `users/{uid}/...`, adapt `storage.rules` to those exact paths. These rules intentionally deny unmatched paths.
+6. Test with Firebase Emulator Suite and the app's real account types before production. Rules are security-sensitive; do not deploy unreviewed rules to a live project.
 
-organization-scoped collections
-  ├── clients
-  ├── leads
-  ├── opportunities
-  ├── policies
-  ├── insurers
-  ├── products
-  ├── quotes
-  ├── claims
-  ├── payments
-  ├── auditLogs
-  └── documents
-
-```
-
-The commercial and operational flow is:
-
-```
-LEAD → OPPORTUNITY → CLIENT → QUOTE → POLICY
-                         ↓
-                  CLAIMS / PAYMENTS
-                         ↓
-                 RENEWALS / AUDIT
-                         ↓
-                    DOCUMENTS
+## Admin custom claim example (trusted server only)
+Use Firebase Admin SDK in a trusted Node.js environment, never in frontend code:
+```js
+await admin.auth().setCustomUserClaims(uid, { admin: true });
 ```
 
-When an opportunity is moved to **won**, the policy creation and opportunity update are performed in one Firestore transaction. Accepting a quote can also create its policy in the same transaction.
-
-## Security
-
-- `firestore.rules` is the authorization boundary for Firestore data.
-- User roles are stored in `users/{uid}`.
-- Existing operational collections are organization-scoped.
-- Document metadata is kept in Firestore while the actual file stays in the external document provider referenced by its HTTPS URL.
-- Document links must use HTTPS.
-- Document deletion is restricted to owner/admin/operations at the rules layer.
-- Audit entries are immutable.
-
-Do not deploy Firestore in test mode.
-
-## Main routes
-
-- `/` — Command Center / Dashboard
-- `/clients` — Clients + Client 360
-- `/leads` — Leads pipeline
-- `/opportunities` — Opportunities
-- `/quotes` — Quotes and quote-to-policy conversion
-- `/policies` — Policies + renewals
-- `/renewals` — Renewal follow-up queue
-- `/claims` — Claims
-- `/payments` — Payments
-- `/documents` — Secure document vault
-- `/finance` — Financial dashboard
-- `/insurers` — Insurer directory
-- `/products` — Insurer products
-- `/team` — Team + roles
-- `/audit` — Audit log
-
-## Local development
-
-```bash
-npm install
-npm run dev
-```
-
-## Build
-
-```bash
-npm run build
-```
-
-A GitHub Actions workflow is included at `.github/workflows/ci.yml` to run dependency installation and the production build on pushes to the main/foundation branches and pull requests.
-
-## Platform Admin
-
-Platform administration is separate from the per-organization `admin` role.
-
-- `/platform-admin` is available only to users listed in `platformAdmins/{uid}`.
-- Platform Admin can review all users, suspend/activate accounts, change roles, inspect organization summaries, manage global feature flags, update platform settings, and review platform audit logs.
-- Feature flags control both the navigation and route access for wired application modules.
-- Adding a feature flag does not create new application code automatically; a new module must first be wired to that flag.
-
-### Bootstrap the first Platform Admin
-
-The `platformAdmins` collection is intentionally **not writable from the application**.
-
-After deploying the new Firestore Rules, open:
-
-`Firebase Console → Firestore Database → Data → platformAdmins`
-
-Create a document whose ID is the Firebase Auth **UID** of the account that should own the platform.
-
-The document can contain a simple field such as:
-
-```
-enabled: true
-```
-
-Then sign out and sign in again in Broker OS. The **إدارة المنصة** button and `/platform-admin` route will become available.
-
-## Firebase deploy
-
-The repository now pins Firebase project `broker-os-7df4b` through `.firebaserc`.
-
-```bash
-npm run build
-firebase deploy --project broker-os-7df4b --only hosting,firestore:rules
-```
-
-Broker OS intentionally stays compatible with the Firebase Spark no-cost plan. Cloud Storage is not used; the Documents screen stores only secure HTTPS links to external files.
-
-## Next architectural layers
-
-1. Tasks and notifications.
-2. Role-level write restrictions across the legacy CRM mutations.
-3. Policy/client mutation audit coverage.
-4. Reporting and broker performance analytics.
-5. Search/indexing and dashboard aggregation to reduce realtime listener load.
+## Note
+The HTML contains the Firebase web config. Firebase web API keys identify the project but are not admin credentials. Security must be enforced by Firebase Security Rules and trusted backend code.
