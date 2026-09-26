@@ -3,8 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Broker OS — لوحة إدارة المنصة</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230B1F3A'/%3E%3Ctext x='32' y='42' font-family='Arial' font-size='26' font-weight='800' fill='%23C9A227' text-anchor='middle'%3EBO%3C/text%3E%3C/svg%3E">
+<title>Broker-OS — لوحة إدارة المنصة</title>
+<link rel="icon" type="image/png" href="broker-os-symbol.png">
+<link rel="apple-touch-icon" href="broker-os-symbol.png">
+<meta name="theme-color" content="#3636AE">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -177,6 +179,43 @@ tbody tr:hover{background:rgba(255,255,255,.015)}
 .modal h3{font-size:16px;margin-bottom:14px;display:flex;align-items:center;gap:9px}
 .modal h3 i{color:var(--gold)}
 .modal-actions{display:flex;gap:9px;margin-top:18px;justify-content:flex-end}
+
+/* ===== Broker-OS visual identity refresh ===== */
+:root{
+  --navy:#3636AE;--navy-dark:#12102E;--navy-light:#5840B8;
+  --gold:#8C6CEB;--gold-2:#B06ADD;--gold-soft:#2A2148;
+  --bg:#0E0C1D;--panel:#15122B;--card:#181533;--card-2:#211C43;
+  --text:#F7F4FF;--text-2:#CEC7E7;--muted:#9189AE;--line:#2C2850;--line-soft:#24203F;
+  --info:#8B8AFF;--info-bg:#20204A;--purple:#B06ADD;--purple-bg:#2C2041;
+  --shadow-gold:0 10px 28px rgba(139,108,235,.28);
+}
+body{background:radial-gradient(circle at 50% -10%,rgba(176,106,221,.13),transparent 34%),var(--bg);}
+.side{background:linear-gradient(180deg,#100D2B 0%,#21184A 55%,#3B2A7A 100%);box-shadow:10px 0 34px rgba(15,10,40,.45);}
+.brand{padding-top:6px;}
+.brand .logo-mark{background:#fff;border:1px solid rgba(255,255,255,.45);box-shadow:0 10px 26px rgba(176,106,221,.22);padding:7px;}
+.brand .logo-mark img{width:100%;height:100%;object-fit:contain;}
+.brand b{letter-spacing:.2px;}
+.nav a.active{background:linear-gradient(135deg,rgba(176,106,221,.24),rgba(139,108,235,.12));color:#F1E9FF;box-shadow:inset 0 0 0 1px rgba(176,106,221,.08);}
+.nav a:hover{background:rgba(176,106,221,.10);}
+.kpi,.card,.pill,.iconbtn,.toast{border-color:rgba(176,106,221,.12);}
+.kpi::before{background:linear-gradient(var(--gold),var(--gold-2));}
+.btn-gold{background:linear-gradient(135deg,#7C62E6,#B06ADD);color:#fff;box-shadow:0 10px 24px rgba(139,108,235,.25);}
+.btn-gold:hover{box-shadow:0 14px 34px rgba(176,106,221,.32);}
+.btn-outline:hover{border-color:#9D82F5;color:#C6B6FF;}
+.banner{background:linear-gradient(135deg,#241D45,#1C1736);border-color:#3F356C;color:#E9E1FF;}
+.banner code{background:#11102A;color:#CDBBFF;}
+.sel,.inl,.txtarea,.field input{background:#0F0D23;border-color:#2A2650;}
+.sel:focus,.inl:focus,.txtarea:focus,.field input:focus{border-color:#9B82F2;box-shadow:0 0 0 3px rgba(139,108,235,.10);}
+.avatar{background:linear-gradient(135deg,#4D37A6,#B06ADD);color:#fff;border-color:rgba(176,106,221,.35);}
+.login-box{border-color:rgba(176,106,221,.18);background:rgba(22,18,48,.92);}
+.login-box .logo-mark{background:#fff;padding:8px;box-shadow:0 12px 30px rgba(176,106,221,.18);}
+.login-box .logo-mark img{width:100%;height:100%;object-fit:contain;}
+.login-brand{display:flex;flex-direction:column;align-items:center;gap:7px;margin-bottom:18px;}
+.login-brand img{width:175px;max-width:70%;height:auto;object-fit:contain;filter:drop-shadow(0 12px 26px rgba(176,106,221,.14));}
+.login-brand span{font-size:10px;letter-spacing:2.6px;text-transform:uppercase;color:#A99FC8;font-weight:700;}
+.toast{box-shadow:0 20px 50px rgba(7,4,24,.45);}
+@media(max-width:900px){.main{padding:18px 16px 60px}}
+
 </style>
 </head>
 <body>
@@ -477,7 +516,7 @@ function dashboardHTML(){
   return `
   <div class="wrap">
   <aside class="side">
-    <div class="brand"><div class="logo-mark">BO</div><div><b>Broker OS</b><span>Platform Control</span></div></div>
+    <div class="brand"><div class="logo-mark brand-symbol"><img src="broker-os-symbol.png" alt="Broker-OS"></div><div><b>Broker-OS</b><span>Technology Platform</span></div></div>
     <div class="nav-g">عام</div>
     <nav class="nav"><a href="#overview" class="active"><i class="fa-solid fa-gauge-high"></i> نظرة عامة</a><a href="#orgs"><i class="fa-solid fa-building"></i> مكاتب الوساطة</a><a href="#users"><i class="fa-solid fa-users-gear"></i> إدارة المستخدمين</a></nav>
     <div class="nav-g">تحكم بالتطبيق</div>
@@ -544,7 +583,7 @@ function dashboardHTML(){
   </div>`;
 }
 function loginHTML(err){
-  return `<div id="login"><div class="login-box"><div class="logo-mark">BO</div><h1>تسجيل دخول المدير</h1><p class="subtitle">هذا الحساب يجب أن يكون له مستند في مجموعة <code>platformAdmins</code> في Firestore.</p>
+  return `<div id="login"><div class="login-box"><div class="login-brand"><img src="broker-os-logo.png" alt="Broker-OS"><span>Technology Platform</span></div><h1>تسجيل دخول المدير</h1><p class="subtitle">هذا الحساب يجب أن يكون له مستند في مجموعة <code>platformAdmins</code> في Firestore.</p>
     <div class="field"><label>البريد الإلكتروني</label><input id="loginEmail" type="email" placeholder="admin@brokeros.app"></div>
     <div class="field"><label>كلمة المرور</label><input id="loginPass" type="password" placeholder="••••••••"></div>
     <button class="btn btn-gold" onclick="doSignIn()"><i class="fa-solid fa-right-to-bracket"></i> دخول</button><div class="loginerr">${err||''}</div></div></div>`;
