@@ -3,1406 +3,286 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-<meta name="theme-color" content="#0B1F3A">
-<title>Broker OS — تطبيق الوسيط</title>
+<title>Broker OS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
 <style>
-:root{
-  --navy:#0B1F3A; --navy2:#12315C; --gold:#C9A227; --gold2:#E4C660;
-  --bg:#F3F5F9; --card:#FFFFFF; --text:#1B2430; --muted:#69758A; --line:#E6E9EF;
-  --ok:#1F9D55; --warn:#D97706; --bad:#DC2626; --info:#2563EB;
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-}
+:root{--navy:#0B1F3A;--navy2:#12315C;--gold:#C9A227;--gold2:#E4C660;--bg:#F3F5F9;--card:#FFFFFF;--text:#1B2430;--muted:#6E7A8F;--line:#ECEFF4;
+--ok:#1F9D55;--okbg:#E7F8EE;--warn:#D97706;--warnbg:#FEF3E2;--bad:#DC2626;--badbg:#FDEAEA;--info:#2563EB;--infobg:#EAF0FE}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overscroll-behavior-y:none}
-body{
-  margin:0;font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);
-  display:flex;flex-direction:column;
-  max-width:520px;margin-inline:auto;
-  box-shadow:0 0 40px rgba(11,31,58,.08);
-  position:relative;
-}
-a{text-decoration:none;color:inherit}
-button{font-family:inherit}
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-thumb{background:#c9cfda;border-radius:8px}
-
-/* ═══════════ Top App Bar ═══════════ */
-.appbar{
-  position:sticky;top:0;z-index:50;
-  background:linear-gradient(135deg,var(--navy),var(--navy2));
-  color:#fff;
-  padding:calc(var(--safe-top) + 14px) 16px 14px;
-  display:flex;align-items:center;gap:12px;
-  border-bottom-left-radius:20px;border-bottom-right-radius:20px;
-  box-shadow:0 4px 18px rgba(11,31,58,.18);
-}
-.appbar .menu-btn{
-  background:rgba(255,255,255,.08);border:none;color:#fff;
-  width:40px;height:40px;border-radius:12px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  transition:.15s;
-}
-.appbar .menu-btn:active{background:rgba(255,255,255,.2);transform:scale(.95)}
-.appbar .menu-btn svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-
-.appbar .title-wrap{flex:1;min-width:0}
-.appbar .title-wrap b{font-size:16px;font-weight:800;display:block;line-height:1.2}
-.appbar .title-wrap span{font-size:11.5px;color:#b9c3d6;display:block}
-
-.appbar .avatar-btn{
-  width:40px;height:40px;border-radius:50%;
-  background:linear-gradient(135deg,var(--gold),var(--gold2));
-  color:var(--navy);font-weight:800;font-size:14px;
-  display:flex;align-items:center;justify-content:center;
-  border:none;cursor:pointer;
-  position:relative;
-}
-.appbar .avatar-btn .dot{
-  position:absolute;top:2px;inset-inline-end:2px;
-  width:10px;height:10px;background:var(--bad);border-radius:50%;
-  border:2px solid var(--navy);
-}
-
-/* ═══════════ Main content ═══════════ */
-.content{
-  flex:1;min-height:0;overflow-y:auto;
-  padding:16px 14px calc(90px + var(--safe-bottom));
-  scroll-behavior:smooth;
-}
-
-.page{display:none}
-.page.active{display:block;animation:fadeIn .22s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
-.page-head{
-  display:flex;align-items:center;gap:10px;
-  margin-bottom:14px;
-}
-.page-head .ic-wrap{
-  width:38px;height:38px;border-radius:12px;
-  background:linear-gradient(135deg,var(--navy),var(--navy2));
-  display:flex;align-items:center;justify-content:center;
-  flex:0 0 38px;
-}
-.page-head .ic-wrap svg{width:20px;height:20px;stroke:var(--gold);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.page-head h2{margin:0;font-size:17px;font-weight:800;color:var(--navy)}
-.page-head p{margin:2px 0 0;font-size:11.5px;color:var(--muted)}
-
-/* ═══════════ Cards ═══════════ */
-.card{
-  background:var(--card);border:1px solid var(--line);border-radius:16px;
-  padding:16px;margin-bottom:14px;
-  box-shadow:0 1px 3px rgba(11,31,58,.04);
-}
-.card h3{
-  font-size:14px;margin:0 0 12px;
-  display:flex;align-items:center;justify-content:space-between;
-  color:var(--navy);font-weight:700;
-}
-.card h3 .count{
-  font-size:11px;background:#EEF2FF;color:var(--info);
-  padding:2px 9px;border-radius:20px;font-weight:700;
-}
-
-/* ═══════════ KPIs ═══════════ */
-.kpi-grid{
-  display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;
-}
-.kpi-card{
-  background:var(--card);border:1px solid var(--line);border-radius:14px;
-  padding:14px 12px;position:relative;overflow:hidden;
-}
-.kpi-card::before{
-  content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;
-  width:3px;background:var(--gold);border-radius:3px;
-}
-.kpi-card .v{font-size:22px;font-weight:800;color:var(--navy);line-height:1.1}
-.kpi-card .l{font-size:11.5px;color:var(--muted);margin-top:3px}
-
-/* ═══════════ Funnel ═══════════ */
-.funnel{display:flex;flex-direction:column;gap:8px}
-.funnel-row{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 12px;border-radius:12px;
-  background:#F7F9FC;border:1px solid var(--line);
-}
-.funnel-row .num{
-  width:32px;height:32px;flex:0 0 32px;border-radius:10px;
-  background:linear-gradient(135deg,var(--navy),var(--navy2));color:var(--gold);
-  display:flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:13px;
-}
-.funnel-row .lbl{flex:1;font-size:13px;color:var(--text);font-weight:600}
-.funnel-row .val{font-size:16px;font-weight:800;color:var(--navy)}
-
-/* ═══════════ Forms ═══════════ */
-.form-grid{display:grid;gap:10px}
-.form-grid .row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px;font-weight:600}
-input,select,textarea{
-  width:100%;padding:11px 12px;
-  border:1px solid var(--line);border-radius:12px;
-  font-family:inherit;font-size:14px;background:#F9FAFC;
-  color:var(--text);
-  transition:.15s;
-}
-input:focus,select:focus,textarea:focus{
-  outline:none;border-color:var(--gold);background:#fff;
-  box-shadow:0 0 0 3px rgba(201,162,39,.15);
-}
-textarea{resize:vertical;min-height:60px}
-.btn-primary{
-  width:100%;padding:13px;border-radius:12px;border:none;
-  background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;
-  font-weight:700;font-size:14.5px;cursor:pointer;
-  transition:.15s;
-}
-.btn-primary:active{transform:scale(.98);opacity:.9}
-
-/* ═══════════ Lists ═══════════ */
-.list-item{
-  display:flex;align-items:center;gap:12px;
-  padding:12px;border-radius:12px;
-  background:#F9FAFC;border:1px solid var(--line);
-  margin-bottom:8px;
-}
-.list-item:last-child{margin-bottom:0}
-.list-item .li-ic{
-  width:38px;height:38px;flex:0 0 38px;border-radius:10px;
-  background:#EEF2FF;color:var(--info);
-  display:flex;align-items:center;justify-content:center;
-}
-.list-item .li-ic svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.list-item .li-body{flex:1;min-width:0}
-.list-item .li-body b{display:block;font-size:13.5px;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.list-item .li-body span{font-size:11.5px;color:var(--muted);display:block}
-.list-item .li-action{
-  background:transparent;border:none;color:var(--bad);cursor:pointer;
-  padding:6px;border-radius:8px;
-}
-.list-item .li-action:hover{background:#FEE2E2}
-
-.badge{
-  padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:700;
-  display:inline-block;
-}
-.b-new{background:#EEF2FF;color:var(--info)}
-.b-review{background:#FEF3C7;color:var(--warn)}
-.b-approved{background:#DCFCE7;color:var(--ok)}
-.b-rejected{background:#FEE2E2;color:var(--bad)}
-.b-pending{background:#FEF3C7;color:var(--warn)}
-.b-active{background:#DCFCE7;color:var(--ok)}
-
-.empty{
-  text-align:center;padding:28px 16px;color:var(--muted);font-size:13px;
-}
-.empty svg{
-  width:48px;height:48px;stroke:#c9cfda;fill:none;stroke-width:1.5;
-  margin-bottom:10px;display:block;margin-inline:auto;
-}
-
-/* ═══════════ Bottom Navigation ═══════════ */
-.bottom-nav{
-  position:fixed;bottom:0;inset-inline:0;
-  max-width:520px;margin-inline:auto;
-  background:#fff;
-  border-top:1px solid var(--line);
-  padding:8px 6px calc(8px + var(--safe-bottom));
-  display:grid;grid-template-columns:repeat(5,1fr);
-  z-index:60;
-  box-shadow:0 -4px 20px rgba(11,31,58,.08);
-}
-.bn-item{
-  display:flex;flex-direction:column;align-items:center;gap:2px;
-  padding:6px 2px;border-radius:12px;
-  color:var(--muted);cursor:pointer;border:none;background:transparent;
-  transition:.15s;
-  font-family:inherit;
-}
-.bn-item svg{
-  width:22px;height:22px;stroke:currentColor;fill:none;
-  stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
-  transition:.15s;
-}
-.bn-item span{font-size:10px;font-weight:600}
-.bn-item.active{color:var(--navy)}
-.bn-item.active svg{stroke:var(--gold);transform:translateY(-1px)}
-.bn-item.active span{color:var(--navy);font-weight:800}
-.bn-item:active{background:#F3F5F9}
-
-/* ═══════════ Drawer (sidebar) ═══════════ */
-.overlay{
-  position:fixed;inset:0;background:rgba(11,31,58,.5);
-  z-index:100;opacity:0;pointer-events:none;transition:.22s;
-  backdrop-filter:blur(2px);
-}
-.overlay.show{opacity:1;pointer-events:auto}
-
-.drawer{
-  position:fixed;top:0;inset-inline-end:0;bottom:0;
-  width:min(85%,340px);
-  background:linear-gradient(180deg,var(--navy),var(--navy2));
-  color:#fff;
-  z-index:110;
-  transform:translateX(-100%);
-  transition:transform .28s cubic-bezier(.22,.9,.3,1);
-  display:flex;flex-direction:column;
-  padding:calc(var(--safe-top) + 20px) 16px calc(var(--safe-bottom) + 16px);
-  overflow-y:auto;
-  box-shadow:-8px 0 30px rgba(0,0,0,.25);
-}
-[dir=rtl] .drawer{transform:translateX(100%)}
-.drawer.show{transform:translateX(0)}
-
-.drawer-header{
-  display:flex;align-items:center;gap:12px;
-  padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.12);
-  margin-bottom:18px;
-}
-.drawer-header .mark{
-  width:44px;height:44px;border-radius:12px;
-  background:linear-gradient(135deg,var(--gold),var(--gold2));
-  display:flex;align-items:center;justify-content:center;
-  font-weight:800;color:var(--navy);font-size:16px;
-}
-.drawer-header b{display:block;font-size:15px}
-.drawer-header span{display:block;font-size:11.5px;color:#b9c3d6}
-
-.drawer-group{font-size:11px;color:#8fa0bd;margin:8px 6px 6px;letter-spacing:.5px}
-.drawer-nav a{
-  display:flex;align-items:center;gap:12px;
-  padding:11px 12px;border-radius:12px;
-  color:#dde4f0;font-size:14px;margin-bottom:2px;
-  cursor:pointer;transition:.15s;
-}
-.drawer-nav a:hover{background:rgba(255,255,255,.08)}
-.drawer-nav a.active{background:var(--gold);color:var(--navy);font-weight:700}
-.drawer-nav a svg{
-  width:20px;height:20px;flex:0 0 20px;
-  stroke:currentColor;fill:none;
-  stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
-}
-
-.drawer-footer{
-  margin-top:auto;padding-top:18px;
-  border-top:1px solid rgba(255,255,255,.12);
-}
-.drawer-footer p{margin:0 0 10px;font-size:11.5px;color:#c6cfe0}
-.drawer-footer a{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  background:var(--gold);color:var(--navy);
-  font-weight:700;padding:11px;border-radius:12px;font-size:13.5px;
-}
-.drawer-footer a svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
-
-.close-drawer{
-  position:absolute;top:calc(var(--safe-top) + 14px);inset-inline-start:14px;
-  width:34px;height:34px;border-radius:10px;
-  background:rgba(255,255,255,.08);border:none;color:#fff;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-}
-.close-drawer svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
-
-/* ═══════════ Notifications ═══════════ */
-.notif-item{
-  display:flex;gap:12px;padding:12px;border-radius:12px;
-  background:#F9FAFC;border:1px solid var(--line);
-  margin-bottom:8px;
-  border-inline-start:4px solid var(--info);
-}
-.notif-item[data-type="success"]{border-inline-start-color:var(--ok)}
-.notif-item[data-type="warning"]{border-inline-start-color:var(--warn)}
-.notif-item[data-type="danger"]{border-inline-start-color:var(--bad)}
-.notif-item .ni-body{flex:1;min-width:0}
-.notif-item b{display:block;font-size:13.5px;color:var(--navy);margin-bottom:3px}
-.notif-item p{margin:0 0 4px;font-size:12px;color:var(--muted);line-height:1.5}
-.notif-item small{font-size:10.5px;color:#8a94a6}
-
-/* ═══════════ Loading / Auth ═══════════ */
-.auth-screen{
-  min-height:100vh;display:flex;align-items:center;justify-content:center;
-  padding:24px;text-align:center;flex-direction:column;gap:12px;
-}
-.auth-screen .mark{
-  width:64px;height:64px;border-radius:20px;
-  background:linear-gradient(135deg,var(--gold),var(--gold2));
-  display:flex;align-items:center;justify-content:center;
-  font-weight:800;color:var(--navy);font-size:24px;
-}
-.auth-screen h2{margin:0;color:var(--navy);font-size:18px}
-.auth-screen p{margin:0;color:var(--muted);font-size:13px}
-
-/* ═══════════ Filters ═══════════ */
-.search-input{
-  position:relative;margin-bottom:12px;
-}
-.search-input input{padding-inline-start:40px}
-.search-input svg{
-  position:absolute;inset-inline-start:12px;top:50%;transform:translateY(-50%);
-  width:18px;height:18px;stroke:var(--muted);fill:none;
-  stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
-  pointer-events:none;
-}
+html,body{height:100%}
+body{margin:0;font-family:'Cairo',sans-serif;background:#0d1117;display:flex;align-items:flex-start;justify-content:center;min-height:100vh}
+::-webkit-scrollbar{display:none}
+.device{width:390px;margin:26px auto;background:#000;border-radius:44px;padding:12px;box-shadow:0 30px 70px rgba(0,0,0,.55)}
+.screen{position:relative;width:100%;height:800px;background:var(--bg);border-radius:32px;overflow:hidden;display:flex;flex-direction:column}
+@media(max-width:460px){body{align-items:stretch}.device{width:100%;margin:0;border-radius:0;padding:0;box-shadow:none}.screen{height:100vh;border-radius:0}}
+.statusbar{display:flex;justify-content:space-between;align-items:center;padding:10px 22px 2px;font-size:12px;color:var(--text);font-weight:700;padding-top:calc(10px + env(safe-area-inset-top,0px))}
+.appbar{padding:6px 18px 12px;background:var(--bg)}
+.appbar .row1{display:flex;justify-content:space-between;align-items:center}
+.appbar h1{font-size:18.5px;margin:0;color:var(--navy)}
+.appbar .sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.appbar .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.content{flex:1;overflow-y:auto;padding:4px 18px 100px;-webkit-overflow-scrolling:touch}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.kpi{background:var(--card);border-radius:16px;padding:14px;box-shadow:0 2px 10px rgba(20,30,60,.05)}
+.kpi .v{font-size:20px;font-weight:800;color:var(--navy)}.kpi .l{font-size:10.5px;color:var(--muted);margin-top:2px}
+.alert{display:flex;gap:10px;background:var(--warnbg);border-radius:14px;padding:12px 14px;margin:12px 0;border:1px solid #fbe3b7}
+.alert b{font-size:13px;color:#92400e}.alert p{margin:2px 0 0;font-size:11.5px;color:#92400e}
+.qa-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+.qa{background:var(--card);border-radius:14px;padding:10px 4px;text-align:center;box-shadow:0 2px 10px rgba(20,30,60,.05);border:none;font-family:inherit}
+.qa .ic{width:36px;height:36px;border-radius:12px;background:var(--infobg);color:var(--info);display:flex;align-items:center;justify-content:center;margin:0 auto 6px;font-size:15px}
+.qa span{font-size:10px;color:var(--text);font-weight:600}
+.sec-title{display:flex;justify-content:space-between;align-items:center;margin:16px 0 8px}
+.sec-title h3{font-size:14px;margin:0;color:var(--navy)}
+.activity{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.activity:last-child{border-bottom:none}
+.activity .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);flex:0 0 8px}
+.activity .t{font-size:12px;color:var(--text)}.activity .d{font-size:10px;color:var(--muted)}
+.support{background:linear-gradient(135deg,var(--navy),var(--navy2));border-radius:16px;padding:16px;color:#fff;margin:14px 0;display:flex;justify-content:space-between;align-items:center}
+.support div b{font-size:13px}.support div p{margin:3px 0 0;font-size:10.5px;color:#c9d3e6}
+.support button{background:var(--gold);color:var(--navy);border:none;padding:8px 14px;border-radius:10px;font-weight:700;font-size:11px;font-family:inherit}
+.searchbar{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:12px;padding:10px 14px;margin:10px 0;box-shadow:0 2px 10px rgba(20,30,60,.05)}
+.searchbar input{border:none;outline:none;flex:1;font-family:inherit;font-size:13px;background:none}
+.item-card{background:var(--card);border-radius:16px;padding:13px 14px;margin-bottom:10px;box-shadow:0 2px 10px rgba(20,30,60,.05)}
+.item-card .top{display:flex;justify-content:space-between;align-items:flex-start}
+.item-card .name{font-size:13px;font-weight:700;color:var(--navy)}
+.item-card .meta{font-size:11px;color:var(--muted);margin-top:3px}
+.badge{font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;white-space:nowrap}
+.b-ok{background:var(--okbg);color:var(--ok)}.b-warn{background:var(--warnbg);color:var(--warn)}
+.b-bad{background:var(--badbg);color:var(--bad)}.b-info{background:var(--infobg);color:var(--info)}
+.fab{position:absolute;bottom:86px;left:20px;width:52px;height:52px;border-radius:50%;background:var(--gold);color:var(--navy);border:none;font-size:22px;font-weight:800;box-shadow:0 8px 20px rgba(201,162,39,.5);z-index:6}
+.more-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:8px}
+.more-item{background:var(--card);border-radius:16px;padding:14px 4px;text-align:center;box-shadow:0 2px 10px rgba(20,30,60,.05);border:none;font-family:inherit}
+.more-item .ic{width:38px;height:38px;border-radius:12px;background:var(--infobg);color:var(--info);display:flex;align-items:center;justify-content:center;margin:0 auto 7px;font-size:16px}
+.more-item span{font-size:10px;font-weight:600;color:var(--text)}
+.form-card{background:var(--card);border-radius:16px;padding:16px;margin-top:8px}
+.form-card label{font-size:11px;color:var(--muted);display:block;margin:10px 0 5px}
+.form-card label:first-child{margin-top:0}
+.form-card input,.form-card select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:13px;background:#fbfcfe}
+.form-card button{width:100%;margin-top:16px;background:var(--navy);color:#fff;border:none;padding:12px;border-radius:10px;font-weight:700;font-family:inherit}
+.profile-card{background:linear-gradient(135deg,var(--navy),var(--navy2));border-radius:18px;padding:20px;color:#fff;margin:10px 0 16px;text-align:center}
+.profile-card .av{width:60px;height:60px;border-radius:50%;background:var(--gold);color:var(--navy);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;margin:0 auto 10px}
+.settings-row{display:flex;justify-content:space-between;align-items:center;background:var(--card);border-radius:12px;padding:12px 14px;margin-bottom:8px;font-size:12.5px}
+.empty-page{text-align:center;color:var(--muted);font-size:12px;padding:60px 20px}
+.bar-bg{background:#eef1f6;border-radius:20px;height:8px;overflow:hidden;margin-top:6px}
+.bar-fill{height:100%;border-radius:20px}
+.chart{display:flex;align-items:flex-end;gap:8px;height:110px;padding:0 4px 4px}
+.chart .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.chart .bar{width:70%;border-radius:6px 6px 0 0;background:var(--navy)}
+.chart .lbl{font-size:9.5px;color:var(--muted);margin-top:4px}
+.cmp-table{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
+.cmp-col{background:var(--card);border-radius:14px;padding:12px 8px;text-align:center;box-shadow:0 2px 10px rgba(20,30,60,.05)}
+.cmp-col h4{font-size:11.5px;margin:0 0 8px;color:var(--navy)}
+.cmp-col .m{font-size:10px;color:var(--muted);margin-top:6px}
+.cmp-col .m b{display:block;font-size:12.5px;color:var(--text)}
+.lock{position:absolute;inset:0;background:var(--navy);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;z-index:20}
+.lock .ic{font-size:40px;margin-bottom:14px}.lock h2{margin:0 0 8px;font-size:17px}.lock p{color:#c9d3e6;font-size:12.5px;line-height:1.7;margin:0}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;color:#6E7A8F;font-size:10px;padding:4px 0;border:none;background:none;font-family:inherit}
+.tab .ic{font-size:18px;line-height:1}.tab.active{color:var(--navy);font-weight:700}.tab.active .ic{color:var(--gold)}
+.loginbox{display:flex;flex-direction:column;justify-content:center;height:100%;padding:30px}
+.loginbox h1{color:var(--navy);font-size:19px;margin:0 0 4px}.loginbox p{font-size:12px;color:var(--muted);margin:0 0 20px}
+.loginbox input{width:100%;padding:12px 14px;margin-bottom:10px;border-radius:12px;border:1px solid var(--line);font-family:inherit;font-size:13.5px}
+.loginbox button{width:100%;background:var(--navy);color:#fff;border:none;padding:13px;border-radius:12px;font-weight:700;font-family:inherit}
+.loginerr{color:var(--bad);font-size:11.5px;margin-top:8px;min-height:16px}
 </style>
 </head>
 <body>
+<div class="device"><div class="screen" id="screen"></div></div>
 
-<!-- ═══════════ Overlay + Drawer ═══════════ -->
-<div class="overlay" id="overlay"></div>
-
-<aside class="drawer" id="drawer">
-  <button class="close-drawer" id="closeDrawer" aria-label="إغلاق">
-    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-  </button>
-
-  <div class="drawer-header">
-    <div class="mark">BO</div>
-    <div>
-      <b>Broker OS</b>
-      <span id="drawerUserName">جار التحميل...</span>
-    </div>
-  </div>
-
-  <div class="drawer-group">القائمة الرئيسية</div>
-  <nav class="drawer-nav" id="drawerNav">
-    <a data-route="dashboard"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> لوحة القيادة</a>
-    <a data-route="clients"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> العملاء</a>
-    <a data-route="leads"><svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg> العملاء المحتملون</a>
-    <a data-route="opportunities"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> الفرص</a>
-    <a data-route="quotes"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg> عروض الأسعار</a>
-    <a data-route="policies"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> الوثائق (بوليصات)</a>
-    <a data-route="claims"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> المطالبات</a>
-    <a data-route="payments"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> المدفوعات</a>
-    <a data-route="documents"><svg viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> المستندات</a>
-    <a data-route="reports"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> التقارير</a>
-    <a data-route="notifications"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> الإشعارات</a>
-  </nav>
-
-  <div class="drawer-footer">
-    <p>صلاحيات المدير فقط</p>
-    <a href="admin-panel.html">
-      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-      لوحة إدارة المنصة
-    </a>
-  </div>
-</aside>
-
-<!-- ═══════════ Top App Bar ═══════════ -->
-<header class="appbar">
-  <button class="menu-btn" id="openDrawer" aria-label="القائمة">
-    <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-  </button>
-  <div class="title-wrap">
-    <b id="pageTitle">لوحة القيادة</b>
-    <span id="pageSub">نظرة عامة على أدائك</span>
-  </div>
-  <button class="avatar-btn" id="notifBtn">
-    إش
-    <span class="dot" id="notifDot" style="display:none"></span>
-  </button>
-</header>
-
-<!-- ═══════════ Main Content ═══════════ -->
-<main class="content" id="content">
-
-  <!-- ═══════ لوحة القيادة ═══════ -->
-  <section class="page active" id="page-dashboard">
-    <div class="kpi-grid">
-      <div class="kpi-card"><div class="v" id="kpiClients">0</div><div class="l">عملاء نشطون</div></div>
-      <div class="kpi-card"><div class="v" id="kpiOpen">0</div><div class="l">فرص مفتوحة</div></div>
-      <div class="kpi-card"><div class="v" id="kpiPending">0</div><div class="l">قيد المراجعة</div></div>
-      <div class="kpi-card"><div class="v" id="kpiApproved">0</div><div class="l">مقبولة</div></div>
-    </div>
-
-    <div class="card">
-      <h3>مسار العمل <span class="count">Lead → Policy</span></h3>
-      <div class="funnel">
-        <div class="funnel-row"><div class="num">1</div><div class="lbl">عملاء محتملون</div><div class="val" id="fLead">0</div></div>
-        <div class="funnel-row"><div class="num">2</div><div class="lbl">فرص</div><div class="val" id="fOpp">0</div></div>
-        <div class="funnel-row"><div class="num">3</div><div class="lbl">عملاء</div><div class="val" id="fClient">0</div></div>
-        <div class="funnel-row"><div class="num">4</div><div class="lbl">عروض أسعار</div><div class="val" id="fQuote">0</div></div>
-        <div class="funnel-row"><div class="num">5</div><div class="lbl">بوليصات</div><div class="val" id="fPolicy">0</div></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>أحدث العملاء المحتملين <span class="count" id="dashLeadsCount">0</span></h3>
-      <div id="dashLeadsList"></div>
-      <div class="empty" id="dashLeadsEmpty" style="display:none">
-        <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-        لا توجد طلبات بعد
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════ العملاء ═══════ -->
-  <section class="page" id="page-clients">
-    <div class="page-head">
-      <div class="ic-wrap"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-      <div><h2>العملاء</h2><p>إدارة قاعدة عملائك</p></div>
-    </div>
-
-    <div class="card">
-      <h3>إضافة عميل جديد</h3>
-      <form id="clientForm" class="form-grid">
-        <div><label>اسم العميل</label><input required id="cName" placeholder="أحمد فتحي"></div>
-        <div class="row-2">
-          <div><label>الهاتف</label><input required id="cPhone" placeholder="01000000000"></div>
-          <div><label>البريد</label><input id="cEmail" type="email" placeholder="a@mail.com"></div>
-        </div>
-        <div><label>نوع التأمين</label>
-          <select id="cType"><option>تأمين سيارات</option><option>تأمين صحي</option><option>تأمين حياة</option><option>تأمين ممتلكات</option></select>
-        </div>
-        <div><label>ملاحظات</label><textarea id="cNotes" rows="2"></textarea></div>
-        <button class="btn-primary" type="submit">حفظ العميل</button>
-      </form>
-    </div>
-
-    <div class="card">
-      <h3>قائمة العملاء <span class="count" id="clientsCount">0</span></h3>
-      <div class="search-input">
-        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="clientSearch" placeholder="بحث بالاسم أو الهاتف...">
-      </div>
-      <div id="clientsList"></div>
-      <div class="empty" id="clientsEmpty" style="display:none">
-        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-        لا يوجد عملاء بعد
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════ العملاء المحتملون ═══════ -->
-  <section class="page" id="page-leads">
-    <div class="page-head">
-      <div class="ic-wrap"><svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></div>
-      <div><h2>العملاء المحتملون</h2><p>متابعة الطلبات الجديدة</p></div>
-    </div>
-
-    <div class="card">
-      <h3>إضافة عميل محتمل</h3>
-      <form id="leadForm" class="form-grid">
-        <div><label>الاسم</label><input required id="lName" placeholder="أحمد فتحي"></div>
-        <div><label>الهاتف</label><input required id="lPhone" placeholder="01000000000"></div>
-        <div><label>نوع التأمين</label>
-          <select id="lType"><option>تأمين سيارات</option><option>تأمين صحي</option><option>تأمين حياة</option><option>تأمين ممتلكات</option></select>
-        </div>
-        <div><label>المصدر</label>
-          <select id="lSource"><option>اتصال مباشر</option><option>الموقع الإلكتروني</option><option>إحالة عميل</option><option>سوشيال ميديا</option></select>
-        </div>
-        <div><label>ملاحظات</label><textarea id="lNotes" rows="2"></textarea></div>
-        <button class="btn-primary" type="submit">إرسال للمراجعة</button>
-      </form>
-    </div>
-
-    <div class="card">
-      <h3>القائمة <span class="count" id="leadsCount">0</span></h3>
-      <div id="leadsList"></div>
-      <div class="empty" id="leadsEmpty" style="display:none">
-        <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-        لا توجد طلبات بعد
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════ الفرص ═══════ -->
-  <section class="page" id="page-opportunities">
-    <div class="page-head">
-      <div class="ic-wrap"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
-      <div><h2>الفرص</h2><p>مسار الفرص التجارية</p></div>
-    </div>
-
-    <div class="card">
-      <h3>إضافة فرصة</h3>
-      <form id="oppForm" class="form-grid">
-        <div><label>عنوان الفرصة</label><input required id="oTitle" placeholder="تجديد بوليصة سيارة"></div>
-        <div><label>العميل</label><input required id="oClient" placeholder="اسم العميل"></div>
-        <div class="row-2">
-          <div><label>القيمة (ج.م)</label><input required id="oValue" type="number" placeholder="15000"></div>
-          <div><label>المرحلة</label>
-            <select id="oStage"><option>مبدئية</option><option>تفاوض</option><option>شبه مؤكدة</option><option>مؤكدة</option></select>
-          </div>
-        </div>
-        <button class="btn-primary" type="submit">حفظ الفرصة</button>
-      </form>
-    </div>
-
-    <div class="card">
-      <h3>الفرص الحالية <span class="count" id="oppsCount">0</span></h3>
-      <div id="oppsList"></div>
-      <div class="empty" id="oppsEmpty" style="display:none">
-        <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-        لا توجد فرص بعد
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════ عروض الأسعار ═══════ -->
-  <section class="page" id="page-quotes">
-    <div class="page-head">
-      <div class="ic-wrap"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-      <div><h2>عروض الأسعار</h2><p>إنشاء ومتابعة العروض</p></div>
-    </div>
-
-    <div class="card">
-      <h3>إنشاء عرض سعر</h3>
-      <form id="quoteForm" class="form-grid">
-        <div><label>رقم العرض</label><input required id="qNo" placeholder="Q-2025-001"></div>
-        <div><label>العميل</label><input required id="qClient" placeholder="اسم العميل"></div>
-        <div class="row-2">
-          <div><label>المبلغ (ج.م)</label><input required id="qAmount" type="number" placeholder="12000"></div>
-          <div><label>الحالة</label>
-            <select id="qStatus"><option>مسودة</option><option>مُرسل</option><option>مقبول</option><option>مرفوض</option></select>
-          </div>
-        </div>
-        <button class="btn-primary" type="submit">حفظ العرض</button>
-      </form>
-    </div>
-
-    <div class="card">
-      <h3>القائمة <span class="count" id="quotesCount">0</span></h3>
-      <div id="quotesList"></div>
-      <div class="empty" id="quotesEmpty" style="display:none">
-        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
-        لا توجد عروض بعد
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════ الوثائق ═══════ -->
-  <section class="page" id="page-policies">
-    <div class="page-head">
-      <div class="ic-wrap"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-      <div><h2>الوثائق</h2><p>البوليصات والتجديدات</p></div>
-    </div>
-
-    <div class="card">
-      <h3>إضافة بوليصة</h3>
-      <form id="policyForm" class="form-grid">
-        <div><label>رقم البوليصة</label><input required id="pNo" placeholder="P-2025-001"></div>
-        <div><label>العميل</label><input required id="pClient" placeholder="اسم العميل"></div>
-        <div class="row-2">
-          <div><label>النوع</label>
-            <select id="pType"><option>سيارات</option><option>صحي</option><option>حياة</option><option>ممتلكات</option></select>
-          </div>
-          <div><label>تاريخ الانتهاء</label><input required id="pExpiry" type="date"></div>
-        </div>
-        <div class="row-2">
-          <div><label>القسط (ج.م)</label><input required id="pPremium" type="number" placeholder="15000"></div>
-          <div><label>الحالة</label>
-            <select id="pStatus"><option>نشطة</option><option>منتهية</option><option>ملغاة</option></select>
-          </div>
-        </div>
-        <button class="btn-primary" type="submit">حفظ البوليصة</button>
-      </form>
-    </div>
-
-    <div class="card">
-      <h3>القائمة <span class="count" id="policiesCount">0</span></h3>
-      <div id="policiesList"></div>
-      <div class="empty" id="policiesEmpty" style="display:none">
-        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        لا توجد بوليصات بعد
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════ المطالبات ═══════ -->
-  <section class="page" id="page-claims">
-    <div class="page-head">
-      <div class="ic-wrap"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-      <div><h2>المطالبات</h2><p>متابعة مطالبات العملاء</p></div>
-    </div>
-
-    <div class="card">
-      <h3>تسجيل مطالبة</h3>
-      <form id="claimForm" class="form-grid">
-        <div><label>رقم المطالبة</label><input required id="clNo" placeholder="C-2025-001"></div>
-        <div><label>العميل</label><input required id="clClient" placeholder="اسم العميل"></div>
-        <div><label>رقم البوليصة</label><input required id="clPolicy" placeholder="P-2025-001"></div>
-        <div class="row-2">
-          <div><label>المبلغ (ج.م)</label><input required id="clAmount" type="number" placeholder="5000"></div>
-          <div><label>الحالة</label>
-            <select id="clStatus"><option>قيد المراجعة</option><option>مقبولة</option><option>مرفوضة</option><option>مدفوعة</option></select>
-          </div>
-        </div>
-        <button class="btn-primary" type="submit">حفظ المطالبة</button>
-      </form>
-    </div>
-
-    <div class="card">
-      <h3>القائمة <span class="count" id="claimsCount">0</span></h3>
-      <div id="claimsList"></div>
-      <div class="empty" id="claimsEmpty" style="display:none">
-        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
-        لا توجد مطالبات بعد
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════ المدفوعات ═══════ -->
-  <section class="page" id="page-payments">
-    <div class="page-head">
-      <div class="ic-wrap"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
-      <div><h2>المدفوعات</h2><p>التحصيل والمدفوعات</p></div>
-    </div>
-
-    <div class="card">
-      <h3>تسجيل دفعة</h3>
-      <form id="paymentForm" class="form-grid">
-        <div><label>رقم الدفعة</label><input required id="payNo" placeholder="PAY-2025-001"></div>
-        <div><label>العميل</label><input required id="payClient" placeholder="اسم العميل"></div>
-        <div class="row-2">
-          <div><label>المبلغ (ج.م)</label><input required id="payAmount" type="number" placeholder="5000"></div>
-          <div><label>الطريقة</label>
-            <select id="payMethod"><option>نقدي</option><option>تحويل بنكي</option><option>بطاقة ائتمان</option><option>محفظة إلكترونية</option></select>
-          </div>
-        </div>
-        <div><label>الحالة</label>
-          <select id="payStatus"><option>مدفوعة</option><option>معلقة</option><option>متأخرة</option></select>
-        </div>
-        <button class="btn-primary" type="submit">حفظ الدفعة</button>
-      </form>
-    </div>
-
-    <div class="card">
-      <h3>القائمة <span class="count" id="paymentsCount">0</span></h3>
-      <div id="paymentsList"></div>
-      <div class="empty" id="paymentsEmpty" style="display:none">
-        <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/></svg>
-        لا توجد مدفوعات بعد
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════ المستندات ═══════ -->
-  <section class="page" id="page-documents">
-    <div class="page-head">
-      <div class="ic-wrap"><svg viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg></div>
-      <div><h2>المستندات</h2><p>رفع وإدارة الملفات</p></div>
-    </div>
-
-    <div class="card">
-      <h3>رفع مستند جديد</h3>
-      <form id="docForm" class="form-grid">
-        <div><label>اسم المستند</label><input required id="dName" placeholder="هوية_العميل"></div>
-        <div><label>صاحب المستند</label><input required id="dOwner" placeholder="اسم العميل"></div>
-        <div><label>النوع</label>
-          <select id="dType"><option>هوية</option><option>رخصة</option><option>عقد</option><option>فاتورة</option><option>أخرى</option></select>
-        </div>
-        <div><label>الملف</label><input type="file" id="dFile"></div>
-        <button class="btn-primary" type="submit">إرسال للمراجعة</button>
-      </form>
-      <p style="font-size:11.5px;color:var(--muted);margin:10px 0 0;line-height:1.7">
-        يتم إرسال الملف إلى لوحة إدارة المنصة للموافقة عليه قبل أن يصبح متاحًا.
-      </p>
-    </div>
-
-    <div class="card">
-      <h3>مستنداتي <span class="count" id="docsCount">0</span></h3>
-      <div id="docsList"></div>
-      <div class="empty" id="docsEmpty" style="display:none">
-        <svg viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/></svg>
-        لا توجد مستندات بعد
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════ التقارير ═══════ -->
-  <section class="page" id="page-reports">
-    <div class="page-head">
-      <div class="ic-wrap"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-      <div><h2>التقارير</h2><p>تحليلات الأداء</p></div>
-    </div>
-
-    <div class="kpi-grid">
-      <div class="kpi-card"><div class="v" id="rClients">0</div><div class="l">إجمالي العملاء</div></div>
-      <div class="kpi-card"><div class="v" id="rPolicies">0</div><div class="l">إجمالي البوليصات</div></div>
-      <div class="kpi-card"><div class="v" id="rPremium">0</div><div class="l">إجمالي الأقساط</div></div>
-      <div class="kpi-card"><div class="v" id="rClaims">0</div><div class="l">إجمالي المطالبات</div></div>
-    </div>
-
-    <div class="card">
-      <h3>توزيع البوليصات حسب النوع</h3>
-      <div id="reportList"></div>
-      <div class="empty" id="reportEmpty" style="display:none">
-        <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/></svg>
-        لا توجد بيانات كافية
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════ الإشعارات ═══════ -->
-  <section class="page" id="page-notifications">
-    <div class="page-head">
-      <div class="ic-wrap"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
-      <div><h2>الإشعارات</h2><p>إشعارات المنصة</p></div>
-    </div>
-
-    <div class="card">
-      <h3>الكل <span class="count" id="userNotifCount">0</span></h3>
-      <div id="userNotifList"></div>
-      <div class="empty" id="userNotifEmpty" style="display:none">
-        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
-        لا توجد إشعارات
-      </div>
-    </div>
-  </section>
-
-</main>
-
-<!-- ═══════════ Bottom Navigation ═══════════ -->
-<nav class="bottom-nav" id="bottomNav">
-  <button class="bn-item active" data-route="dashboard">
-    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    <span>الرئيسية</span>
-  </button>
-  <button class="bn-item" data-route="clients">
-    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-    <span>العملاء</span>
-  </button>
-  <button class="bn-item" data-route="leads">
-    <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-    <span>المحتملون</span>
-  </button>
-  <button class="bn-item" data-route="policies">
-    <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-    <span>الوثائق</span>
-  </button>
-  <button class="bn-item" id="openDrawerBtn">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-    <span>المزيد</span>
-  </button>
-</nav>
-
-<!-- ═══════════ Firebase SDK ═══════════ -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, query, where, orderBy, onSnapshot, serverTimestamp, addDoc, deleteDoc }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-/* ═══════════ إعداد Firebase ═══════════ */
+<script>
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBc_zK1eS5vBo1lRFL53cavstrU9ncdydI",
+  authDomain: "broker-os-7df4b.firebaseapp.com",
+  projectId: "broker-os-7df4b",
+  storageBucket: "broker-os-7df4b.firebasestorage.app",
+  messagingSenderId: "882880749734",
+  appId: "1:882880749734:web:24df7eb1a914100e841467",
+  measurementId: "G-W6L9G9RM47"
 };
+const DEMO = firebaseConfig.apiKey.indexOf('YOUR_')===0;
+let db=null, auth=null, ME_UID='u1', ME_NAME='إسلام شاهين';
+if(!DEMO){firebase.initializeApp(firebaseConfig); db=firebase.firestore(); auth=firebase.auth();}
 
-const app  = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
+const FLAGS_KEY='brokeros_flags', LEADS_KEY='brokeros_leads', USERS_KEY='brokeros_users',
+      INSURERS_KEY='brokeros_insurers', PRODUCTS_KEY='brokeros_products', NOTIFS_KEY='brokeros_notifications', CONTENT_KEY='brokeros_page_content';
+function J(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}}
+function W(k,v){localStorage.setItem(k,JSON.stringify(v))}
 
-/* ═══════════ حالة المصادقة ═══════════ */
-let currentBroker = null;
-let orgId = null;
+const PAGES=[{key:'home',name:'الرئيسية',ic:'⌂'},{key:'clients',name:'العملاء',ic:'◧'},{key:'leads',name:'محتملون',ic:'◈'},
+  {key:'quotes',name:'العروض',ic:'◫'},{key:'policies',name:'وثائقي',ic:'◉'},{key:'claims',name:'المطالبات',ic:'✦'},
+  {key:'payments',name:'المدفوعات',ic:'◍'},{key:'renewals',name:'التجديدات',ic:'⟳'},{key:'documents',name:'المستندات',ic:'▤'},
+  {key:'notifications',name:'الإشعارات',ic:'●'},{key:'analytics',name:'أداء الوسيط',ic:'▲'},{key:'medical',name:'الاستهلاك الطبي',ic:'✚'},
+  {key:'commissions',name:'العمولات',ic:'¤'},{key:'compare',name:'مقارنة العروض',ic:'⇄'},{key:'profile',name:'حسابي',ic:'◐'}];
+const PINNED=['home','clients','quotes','policies'];
+const DEFAULT_INSURERS=['مصر للتأمين','اليانز','ميت لايف','إكسا','ساكو'];
+const DEFAULT_PRODUCTS=['تأمين سيارات','تأمين صحي','تأمين حياة','تأمين ممتلكات'];
+const DEFAULT_NOTIFS=[{t:'تم قبول عرض سعر سارة يوسف',d:'منذ 10 دقائق'},{t:'بوليصة POL-2291 تنتهي قريبًا',d:'منذ ساعة'},{t:'تحصيل جديد بقيمة 3,200 ج.م',d:'اليوم 10:20 ص'}];
 
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    document.body.innerHTML = `
-      <div class="auth-screen">
-        <div class="mark">BO</div>
-        <h2>يجب تسجيل الدخول</h2>
-        <p>يرجى تسجيل الدخول للوصول إلى حسابك.</p>
-      </div>`;
-    return;
+let CACHE={pages:{},widgets:{},pageContent:{},insurers:DEFAULT_INSURERS,products:DEFAULT_PRODUCTS,notifications:DEFAULT_NOTIFS,leads:[],myStatus:'نشط'};
+PAGES.forEach(p=>CACHE.pages[p.key]=true); ['kpi','funnel','quickActions','renewalAlerts','activityFeed','supportCard'].forEach(w=>CACHE.widgets[w]=true);
+let current='home';
+
+const CLIENTS=[{name:'أحمد فتحي',type:'تأمين سيارات',phone:'0100 000 111',status:'نشط',b:'b-ok'},{name:'منى الشربيني',type:'تأمين صحي',phone:'0111 222 333',status:'نشط',b:'b-ok'},
+  {name:'كريم عادل',type:'تأمين ممتلكات',phone:'0122 444 555',status:'مراجعة',b:'b-warn'},{name:'سارة يوسف',type:'تأمين حياة',phone:'0155 666 777',status:'نشط',b:'b-ok'}];
+const QUOTES=[{client:'أحمد فتحي',insurer:'مصر للتأمين',premium:'3,200 ج.م',status:'بانتظار الموافقة',b:'b-warn'},{client:'سارة يوسف',insurer:'ميت لايف',premium:'1,850 ج.م',status:'مقبول',b:'b-ok'},{client:'كريم عادل',insurer:'اكسا',premium:'950 ج.م',status:'مرفوض',b:'b-bad'}];
+const POLICIES=[{no:'POL-2291',client:'أحمد فتحي',insurer:'مصر للتأمين',expiry:'ينتهي خلال 12 يومًا',b:'b-warn'},{no:'POL-1187',client:'منى الشربيني',insurer:'اليانز',expiry:'سارية حتى مارس 2027',b:'b-ok'},{no:'POL-0965',client:'سارة يوسف',insurer:'ميت لايف',expiry:'سارية حتى يونيو 2027',b:'b-ok'}];
+const CLAIMS=[{no:'CLM-551',client:'أحمد فتحي',type:'حادث سيارة',amount:'8,000 ج.م',status:'قيد المعالجة',b:'b-warn'},{no:'CLM-489',client:'منى الشربيني',type:'علاج طبي',amount:'2,300 ج.م',status:'مسدد',b:'b-ok'}];
+const PAYMENTS=[{who:'أحمد فتحي',amount:'+ 3,200 ج.م',date:'اليوم 10:20 ص',b:'b-ok'},{who:'عمولة اليانز',amount:'+ 640 ج.م',date:'أمس',b:'b-ok'},{who:'استرداد كريم عادل',amount:'- 300 ج.م',date:'منذ يومين',b:'b-bad'}];
+const RENEWALS=[{client:'أحمد فتحي',policy:'POL-2291',days:'12 يومًا',b:'b-warn'},{client:'وائل نجيب',policy:'POL-3310',days:'5 أيام',b:'b-bad'}];
+const DOCS=[{name:'بوليصة أحمد فتحي.pdf',size:'220 KB'},{name:'بطاقة رقم قومي - منى.jpg',size:'1.1 MB'},{name:'تقرير مطالبة CLM-551.pdf',size:'340 KB'}];
+const ACTIVITY=[{t:'تمت إضافة عميل محتمل جديد',d:'منذ 5 دقائق'},{t:'تم قبول عرض سعر لـ سارة يوسف',d:'منذ ساعة'},{t:'تحصيل دفعة من أحمد فتحي',d:'اليوم'}];
+const MEDICAL=[{name:'منى الشربيني',cons:70,meds:45,hosp:10,risk:'متوسط',b:'b-warn'},{name:'سارة يوسف',cons:30,meds:20,hosp:0,risk:'منخفض',b:'b-ok'},{name:'وائل نجيب',cons:90,meds:85,hosp:60,risk:'مرتفع',b:'b-bad'}];
+const COMMISSIONS=[{policy:'POL-2291',insurer:'مصر للتأمين',amount:'480 ج.م',status:'مستحقة',b:'b-warn'},{policy:'POL-1187',insurer:'اليانز',amount:'210 ج.م',status:'محصلة',b:'b-ok'},{policy:'POL-0965',insurer:'ميت لايف',amount:'160 ج.م',status:'محصلة',b:'b-ok'}];
+const CHART=[{m:'أبريل',v:40},{m:'مايو',v:55},{m:'يونيو',v:48},{m:'يوليو',v:70},{m:'أغسطس',v:62},{m:'سبتمبر',v:82}];
+const COMPARE_OFFERS=[{ins:'مصر للتأمين',premium:'3,200 ج.م',cover:'250,000 ج.م',ded:'5%',rate:'4.2 ★'},{ins:'اليانز',premium:'3,450 ج.م',cover:'300,000 ج.م',ded:'3%',rate:'4.6 ★'},{ins:'إكسا',premium:'2,950 ج.م',cover:'200,000 ج.م',ded:'8%',rate:'3.9 ★'}];
+
+function pageOn(k){return CACHE.pages[k]!==false} function widOn(k){return CACHE.widgets[k]!==false}
+function itemCard(name,meta,badge,badgeClass){return `<div class="item-card"><div class="top"><div><div class="name">${name}</div><div class="meta">${meta}</div></div><span class="badge ${badgeClass}">${badge}</span></div></div>`}
+function renderList(items,mapFn,emptyText){return items.length?`<div style="margin-top:10px">${items.map(mapFn).join('')}</div>`:`<div class="empty-page">${emptyText}</div>`}
+function pageTitle(key,def){const c=CACHE.pageContent[key]; return c&&c.title?[c.title,c.subtitle||def[1]]:def;}
+
+function renderHome(){
+  let h='';
+  if(widOn('renewalAlerts')) h+=`<div class="alert"><div>⚠</div><div><b>تنبيه تجديد</b><p>لديك بوليصتان تنتهيان خلال أقل من 15 يومًا — راجع صفحة التجديدات.</p></div></div>`;
+  if(widOn('kpi')) h+=`<div class="kpis"><div class="kpi"><div class="v">${128+CACHE.leads.filter(l=>l.status==='مقبول').length}</div><div class="l">عملاء نشطون</div></div>
+    <div class="kpi"><div class="v">${34+CACHE.leads.length}</div><div class="l">فرص مفتوحة</div></div>
+    <div class="kpi"><div class="v">18,400</div><div class="l">تحصيل الشهر (ج.م)</div></div>
+    <div class="kpi"><div class="v">${CACHE.leads.filter(l=>l.status==='جديد'||l.status==='قيد المراجعة').length}</div><div class="l">بانتظار المراجعة</div></div></div>`;
+  if(widOn('quickActions')) h+=`<div class="qa-row"><button class="qa" onclick="goto('leads')"><div class="ic">＋</div><span>عميل جديد</span></button>
+    <button class="qa" onclick="goto('quotes')"><div class="ic">◫</div><span>عرض سعر</span></button>
+    <button class="qa" onclick="goto('documents')"><div class="ic">▤</div><span>رفع مستند</span></button>
+    <button class="qa" onclick="goto('profile')"><div class="ic">☎</div><span>الدعم</span></button></div>`;
+  if(widOn('funnel')) h+=`<div class="sec-title"><h3>مسار العمل التجاري</h3></div><div class="kpis">
+    <div class="kpi"><div class="v">${CACHE.leads.filter(l=>l.status==='جديد').length}</div><div class="l">عميل محتمل</div></div>
+    <div class="kpi"><div class="v">${CACHE.leads.filter(l=>l.status==='قيد المراجعة').length}</div><div class="l">قيد المراجعة</div></div></div>`;
+  if(widOn('activityFeed')){h+=`<div class="sec-title"><h3>آخر النشاطات</h3></div><div class="item-card">`;ACTIVITY.forEach(a=>h+=`<div class="activity"><div class="dot"></div><div><div class="t">${a.t}</div><div class="d">${a.d}</div></div></div>`);h+=`</div>`;}
+  if(widOn('supportCard')) h+=`<div class="support"><div><b>محتاج مساعدة؟</b><p>فريق الدعم الفني متاح الآن</p></div><button>تواصل</button></div>`;
+  return h||`<div class="empty-page">لا توجد عناصر مفعّلة لهذه الشاشة حاليًا.</div>`;
+}
+function renderClients(){return `<div class="searchbar">🔍<input placeholder="ابحث عن عميل..."></div>`+renderList(CLIENTS,c=>itemCard(c.name,`${c.type} · ${c.phone}`,c.status,c.b),'لا يوجد عملاء بعد');}
+function renderLeadsPage(){
+  const mine=[...CACHE.leads].filter(l=>l.createdBy===ME_UID||l.submittedBy===ME_NAME).reverse();
+  const list=renderList(mine,l=>itemCard(l.name,`${l.type} · ${l.phone||'—'}`,l.status,l.status==='مقبول'?'b-ok':l.status==='مرفوض'?'b-bad':l.status==='قيد المراجعة'?'b-warn':'b-info'),'لم تُضِف أي عميل محتمل بعد.');
+  return `<div class="form-card"><label>اسم العميل</label><input id="lName" placeholder="مثال: أحمد فتحي">
+    <label>رقم الهاتف</label><input id="lPhone" placeholder="01000000000">
+    <label>نوع التأمين</label><select id="lType">${CACHE.products.map(p=>`<option>${typeof p==='string'?p:p.name}</option>`).join('')}</select>
+    <button onclick="addLead()">إرسال للمراجعة</button></div>
+    <div class="sec-title"><h3>الطلبات المرسلة</h3></div>${list}`;
+}
+function addLead(){
+  const name=document.getElementById('lName').value.trim(), phone=document.getElementById('lPhone').value.trim(), type=document.getElementById('lType').value;
+  if(!name||!phone) return;
+  if(DEMO){const leads=J(LEADS_KEY,[]); leads.push({id:'L'+Date.now(),name,phone,type,status:'جديد',date:new Date().toLocaleDateString('ar-EG'),submittedBy:ME_NAME}); W(LEADS_KEY,leads); CACHE.leads=leads; renderPage();}
+  else{db.collection('leads').add({name,phone,type,status:'جديد',createdBy:ME_UID,submittedBy:ME_NAME,createdAt:firebase.firestore.FieldValue.serverTimestamp()});}
+}
+function renderQuotes(){return renderList(QUOTES,q=>itemCard(q.client,`${q.insurer} · ${q.premium}`,q.status,q.b),'لا توجد عروض أسعار بعد');}
+function renderPolicies(){return renderList(POLICIES,p=>itemCard(`${p.no} — ${p.client}`,p.insurer,p.expiry,p.b),'لا توجد بوليصات نشطة بعد');}
+function renderClaims(){return renderList(CLAIMS,c=>itemCard(`${c.no} — ${c.client}`,`${c.type} · ${c.amount}`,c.status,c.b),'لا توجد مطالبات مسجلة');}
+function renderPayments(){return `<div class="kpis"><div class="kpi" style="grid-column:1/-1"><div class="v">18,400 ج.م</div><div class="l">إجمالي التحصيل هذا الشهر</div></div></div>`+renderList(PAYMENTS,p=>itemCard(p.who,p.date,p.amount,p.b),'لا توجد معاملات بعد');}
+function renderRenewals(){return renderList(RENEWALS,r=>itemCard(r.client,r.policy,r.days,r.b),'لا توجد تجديدات قريبة 🎉');}
+function renderDocuments(){return renderList(DOCS,d=>`<div class="item-card"><div class="top"><div><div class="name">${d.name}</div><div class="meta">${d.size}</div></div><span class="badge b-info">عرض</span></div></div>`,'لا توجد مستندات محفوظة');}
+function renderNotifications(){return `<div class="item-card">${CACHE.notifications.map(n=>`<div class="activity"><div class="dot"></div><div><div class="t">${n.t}</div><div class="d">${n.d}</div></div></div>`).join('')}</div>`;}
+function bar(label,val,color){return `<div class="meta" style="margin-top:8px;display:flex;justify-content:space-between"><span>${label}</span><b style="color:var(--text)">${val}%</b></div><div class="bar-bg"><div class="bar-fill" style="width:${val}%;background:${color}"></div></div>`;}
+function renderMedical(){return renderList(MEDICAL,m=>`<div class="item-card"><div class="top"><div class="name">${m.name}</div><span class="badge ${m.b}">${m.risk} الاستهلاك</span></div>${bar('استشارات',m.cons,'#2563EB')}${bar('أدوية',m.meds,'#C9A227')}${bar('تنويم',m.hosp,'#DC2626')}</div>`,'لا توجد بيانات استهلاك طبي بعد');}
+function renderCommissions(){return `<div class="kpis"><div class="kpi" style="grid-column:1/-1"><div class="v">${COMMISSIONS.filter(c=>c.status==='مستحقة').length} عمولة مستحقة</div><div class="l">إجمالي 480 ج.م بانتظار التحصيل</div></div></div>`+renderList(COMMISSIONS,c=>itemCard(`${c.policy} — ${c.insurer}`,'عمولة وسيط',c.status==='مستحقة'?c.amount+' · مستحقة':c.amount+' · محصلة',c.b),'لا توجد عمولات مسجلة');}
+function renderAnalytics(){const max=Math.max(...CHART.map(c=>c.v));return `<div class="kpis"><div class="kpi"><div class="v">62%</div><div class="l">معدل التحويل</div></div><div class="kpi"><div class="v">2,150</div><div class="l">متوسط قيمة البوليصة</div></div>
+    <div class="kpi"><div class="v">88%</div><div class="l">معدل الاحتفاظ بالعملاء</div></div><div class="kpi"><div class="v">18,400</div><div class="l">تحصيل هذا الشهر</div></div></div>
+    <div class="sec-title"><h3>التحصيل الشهري (آخر 6 أشهر)</h3></div><div class="item-card"><div class="chart">${CHART.map(c=>`<div class="col"><div class="bar" style="height:${(c.v/max*100)}%"></div><div class="lbl">${c.m}</div></div>`).join('')}</div></div>`;}
+function renderCompare(){return `<p style="font-size:11.5px;color:var(--muted);margin:8px 0">مقارنة عروض لعميل: <b style="color:var(--text)">أحمد فتحي</b></p>
+    <div class="cmp-table">${COMPARE_OFFERS.map(o=>`<div class="cmp-col"><h4>${o.ins}</h4><div class="m">القسط<b>${o.premium}</b></div><div class="m">التغطية<b>${o.cover}</b></div><div class="m">التحمل<b>${o.ded}</b></div><div class="m">التقييم<b>${o.rate}</b></div></div>`).join('')}</div>`;}
+function renderProfile(){return `<div class="profile-card"><div class="av">${ME_NAME.split(' ').map(w=>w[0]).slice(0,2).join('')}</div><b>${ME_NAME}</b><p style="margin:4px 0 0;font-size:11.5px;color:#c9d3e6">وسيط تأمين معتمد</p></div>
+    <div class="settings-row"><span>اللغة</span><span style="color:var(--muted)">العربية</span></div>
+    <div class="settings-row"><span>الإشعارات</span><span style="color:var(--ok);font-weight:700">مفعّلة</span></div>
+    <div class="settings-row"><span>الدعم الفني</span><span style="color:var(--info);font-weight:700">تواصل</span></div>
+    <div class="settings-row"><span>سياسة الخصوصية</span><span>›</span></div>
+    ${!DEMO?`<div class="settings-row" onclick="doSignOut()"><span style="color:var(--bad)">تسجيل الخروج</span><span>›</span></div>`:''}`;
+}
+function renderMore(){const rest=PAGES.filter(p=>!PINNED.includes(p.key)&&pageOn(p.key)); return rest.length?`<div class="more-grid">${rest.map(p=>`<button class="more-item" onclick="goto('${p.key}')"><div class="ic">${p.ic}</div><span>${p.name}</span></button>`).join('')}</div>`:`<div class="empty-page">لا توجد صفحات إضافية مفعّلة.</div>`;}
+
+const RENDERERS={home:renderHome,clients:renderClients,leads:renderLeadsPage,quotes:renderQuotes,policies:renderPolicies,claims:renderClaims,
+  payments:renderPayments,renewals:renderRenewals,documents:renderDocuments,notifications:renderNotifications,analytics:renderAnalytics,
+  medical:renderMedical,commissions:renderCommissions,compare:renderCompare,profile:renderProfile};
+const TITLES={home:['مرحبًا، إسلام 👋','إليك ملخص أعمالك اليوم'],clients:['العملاء','قائمة عملائك وبياناتهم'],leads:['العملاء المحتملون','استقبال ومتابعة الطلبات الجديدة'],
+  quotes:['عروض الأسعار','متابعة عروض التأمين'],policies:['وثائقي','البوليصات النشطة والمنتهية'],claims:['المطالبات','متابعة حالة مطالبات عملائك'],
+  payments:['المدفوعات','سجل التحصيل والمعاملات'],renewals:['التجديدات','البوليصات القريبة من الانتهاء'],documents:['المستندات','خزنة الوثائق الآمنة'],
+  notifications:['الإشعارات','آخر التحديثات'],analytics:['أداء الوسيط','تحليلات ومؤشرات الأداء'],medical:['الاستهلاك الطبي','تحليل استخدام التأمين الصحي لعملائك'],
+  commissions:['العمولات','متابعة عمولاتك المستحقة والمحصلة'],compare:['مقارنة العروض','قارن عروض شركات التأمين لعميلك'],profile:['حسابي','الإعدادات والدعم الفني'],more:['المزيد','كل الخدمات في مكان واحد']};
+
+function goto(key){current=key;renderPage();}
+
+function appShellHTML(){
+  return `<div class="statusbar"><span id="clock">9:41</span><span>●●●●  🔋</span></div>
+  <div class="appbar"><div class="row1"><div><h1 id="pageTitle"></h1><div class="sub" id="pageSub"></div></div><div class="avatar">${ME_NAME.split(' ').map(w=>w[0]).slice(0,2).join('')}</div></div></div>
+  <div class="content" id="content"></div>
+  <button class="fab" id="fab" style="display:none">+</button>
+  <div class="tabbar" id="tabbar" style="position:absolute;bottom:0;inset-inline:0;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-top:1px solid #ECEFF4;display:flex;padding:8px 4px calc(6px + env(safe-area-inset-bottom,0px));z-index:5"></div>
+  <div class="lock" id="lockScreen" style="display:none"></div>`;
+}
+function loginHTML(err){
+  return `<div class="loginbox"><h1>تسجيل الدخول</h1><p>ادخل إلى تطبيق الوسيط الخاص بك</p>
+    <input id="lEmail" type="email" placeholder="البريد الإلكتروني"><input id="lPass" type="password" placeholder="كلمة المرور">
+    <button onclick="doSignIn()">دخول</button><div class="loginerr">${err||''}</div></div>`;
+}
+function doSignIn(){
+  const email=document.getElementById('lEmail').value.trim(), pass=document.getElementById('lPass').value;
+  auth.signInWithEmailAndPassword(email,pass).catch(e=>{document.getElementById('screen').innerHTML=loginHTML('فشل تسجيل الدخول: '+e.message);});
+}
+function doSignOut(){auth.signOut();}
+
+function renderPage(){
+  if(!pageOn(current) && current!=='more') current='home';
+  const def=TITLES[current]||['',''];
+  const [title,sub]=current==='more'?def:pageTitle(current,def);
+  document.getElementById('content').innerHTML = current==='more' ? renderMore() : (RENDERERS[current]?RENDERERS[current]():'');
+  document.getElementById('pageTitle').textContent=title; document.getElementById('pageSub').textContent=sub;
+  document.getElementById('fab').style.display=(current==='clients'||current==='quotes'||current==='policies')?'flex':'none';
+  const tabs=[]; PINNED.forEach(k=>{if(pageOn(k)) tabs.push(PAGES.find(p=>p.key===k));});
+  if(PAGES.some(p=>!PINNED.includes(p.key)&&pageOn(p.key))) tabs.push({key:'more',name:'المزيد',ic:'▦'});
+  const tb=document.getElementById('tabbar'); tb.innerHTML='';
+  tabs.forEach(t=>{const b=document.createElement('button');b.className='tab'+(current===t.key?' active':'');b.innerHTML=`<span class="ic">${t.ic}</span>${t.name}`;b.onclick=()=>goto(t.key);tb.appendChild(b);});
+}
+function checkLock(){
+  if(CACHE.myStatus!=='نشط'){
+    document.getElementById('lockScreen').style.display='flex';
+    document.getElementById('lockScreen').innerHTML=`<div class="ic">⛔</div><h2>تم إيقاف هذا الحساب</h2><p>قامت إدارة المنصة بإيقاف حسابك مؤقتًا.<br>للاستفسار يرجى التواصل مع الدعم الفني.</p>`;
+    return true;
   }
-
-  const userDoc = await getDoc(doc(db, "users", user.uid));
-  if (!userDoc.exists()) {
-    document.body.innerHTML = `<div class="auth-screen"><div class="mark">BO</div><h2>الحساب غير موجود</h2></div>`;
-    return;
-  }
-
-  const userData = userDoc.data();
-  currentBroker = { uid: user.uid, email: user.email, ...userData };
-  orgId = userData.organizationId;
-
-  if (!orgId) {
-    document.body.innerHTML = `<div class="auth-screen"><div class="mark">BO</div><h2>لم يتم ربط حسابك بأي منظمة</h2></div>`;
-    return;
-  }
-
-  const initials = (currentBroker.name || user.email || 'US').substring(0,2).toUpperCase();
-  document.getElementById('notifBtn').innerHTML = `${initials}<span class="dot" id="notifDot" style="display:none"></span>`;
-  document.getElementById('drawerUserName').textContent = currentBroker.name || user.email;
-
-  initNav();
-  subscribeToData();
-});
-
-/* ═══════════ الاشتراكات الحية ═══════════ */
-function subscribeToData(){
-  const orgFilter = where("organizationId", "==", orgId);
-
-  onSnapshot(query(collection(db, "clients"), orgFilter), (snap) => {
-    allClients = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderClients();
-    renderDashboard();
-    renderReports();
-  });
-
-  onSnapshot(query(collection(db, "leads"), orgFilter), (snap) => {
-    allLeads = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
-    renderLeads();
-    renderDashboard();
-  });
-
-  onSnapshot(query(collection(db, "opportunities"), orgFilter), (snap) => {
-    allOpps = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderOpps();
-    renderDashboard();
-  });
-
-  onSnapshot(query(collection(db, "quotes"), orgFilter), (snap) => {
-    allQuotes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderQuotes();
-    renderDashboard();
-  });
-
-  onSnapshot(query(collection(db, "policies"), orgFilter), (snap) => {
-    allPolicies = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderPolicies();
-    renderDashboard();
-    renderReports();
-  });
-
-  onSnapshot(query(collection(db, "claims"), orgFilter), (snap) => {
-    allClaims = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderClaims();
-    renderReports();
-  });
-
-  onSnapshot(query(collection(db, "payments"), orgFilter), (snap) => {
-    allPayments = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderPayments();
-  });
-
-  onSnapshot(query(collection(db, "documents"), orgFilter), (snap) => {
-    allDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderDocs();
-  });
-
-  onSnapshot(query(collection(db, "notifications"), orderBy("createdAt", "desc")), (snap) => {
-    const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderUserNotifications(list);
-  });
-
-  onSnapshot(doc(db, "settings", "featureFlags"), (docSnap) => {
-    const flags = docSnap.exists() ? docSnap.data() : {};
-    applyFeatureFlags(flags);
-  });
+  document.getElementById('lockScreen').style.display='none'; return false;
 }
+function render(){document.getElementById('screen').innerHTML=appShellHTML(); if(checkLock())return; renderPage();}
+function clock(){const el=document.getElementById('clock'); if(el) el.textContent=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});}
+setInterval(clock,30000);
 
-/* ═══════════ التنقل ═══════════ */
-const PAGE_META = {
-  dashboard:    {title:'لوحة القيادة',      sub:'نظرة عامة على أدائك'},
-  clients:      {title:'العملاء',           sub:'إدارة قاعدة عملائك'},
-  leads:        {title:'العملاء المحتملون', sub:'متابعة الطلبات الجديدة'},
-  opportunities:{title:'الفرص',             sub:'مسار الفرص التجارية'},
-  quotes:       {title:'عروض الأسعار',      sub:'إنشاء ومتابعة العروض'},
-  policies:     {title:'الوثائق',           sub:'البوليصات والتجديدات'},
-  claims:       {title:'المطالبات',         sub:'متابعة مطالبات العملاء'},
-  payments:     {title:'المدفوعات',         sub:'التحصيل والمدفوعات'},
-  documents:    {title:'المستندات',         sub:'رفع وإدارة الملفات'},
-  reports:      {title:'التقارير',          sub:'تحليلات الأداء'},
-  notifications:{title:'الإشعارات',         sub:'إشعارات المنصة'},
-};
-
-function showPage(route){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  const el = document.getElementById('page-'+route);
-  if(!el) return;
-  el.classList.add('active');
-
-  // تحديث شريط التنقل السفلي
-  document.querySelectorAll('.bn-item[data-route]').forEach(b=>
-    b.classList.toggle('active', b.dataset.route===route)
-  );
-  // تحديث القائمة الجانبية
-  document.querySelectorAll('#drawerNav a').forEach(a=>
-    a.classList.toggle('active', a.dataset.route===route)
-  );
-
-  // تحديث العنوان
-  const meta = PAGE_META[route] || PAGE_META.dashboard;
-  document.getElementById('pageTitle').textContent = meta.title;
-  document.getElementById('pageSub').textContent = meta.sub;
-
-  // إعادة التمرير للأعلى
-  document.getElementById('content').scrollTop = 0;
-
-  location.hash = '#/' + route;
+/* ---- Demo mode: identical behaviour to before, via localStorage ---- */
+function loadDemoAll(){
+  const f=J(FLAGS_KEY,{}); CACHE.pages={...CACHE.pages,...(f.pages||{})}; CACHE.widgets={...CACHE.widgets,...(f.widgets||{})};
+  CACHE.pageContent=J(CONTENT_KEY,{});
+  CACHE.insurers=J(INSURERS_KEY,DEFAULT_INSURERS); CACHE.products=J(PRODUCTS_KEY,DEFAULT_PRODUCTS);
+  CACHE.notifications=J(NOTIFS_KEY,DEFAULT_NOTIFS); CACHE.leads=J(LEADS_KEY,[]);
+  const users=J(USERS_KEY,null); const me=users&&users.find(u=>u.id===ME_UID); CACHE.myStatus=me?me.status:'نشط';
 }
-
-function initNav(){
-  // شريط التنقل السفلي
-  document.querySelectorAll('.bn-item[data-route]').forEach(b=>{
-    b.addEventListener('click', ()=> showPage(b.dataset.route));
-  });
-  // القائمة الجانبية
-  document.querySelectorAll('#drawerNav a').forEach(a=>{
-    a.addEventListener('click', ()=>{ showPage(a.dataset.route); closeDrawer(); });
-  });
-  // زر "المزيد"
-  document.getElementById('openDrawerBtn').addEventListener('click', openDrawer);
-  document.getElementById('openDrawer').addEventListener('click', openDrawer);
-  document.getElementById('closeDrawer').addEventListener('click', closeDrawer);
-  document.getElementById('overlay').addEventListener('click', closeDrawer);
-  document.getElementById('notifBtn').addEventListener('click', ()=> showPage('notifications'));
-
-  const initial = location.hash.replace('#/','') || 'dashboard';
-  showPage(initial);
-}
-
-function openDrawer(){
-  document.getElementById('drawer').classList.add('show');
-  document.getElementById('overlay').classList.add('show');
-  document.body.style.overflow = 'hidden';
-}
-function closeDrawer(){
-  document.getElementById('drawer').classList.remove('show');
-  document.getElementById('overlay').classList.remove('show');
-  document.body.style.overflow = '';
-}
-
-/* ═══════════ أعلام الميزات ═══════════ */
-function applyFeatureFlags(flags){
-  const map = {
-    clients:'clients', leads:'leads', opportunities:'opportunities',
-    quotes:'quotes', policies:'policies', claims:'claims',
-    payments:'payments', documents:'documents', reports:'reports',
-    notifications:'notifications'
-  };
-  Object.entries(map).forEach(([route, flag])=>{
-    const show = flags[flag] !== false;
-    const drawerLink = document.querySelector(`#drawerNav a[data-route="${route}"]`);
-    if(drawerLink) drawerLink.style.display = show ? 'flex' : 'none';
-    const bnItem = document.querySelector(`.bn-item[data-route="${route}"]`);
-    if(bnItem) bnItem.style.display = show ? 'flex' : 'none';
-    const page = document.getElementById('page-'+route);
-    if(page && !show && page.classList.contains('active')) showPage('dashboard');
-  });
-}
-
-/* ═══════════ أدوات مساعدة ═══════════ */
-function statusBadge(s){
-  const map = {
-    'جديد':'b-new','قيد المراجعة':'b-review','مقبول':'b-approved','مرفوض':'b-rejected',
-    'بانتظار الموافقة':'b-pending','مقبولة':'b-approved','مرفوضة':'b-rejected',
-    'نشطة':'b-active','منتهية':'b-rejected','ملغاة':'b-rejected',
-    'مدفوعة':'b-approved','معلقة':'b-pending','متأخرة':'b-rejected',
-    'مسودة':'b-new','مُرسل':'b-review',
-  };
-  return `<span class="badge ${map[s]||'b-new'}">${s}</span>`;
-}
-
-function fmtDate(ts){
-  if(!ts) return '';
-  try{ return ts.toDate().toLocaleDateString('ar-EG'); }catch(e){ return ''; }
-}
-
-/* ═══════════ البيانات (المتغيرات العامة) ═══════════ */
-let allClients = [], allLeads = [], allOpps = [], allQuotes = [],
-    allPolicies = [], allClaims = [], allPayments = [], allDocs = [];
-
-/* ═══════════ لوحة القيادة ═══════════ */
-function renderDashboard(){
-  const pending = allLeads.filter(l=>l.status==='جديد'||l.status==='قيد المراجعة').length;
-  const approved = allLeads.filter(l=>l.status==='مقبول').length;
-
-  document.getElementById('kpiClients').textContent = allClients.length;
-  document.getElementById('kpiOpen').textContent = allOpps.length;
-  document.getElementById('kpiPending').textContent = pending;
-  document.getElementById('kpiApproved').textContent = approved;
-
-  document.getElementById('fLead').textContent = allLeads.length;
-  document.getElementById('fOpp').textContent = allOpps.length;
-  document.getElementById('fClient').textContent = allClients.length;
-  document.getElementById('fQuote').textContent = allQuotes.length;
-  document.getElementById('fPolicy').textContent = allPolicies.length;
-
-  const wrap = document.getElementById('dashLeadsList');
-  wrap.innerHTML = '';
-  const recent = allLeads.slice(0,5);
-  recent.forEach(l=>{
-    const div = document.createElement('div');
-    div.className = 'list-item';
-    div.innerHTML = `
-      <div class="li-ic"><svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></div>
-      <div class="li-body">
-        <b>${l.name}</b>
-        <span>${l.type||'—'} · ${fmtDate(l.createdAt)}</span>
-      </div>
-      ${statusBadge(l.status)}`;
-    wrap.appendChild(div);
-  });
-  document.getElementById('dashLeadsEmpty').style.display = recent.length?'none':'block';
-  document.getElementById('dashLeadsCount').textContent = recent.length;
-}
-
-/* ═══════════ العملاء ═══════════ */
-function renderClients(){
-  const q = (document.getElementById('clientSearch').value||'').trim().toLowerCase();
-  const filtered = allClients.filter(c=>!q || (c.name||'').toLowerCase().includes(q) || (c.phone||'').includes(q));
-  const wrap = document.getElementById('clientsList');
-  wrap.innerHTML = '';
-  filtered.forEach(c=>{
-    const div = document.createElement('div');
-    div.className = 'list-item';
-    div.innerHTML = `
-      <div class="li-ic"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-      <div class="li-body">
-        <b>${c.name}</b>
-        <span>${c.phone||'—'} · ${c.type||'—'}</span>
-      </div>
-      <button class="li-action" data-id="${c.id}" aria-label="حذف">
-        <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
-      </button>`;
-    wrap.appendChild(div);
-  });
-  document.getElementById('clientsEmpty').style.display = filtered.length?'none':'block';
-  document.getElementById('clientsCount').textContent = filtered.length;
-
-  wrap.querySelectorAll('button[data-id]').forEach(b=>{
-    b.addEventListener('click', async ()=>{
-      if(!confirm('تأكيد حذف العميل؟')) return;
-      await deleteDoc(doc(db, "clients", b.dataset.id));
+if(DEMO){
+  loadDemoAll(); render();
+  window.addEventListener('storage',()=>{loadDemoAll();render();});
+  setInterval(()=>{loadDemoAll();render();},2500);
+}else{
+  document.getElementById('screen').innerHTML=loginHTML();
+  auth.onAuthStateChanged(user=>{
+    if(!user){document.getElementById('screen').innerHTML=loginHTML(); return;}
+    ME_UID=user.uid; ME_NAME=user.displayName||user.email;
+    db.collection('platformSettings').doc('appConfig').onSnapshot(doc=>{
+      const d=doc.data()||{}; CACHE.pages={...CACHE.pages,...(d.pages||{})}; CACHE.widgets={...CACHE.widgets,...(d.widgets||{})}; CACHE.pageContent=d.pageContent||{}; if(document.getElementById('content')) renderPage();
     });
+    db.collection('insurers').onSnapshot(s=>{CACHE.insurers=s.docs.map(d=>d.data().name);});
+    db.collection('products').onSnapshot(s=>{CACHE.products=s.docs.map(d=>d.data().name); if(current==='leads') renderPage();});
+    db.collection('broadcastNotifications').orderBy('ts','desc').limit(20).onSnapshot(s=>{CACHE.notifications=s.docs.map(d=>d.data()); if(current==='notifications') renderPage();});
+    db.collection('leads').where('createdBy','==',user.uid).onSnapshot(s=>{CACHE.leads=s.docs.map(d=>({id:d.id,...d.data()})); if(document.getElementById('content')) renderPage();});
+    db.collection('users').doc(user.uid).onSnapshot(doc=>{CACHE.myStatus=(doc.data()||{}).status||'نشط'; render();});
   });
 }
-
-document.getElementById('clientForm').addEventListener('submit', async e=>{
-  e.preventDefault();
-  await addDoc(collection(db, "clients"), {
-    name:document.getElementById('cName').value.trim(),
-    phone:document.getElementById('cPhone').value.trim(),
-    email:document.getElementById('cEmail').value.trim(),
-    type:document.getElementById('cType').value,
-    notes:document.getElementById('cNotes').value.trim(),
-    organizationId: orgId,
-    createdAt: serverTimestamp()
-  });
-  e.target.reset();
-});
-
-/* ═══════════ العملاء المحتملون ═══════════ */
-function renderLeads(){
-  const wrap = document.getElementById('leadsList');
-  wrap.innerHTML = '';
-  allLeads.forEach(l=>{
-    const div = document.createElement('div');
-    div.className = 'list-item';
-    div.innerHTML = `
-      <div class="li-ic"><svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></div>
-      <div class="li-body">
-        <b>${l.name}</b>
-        <span>${l.type||'—'} · ${l.source||'—'}</span>
-      </div>
-      ${statusBadge(l.status)}`;
-    wrap.appendChild(div);
-  });
-  document.getElementById('leadsEmpty').style.display = allLeads.length?'none':'block';
-  document.getElementById('leadsCount').textContent = allLeads.length;
-}
-
-document.getElementById('leadForm').addEventListener('submit', async e=>{
-  e.preventDefault();
-  await addDoc(collection(db, "leads"), {
-    name:document.getElementById('lName').value.trim(),
-    phone:document.getElementById('lPhone').value.trim(),
-    type:document.getElementById('lType').value,
-    source:document.getElementById('lSource').value,
-    notes:document.getElementById('lNotes').value.trim(),
-    status:'جديد',
-    organizationId: orgId,
-    createdAt: serverTimestamp()
-  });
-  e.target.reset();
-});
-
-/* ═══════════ الفرص ═══════════ */
-function renderOpps(){
-  const wrap = document.getElementById('oppsList');
-  wrap.innerHTML = '';
-  allOpps.forEach(o=>{
-    const div = document.createElement('div');
-    div.className = 'list-item';
-    div.innerHTML = `
-      <div class="li-ic"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
-      <div class="li-body">
-        <b>${o.title}</b>
-        <span>${o.client} · ${Number(o.value||0).toLocaleString('ar-EG')} ج.م · ${o.stage}</span>
-      </div>
-      <button class="li-action" data-id="${o.id}">
-        <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
-      </button>`;
-    wrap.appendChild(div);
-  });
-  document.getElementById('oppsEmpty').style.display = allOpps.length?'none':'block';
-  document.getElementById('oppsCount').textContent = allOpps.length;
-  wrap.querySelectorAll('button[data-id]').forEach(b=>{
-    b.addEventListener('click', async ()=>{ await deleteDoc(doc(db, "opportunities", b.dataset.id)); });
-  });
-}
-document.getElementById('oppForm').addEventListener('submit', async e=>{
-  e.preventDefault();
-  await addDoc(collection(db, "opportunities"), {
-    title:document.getElementById('oTitle').value.trim(),
-    client:document.getElementById('oClient').value.trim(),
-    value:document.getElementById('oValue').value,
-    stage:document.getElementById('oStage').value,
-    organizationId: orgId,
-    createdAt: serverTimestamp()
-  });
-  e.target.reset();
-});
-
-/* ═══════════ العروض ═══════════ */
-function renderQuotes(){
-  const wrap = document.getElementById('quotesList');
-  wrap.innerHTML = '';
-  allQuotes.forEach(q=>{
-    const div = document.createElement('div');
-    div.className = 'list-item';
-    div.innerHTML = `
-      <div class="li-ic"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div>
-      <div class="li-body">
-        <b>${q.no}</b>
-        <span>${q.client} · ${Number(q.amount||0).toLocaleString('ar-EG')} ج.م</span>
-      </div>
-      ${statusBadge(q.status)}`;
-    wrap.appendChild(div);
-  });
-  document.getElementById('quotesEmpty').style.display = allQuotes.length?'none':'block';
-  document.getElementById('quotesCount').textContent = allQuotes.length;
-}
-document.getElementById('quoteForm').addEventListener('submit', async e=>{
-  e.preventDefault();
-  await addDoc(collection(db, "quotes"), {
-    no:document.getElementById('qNo').value.trim(),
-    client:document.getElementById('qClient').value.trim(),
-    amount:document.getElementById('qAmount').value,
-    status:document.getElementById('qStatus').value,
-    organizationId: orgId,
-    createdAt: serverTimestamp()
-  });
-  e.target.reset();
-});
-
-/* ═══════════ البوليصات ═══════════ */
-function renderPolicies(){
-  const wrap = document.getElementById('policiesList');
-  wrap.innerHTML = '';
-  allPolicies.forEach(p=>{
-    const div = document.createElement('div');
-    div.className = 'list-item';
-    div.innerHTML = `
-      <div class="li-ic"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-      <div class="li-body">
-        <b>${p.no} — ${p.client}</b>
-        <span>${p.type} · ${Number(p.premium||0).toLocaleString('ar-EG')} ج.م · ينتهي ${p.expiry}</span>
-      </div>
-      ${statusBadge(p.status)}`;
-    wrap.appendChild(div);
-  });
-  document.getElementById('policiesEmpty').style.display = allPolicies.length?'none':'block';
-  document.getElementById('policiesCount').textContent = allPolicies.length;
-}
-document.getElementById('policyForm').addEventListener('submit', async e=>{
-  e.preventDefault();
-  await addDoc(collection(db, "policies"), {
-    no:document.getElementById('pNo').value.trim(),
-    client:document.getElementById('pClient').value.trim(),
-    type:document.getElementById('pType').value,
-    expiry:document.getElementById('pExpiry').value,
-    premium:document.getElementById('pPremium').value,
-    status:document.getElementById('pStatus').value,
-    organizationId: orgId,
-    createdAt: serverTimestamp()
-  });
-  e.target.reset();
-});
-
-/* ═══════════ المطالبات ═══════════ */
-function renderClaims(){
-  const wrap = document.getElementById('claimsList');
-  wrap.innerHTML = '';
-  allClaims.forEach(c=>{
-    const div = document.createElement('div');
-    div.className = 'list-item';
-    div.innerHTML = `
-      <div class="li-ic"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div>
-      <div class="li-body">
-        <b>${c.no}</b>
-        <span>${c.client} · ${Number(c.amount||0).toLocaleString('ar-EG')} ج.م</span>
-      </div>
-      ${statusBadge(c.status)}`;
-    wrap.appendChild(div);
-  });
-  document.getElementById('claimsEmpty').style.display = allClaims.length?'none':'block';
-  document.getElementById('claimsCount').textContent = allClaims.length;
-}
-document.getElementById('claimForm').addEventListener('submit', async e=>{
-  e.preventDefault();
-  await addDoc(collection(db, "claims"), {
-    no:document.getElementById('clNo').value.trim(),
-    client:document.getElementById('clClient').value.trim(),
-    policy:document.getElementById('clPolicy').value.trim(),
-    amount:document.getElementById('clAmount').value,
-    status:document.getElementById('clStatus').value,
-    organizationId: orgId,
-    createdAt: serverTimestamp()
-  });
-  e.target.reset();
-});
-
-/* ═══════════ المدفوعات ═══════════ */
-function renderPayments(){
-  const wrap = document.getElementById('paymentsList');
-  wrap.innerHTML = '';
-  allPayments.forEach(p=>{
-    const div = document.createElement('div');
-    div.className = 'list-item';
-    div.innerHTML = `
-      <div class="li-ic"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
-      <div class="li-body">
-        <b>${p.no}</b>
-        <span>${p.client} · ${Number(p.amount||0).toLocaleString('ar-EG')} ج.م · ${p.method}</span>
-      </div>
-      ${statusBadge(p.status)}`;
-    wrap.appendChild(div);
-  });
-  document.getElementById('paymentsEmpty').style.display = allPayments.length?'none':'block';
-  document.getElementById('paymentsCount').textContent = allPayments.length;
-}
-document.getElementById('paymentForm').addEventListener('submit', async e=>{
-  e.preventDefault();
-  await addDoc(collection(db, "payments"), {
-    no:document.getElementById('payNo').value.trim(),
-    client:document.getElementById('payClient').value.trim(),
-    amount:document.getElementById('payAmount').value,
-    method:document.getElementById('payMethod').value,
-    status:document.getElementById('payStatus').value,
-    organizationId: orgId,
-    createdAt: serverTimestamp()
-  });
-  e.target.reset();
-});
-
-/* ═══════════ المستندات ═══════════ */
-function renderDocs(){
-  const wrap = document.getElementById('docsList');
-  wrap.innerHTML = '';
-  allDocs.forEach(d=>{
-    const div = document.createElement('div');
-    div.className = 'list-item';
-    div.innerHTML = `
-      <div class="li-ic"><svg viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg></div>
-      <div class="li-body">
-        <b>${d.name}</b>
-        <span>${d.owner} · ${d.type}</span>
-      </div>
-      ${statusBadge(d.status)}`;
-    wrap.appendChild(div);
-  });
-  document.getElementById('docsEmpty').style.display = allDocs.length?'none':'block';
-  document.getElementById('docsCount').textContent = allDocs.length;
-}
-document.getElementById('docForm').addEventListener('submit', async e=>{
-  e.preventDefault();
-  const name = document.getElementById('dName').value.trim();
-  const owner = document.getElementById('dOwner').value.trim();
-  const type = document.getElementById('dType').value;
-  const file = document.getElementById('dFile').files[0];
-  const size = file ? Math.round(file.size/1024)+'KB' : '—';
-
-  await addDoc(collection(db, "documents"), {
-    name, owner, type, size,
-    status:'بانتظار الموافقة',
-    organizationId: orgId,
-    createdAt: serverTimestamp()
-  });
-
-  await addDoc(collection(db, "uploads"), {
-    fileName: name + (file? ' — '+file.name : ''),
-    owner, type, size,
-    status:'pending',
-    organizationId: orgId,
-    uploadedBy: currentBroker.uid,
-    createdAt: serverTimestamp()
-  });
-
-  e.target.reset();
-});
-
-/* ═══════════ التقارير ═══════════ */
-function renderReports(){
-  document.getElementById('rClients').textContent = allClients.length;
-  document.getElementById('rPolicies').textContent = allPolicies.length;
-  document.getElementById('rPremium').textContent = allPolicies.reduce((a,p)=>a+Number(p.premium||0),0).toLocaleString('ar-EG');
-  document.getElementById('rClaims').textContent = allClaims.length;
-
-  const byType = {};
-  allPolicies.forEach(p=>{
-    byType[p.type] = byType[p.type] || {count:0, sum:0};
-    byType[p.type].count++;
-    byType[p.type].sum += Number(p.premium||0);
-  });
-
-  const wrap = document.getElementById('reportList');
-  wrap.innerHTML = '';
-  Object.entries(byType).forEach(([type, v])=>{
-    const div = document.createElement('div');
-    div.className = 'list-item';
-    div.innerHTML = `
-      <div class="li-ic"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-      <div class="li-body">
-        <b>${type}</b>
-        <span>${v.count} بوليصة</span>
-      </div>
-      <b style="color:var(--navy);font-size:13px">${v.sum.toLocaleString('ar-EG')} ج.م</b>`;
-    wrap.appendChild(div);
-  });
-  document.getElementById('reportEmpty').style.display = Object.keys(byType).length?'none':'block';
-}
-
-/* ═══════════ الإشعارات ═══════════ */
-function renderUserNotifications(list){
-  const wrap = document.getElementById('userNotifList');
-  wrap.innerHTML = '';
-  list.forEach(n=>{
-    const div = document.createElement('div');
-    div.className = 'notif-item';
-    div.dataset.type = n.type || 'info';
-    div.innerHTML = `
-      <div class="ni-body">
-        <b>${n.title}</b>
-        <p>${n.body}</p>
-        <small>${n.createdAt?.toDate?.().toLocaleString('ar-EG') || ''}</small>
-      </div>`;
-    wrap.appendChild(div);
-  });
-  document.getElementById('userNotifEmpty').style.display = list.length?'none':'block';
-  document.getElementById('userNotifCount').textContent = list.length;
-  document.getElementById('notifDot').style.display = list.length ? 'inline-block' : 'none';
-}
-
-/* ═══════════ الفلاتر ═══════════ */
-document.getElementById('clientSearch').addEventListener('input', renderClients);
-
-/* ═══════════ hashchange ═══════════ */
-window.addEventListener('hashchange', ()=>{
-  const route = location.hash.replace('#/','') || 'dashboard';
-  if(document.getElementById('page-'+route)) showPage(route);
-});
 </script>
 </body>
 </html>
